@@ -101,6 +101,9 @@
     <None Include="Resources\BNetworks\DungeonNet.neta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Resources\BNetworks\DungeonNetCount.neta" />
+    <None Include="Resources\BNetworks\DungeonNetEM.neta" />
+    <None Include="Resources\BNetworks\DungeonNetGD.neta" />
     <None Include="Resources\Maps\17vertices.yml" />
     <None Include="Resources\Maps\41vertices.yml" />
     <None Include="Resources\Maps\9vertices.yml" />
@@ -150,6 +153,8 @@
     <None Include="Resources\Rooms\tutorial_basicRooms.yml" />
     <None Include="Resources\Rooms\tutorial_corridors.yml" />
     <None Include="Resources\Rooms\tutorial_differentProbabilities.yml" />
+    <Compile Include="SpaceGenerator\Learners\EMLearner.cs" />
+    <Compile Include="SpaceGenerator\Learners\ILearner.cs" />
     <Compile Include="SpaceGenerator\NodeTypes.cs" />
   </ItemGroup>
   <ItemGroup>
