@@ -15,29 +15,44 @@ namespace BayesianPDG.SpaceGenerator
         private BNet net { get; }
         private Caseset data { get; }
 
-
-        // Count, EM or Gradient Descent
-        private List<Learner> parameterLearners;
-
-        //TAN learned or Sumerrville's sparse network
-        private List<BNet> networkStructures;
-
-        
         public SpaceModel(DAGLoader loader)
         {
-            
+
             net = loader.Net;
             data = loader.Data;
 
-            LearnEM();
-            double rooms = Probability(NodeTypes.NumRooms, 3);
-            Debug.WriteLine("The probability of a dungeon having 6 Rooms is " + rooms.ToString("G4"));
-            double cpr = Probability(NodeTypes.CriticalPathLength, 3);
-            Debug.WriteLine("The probability of a critical path being 3 is " + cpr.ToString("G4"));
-            Observe(NodeTypes.NumRooms, 2);
-            cpr = Probability(NodeTypes.CriticalPathLength, 3);
-            Debug.WriteLine("Given 6 rooms, the probability of a critical path being 3 is " + cpr.ToString("G4"));
-            net.RetractFindings();
+            //double rooms = Probability(NodeTypes.NumRooms, 3);
+            //Debug.WriteLine("The probability of a dungeon having 6 Rooms is " + rooms.ToString("G4"));
+            //double cpr = Probability(NodeTypes.CriticalPathLength, 3);
+            //Debug.WriteLine("The probability of a critical path being 3 is " + cpr.ToString("G4"));
+            //Observe(NodeTypes.NumRooms, 2);
+            //cpr = Probability(NodeTypes.CriticalPathLength, 3);
+            //Debug.WriteLine("Given 6 rooms, the probability of a critical path being 3 is " + cpr.ToString("G4"));
+            //net.RetractFindings();
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clearFindings">Remove previously set observations.</param>
+        public BNet Sample(bool clearFindings = false)
+        {
+            if (clearFindings)
+            {
+                net.RetractFindings();
+            }
+            int exit = net.GenerateRandomCase(net.Nodes);
+
+            if (exit == 0)
+            {
+                return net;
+            }
+            else
+            {
+                net.RetractFindings();
+                throw new InvalidOperationException("There was a problem Sampling the network");
+            }
 
         }
 
@@ -104,6 +119,7 @@ namespace BayesianPDG.SpaceGenerator
         public double Probability(NodeTypes node, int state) => Probability(node.ToString(), state);
         #endregion
 
+        #region Utils
         private void ClearCPT()
         {
             foreach (BNode node in net.Nodes)
@@ -111,5 +127,6 @@ namespace BayesianPDG.SpaceGenerator
                 node.DeleteTables();
             }
         }
+        #endregion
     }
 }
