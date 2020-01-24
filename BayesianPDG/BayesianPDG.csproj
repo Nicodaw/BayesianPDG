@@ -159,7 +159,7 @@
     <None Include="Resources\Rooms\tutorial_basicRooms.yml" />
     <None Include="Resources\Rooms\tutorial_corridors.yml" />
     <None Include="Resources\Rooms\tutorial_differentProbabilities.yml" />
-    <Compile Include="SpaceGenerator\NodeTypes.cs" />
+    <Compile Include="SpaceGenerator\Enums\FeatureType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -175,6 +175,9 @@
     <Compile Include="MissionGenerator\Vertex.cs" />
     <Compile Include="SpaceGenerator\DAGLoader.cs" />
     <Compile Include="SpaceGenerator\SpaceModel.cs" />
+    <Compile Include="SpaceGenerator\Space\Edge.cs" />
+    <Compile Include="SpaceGenerator\Space\Node.cs" />
+    <Compile Include="SpaceGenerator\Space\SpaceGraph.cs" />
     <Compile Include="Utils\WFLayoutDrawer.cs" />
   </ItemGroup>
   <ItemGroup>

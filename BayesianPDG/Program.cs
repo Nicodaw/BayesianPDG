@@ -1,5 +1,6 @@
 ﻿using BayesianPDG.MissionGenerator;
 using BayesianPDG.SpaceGenerator;
+using BayesianPDG.SpaceGenerator.Space;
 using GeneralAlgorithms.DataStructures.Polygons;
 using MapGeneration.Core.Doors.DoorModes;
 using MapGeneration.Core.MapDescriptions;
@@ -13,6 +14,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using Edge = BayesianPDG.MissionGenerator.Edge;
 
 namespace BayesianPDG
 {
@@ -89,6 +91,18 @@ namespace BayesianPDG
             {
                 Debug.WriteLine($"{e.Message} by {e.ParamName} with: {e.Data} {e.StackTrace}");
             }
+
+        }
+
+        static void GenerateMap(SpaceGraph graph, int seed = 0)
+        {
+            //TODO: Finish when graph population is done
+            var layoutGenerator = LayoutGeneratorFactory.GetDefaultChainBasedGenerator<int>();
+            layoutGenerator.InjectRandomGenerator(new Random(seed));
+
+            var mapDescription = new MapDescription<int>();
+
+            graph.AllNodes.ForEach(node => mapDescription.AddRoom(node.Id));
 
         }
 

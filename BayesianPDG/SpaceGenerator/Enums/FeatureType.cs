@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace BayesianPDG.SpaceGenerator
 {
     /// <summary>
-    /// The names of our parameters/features
+    /// The names of our parameters/features/RVs
     /// Each one is a unique node in the DAG 
     /// </summary>
-    enum NodeTypes
+    enum FeatureType
     {
         NumRooms,
         CriticalPathLength,

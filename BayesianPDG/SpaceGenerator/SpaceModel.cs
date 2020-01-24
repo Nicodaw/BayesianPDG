@@ -11,6 +11,7 @@ namespace BayesianPDG.SpaceGenerator
 {
     class SpaceModel
     {
+        private const int UndefinedState = -3; //netica default undefined state value
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
         private BNet net { get; }
         private Caseset data { get; }
@@ -21,12 +22,12 @@ namespace BayesianPDG.SpaceGenerator
             net = loader.Net;
             data = loader.Data;
 
-            //double rooms = Probability(NodeTypes.NumRooms, 3);
+            //double rooms = Probability(FeatureType.NumRooms, 3);
             //Debug.WriteLine("The probability of a dungeon having 6 Rooms is " + rooms.ToString("G4"));
-            //double cpr = Probability(NodeTypes.CriticalPathLength, 3);
+            //double cpr = Probability(FeatureType.CriticalPathLength, 3);
             //Debug.WriteLine("The probability of a critical path being 3 is " + cpr.ToString("G4"));
-            //Observe(NodeTypes.NumRooms, 2);
-            //cpr = Probability(NodeTypes.CriticalPathLength, 3);
+            //Observe(FeatureType.NumRooms, 2);
+            //cpr = Probability(FeatureType.CriticalPathLength, 3);
             //Debug.WriteLine("Given 6 rooms, the probability of a critical path being 3 is " + cpr.ToString("G4"));
             //net.RetractFindings();
 
@@ -56,31 +57,17 @@ namespace BayesianPDG.SpaceGenerator
 
         }
 
-        /// <summary>
-        /// Learn using EM TODO: more descriptive summary of how EM is used
-        /// </summary>
-        /// <param name="withClearTables">If the nodes have CPT and experience tables before the learning starts, they will be considered as part of the data .
-        /// Set if you don't want these observations to be taken in account. Note: It clears all previously set CPTs</param>
-        /// <returns>EM Learner</returns>
-        Learner LearnEM(bool withClearTables = true)
-        {
-            if (withClearTables) ClearCPT();
-            Learner em = _app.NewLearner(LearningMethod.EMLearning);
-            em.LearnCPTs(net.Nodes, data, 1);
-            return em;
-        }
-
         #region Public Methods
         /// <summary>
         /// Set evidence for a particular node. This is a wrapper for EnterFindings so we can use values instead of indices.
         /// </summary>
-        /// <param name="node">target node</param>
+        /// <param name="node">target RV</param>
         /// <param name="state">The value of the evindence.</param>
         public void Observe(BNode node, int state)
         {
             try
             {
-                int index = -3; //netica default undefined state value
+                int index = UndefinedState;
                 for (int i = 0; i < node.NumberStates; i++)
                 {
                     if (node.StateLabel[i].Equals(state.ToString())) index = i; //iterating over StateLabels. Names are not set and hence we can't use node.GetStateIndex(str statename)
@@ -93,17 +80,17 @@ namespace BayesianPDG.SpaceGenerator
             }
         }
         public void Observe(string node, int state) => Observe(net.Nodes.get_Item(node), state);
-        public void Observe(NodeTypes node, int state) => Observe(node.ToString(), state);
+        public void Observe(FeatureType node, int state) => Observe(node.ToString(), state);
         /// <summary>
         /// Extract belief for a particular node. This is a wrapper for GetBelief so we can use values instead of indices.
         /// </summary>
-        /// <param name="node">target node</param>
+        /// <param name="node">target RV</param>
         /// <param name="state">The value of the evindence.</param>
         public double Probability(BNode node, int state)
         {
             try
             {
-                int index = -3; //netica default undefined state value
+                int index = UndefinedState;
                 for (int i = 0; i < node.NumberStates; i++)
                 {
                     if (node.StateLabel[i].Equals(state.ToString())) index = i; //iterating over StateLabels. Names are not set and hence we can't use node.GetStateIndex(str statename)
@@ -116,8 +103,29 @@ namespace BayesianPDG.SpaceGenerator
             }
         }
         public double Probability(string node, int state) => Probability(net.Nodes.get_Item(node), state);
-        public double Probability(NodeTypes node, int state) => Probability(node.ToString(), state);
+        public double Probability(FeatureType node, int state) => Probability(node.ToString(), state);
+
+        /// <summary>
+        /// Get a point estimate from a sampled BN
+        /// Note: The value must be observed otherwise it will throw an exception
+        /// </summary>
+        /// <param name="node">target RV</param>
+        /// <returns></returns>
+        public double Value(BNode node)
+        {
+            double val = node.CalcValue();
+            if (node.CalcState() != UndefinedState)
+            {
+                return val;
+            } else
+            {
+                throw new COMException($"No value is set for node {node.Name}. Make sure you have either set the observation of the node or have ran Sample()");
+            }
+        }
+        public double Value(string node) => Value(net.Nodes.get_Item(node));
+        public double Value(FeatureType node) => Value(node.ToString());
         #endregion
+
 
         #region Utils
         private void ClearCPT()
