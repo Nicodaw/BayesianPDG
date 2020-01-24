@@ -3,6 +3,7 @@ using BayesianPDG.SpaceGenerator;
 using BayesianPDG.SpaceGenerator.Space;
 using GeneralAlgorithms.DataStructures.Polygons;
 using MapGeneration.Core.Doors.DoorModes;
+using MapGeneration.Core.LayoutGenerators;
 using MapGeneration.Core.MapDescriptions;
 using MapGeneration.Interfaces.Core.MapLayouts;
 using MapGeneration.Utils;
@@ -24,7 +25,8 @@ namespace BayesianPDG
         {
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
-            spaceGen.RunInference();
+            SpaceGraph graph = spaceGen.RunInference();
+            GenerateMap(graph);
 
             //Mission mg = new Mission();
             //mg.GenerateDungeon(2, 2);
@@ -97,13 +99,54 @@ namespace BayesianPDG
         static void GenerateMap(SpaceGraph graph, int seed = 0)
         {
             //TODO: Finish when graph population is done
-            var layoutGenerator = LayoutGeneratorFactory.GetDefaultChainBasedGenerator<int>();
-            layoutGenerator.InjectRandomGenerator(new Random(seed));
 
             var mapDescription = new MapDescription<int>();
 
+            //Add rooms
             graph.AllNodes.ForEach(node => mapDescription.AddRoom(node.Id));
+            //Add connections
+            List<List<int>> connections = graph.ConvertToAdjList();
+            for (int i = 0; i < connections.Count; i++)
+            {
+                for (int j = 0; j < connections[i].Count; j++)
+                {
+                    mapDescription.AddPassage(i, connections[i][j]);
+                }
+            }
+            // Add room shapes
+            var doorMode = new OverlapMode(1, 1);
+            var squareRoom = new RoomDescription(
+              GridPolygon.GetSquare(8),
+              doorMode
+            );
+            var rectangleRoom = new RoomDescription(
+              GridPolygon.GetRectangle(6, 10),
+              doorMode
+            );
+            mapDescription.AddRoomShapes(squareRoom);
+            mapDescription.AddRoomShapes(rectangleRoom);
 
+            // Generate bitmap
+            SaveBitmap(mapDescription, seed);
+
+
+
+        }
+
+        private static void SaveBitmap(MapDescription<int> mapDescription, int seed)
+        {
+            try
+            {
+                var layoutGenerator = LayoutGeneratorFactory.GetDefaultChainBasedGenerator<int>();
+                layoutGenerator.InjectRandomGenerator(new Random(seed));
+                Debug.WriteLine(mapDescription.GetGraph().ToString());
+                List<IMapLayout<int>> generatedLayouts = (List<IMapLayout<int>>)layoutGenerator.GetLayouts(mapDescription, 3); //Magic number 3 is how many different layouts we want
+                exportAllJpgButton_Click(generatedLayouts);
+            }
+            catch (ArgumentException e)
+            {
+                Debug.WriteLine($"{e.Message} by {e.ParamName} with: {e.Data} {e.StackTrace}");
+            }
         }
 
         private static void exportAllJpgButton_Click(List<IMapLayout<int>> generatedLayouts)
