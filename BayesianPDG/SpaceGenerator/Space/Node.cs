@@ -17,9 +17,10 @@ namespace BayesianPDG.SpaceGenerator.Space
         }
 
         /// <summary>
-        /// Create a new arc, connecting this Node to the Node passed in the parameter
+        /// Create a new edge
         /// Also, it creates the inversed node in the passed node
         /// </summary>
+        /// <returns>this</returns>
         public Node AddEdge(Node child)
         {
             Edges.Add(new Edge
@@ -28,26 +29,29 @@ namespace BayesianPDG.SpaceGenerator.Space
                 Child = child
             });
 
-            if (!child.Edges.Exists(a => a.Parent == child && a.Child == this))
+            if (!child.Edges.Exists(e => e.Parent == child && e.Child == this))
             {
                 child.AddEdge(this);
             }
 
             return this;
         }
-
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Delete an existing edge
+        /// Also, it deletes the inversed node in the passed node
+        /// </summary>
+        /// <returns>this</returns>
+        public Node RemoveEdge(Node child)
         {
-            if(obj.GetType() == typeof(Node))
+            if (Edges.Exists(e => e.Parent == this && e.Child == child))
             {
-                Node other =  (Node) obj;
-                if(other.Id == Id)
-                {
-                    return true;
-                } 
-                //TODO Check for edge content comparison
+                Edges.Remove(Edges.First<Edge>(e => e.Parent == this && e.Child == child));
             }
-            return false;
+            if (child.Edges.Exists(e => e.Parent == child && e.Child == this))
+            {
+                child.RemoveEdge(this);
+            }
+            return this;
         }
     }
 }

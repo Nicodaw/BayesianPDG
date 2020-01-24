@@ -8,7 +8,6 @@ namespace BayesianPDG.SpaceGenerator.Space
 {
     class SpaceGraph
     {
-        public Node Root;
         public List<Node> AllNodes = new List<Node>();
         public Node Node(int id) => AllNodes.First<Node>(node => node.Id == id);
 
@@ -19,12 +18,11 @@ namespace BayesianPDG.SpaceGenerator.Space
             return n;
         }
 
-        public void Connect(int parent, int child)
-        {
-            Node(parent).AddEdge(Node(child));
-        }
+        public void Connect(int parent, int child) => Node(parent).AddEdge(Node(child));
 
-        private int?[,] ConvertToAdjMatrix()
+        public void Disconnect(int parent, int child) => Node(parent).RemoveEdge(Node(child));
+
+        public int?[,] ConvertToAdjMatrix()
         {
             int?[,] adj = new int?[AllNodes.Count, AllNodes.Count];
 
@@ -46,7 +44,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             return adj;
         }
-        private List<List<int>> ConvertToAdjList()
+        public List<List<int>> ConvertToAdjList()
         {   //ToDo: implement Adjacency lists ...
             //flatten down adj matrix
             List<List<int>> adj = new List<List<int>>();
