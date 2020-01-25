@@ -3,7 +3,6 @@ using BayesianPDG.SpaceGenerator;
 using BayesianPDG.SpaceGenerator.Space;
 using GeneralAlgorithms.DataStructures.Polygons;
 using MapGeneration.Core.Doors.DoorModes;
-using MapGeneration.Core.LayoutGenerators;
 using MapGeneration.Core.MapDescriptions;
 using MapGeneration.Interfaces.Core.MapLayouts;
 using MapGeneration.Utils;
@@ -26,7 +25,7 @@ namespace BayesianPDG
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
             SpaceGraph graph = spaceGen.RunInference();
-            GenerateMap(graph);
+          //  GenerateMap(graph);
 
             //Mission mg = new Mission();
             //mg.GenerateDungeon(2, 2);
@@ -104,16 +103,17 @@ namespace BayesianPDG
 
             //Add rooms
             graph.AllNodes.ForEach(node => mapDescription.AddRoom(node.Id));
+
             //Add connections
             List<List<int>> connections = graph.ConvertToAdjList();
-            for (int i = 0; i < connections.Count; i++)
+            for (int node = 0; node < connections.Count; node++)
             {
-                for (int j = 0; j < connections[i].Count; j++)
+                for (int link = 0; link < connections[node].Count; link++)
                 {
-                    mapDescription.AddPassage(i, connections[i][j]);
+                    mapDescription.AddPassage(node, connections[node][link]);
                 }
             }
-            // Add room shapes
+            // Add default room shapes
             var doorMode = new OverlapMode(1, 1);
             var squareRoom = new RoomDescription(
               GridPolygon.GetSquare(8),
@@ -128,9 +128,6 @@ namespace BayesianPDG
 
             // Generate bitmap
             SaveBitmap(mapDescription, seed);
-
-
-
         }
 
         private static void SaveBitmap(MapDescription<int> mapDescription, int seed)

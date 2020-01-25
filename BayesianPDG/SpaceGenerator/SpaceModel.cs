@@ -14,7 +14,7 @@ namespace BayesianPDG.SpaceGenerator
         private const int UndefinedState = -3; //netica default undefined state value
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
         private BNet net { get; }
-        private Caseset data { get; }
+        private Caseset data { get; } // ToDo: remove? Do we need the data files if we're loading a pre-trained net?
 
         public SpaceModel(DAGLoader loader)
         {
@@ -22,37 +22,24 @@ namespace BayesianPDG.SpaceGenerator
             net = loader.Net;
             data = loader.Data;
 
-            //double rooms = Probability(FeatureType.NumRooms, 3);
-            //Debug.WriteLine("The probability of a dungeon having 6 Rooms is " + rooms.ToString("G4"));
-            //double cpr = Probability(FeatureType.CriticalPathLength, 3);
-            //Debug.WriteLine("The probability of a critical path being 3 is " + cpr.ToString("G4"));
-            //Observe(FeatureType.NumRooms, 2);
-            //cpr = Probability(FeatureType.CriticalPathLength, 3);
-            //Debug.WriteLine("Given 6 rooms, the probability of a critical path being 3 is " + cpr.ToString("G4"));
-            //net.RetractFindings();
-
         }
 
         /// <summary>
-        /// 
+        /// Sample the network. Randomly observes values depending on their distribution. Sample() takes in account previously set observations and works around them
+        /// I.e. if you have Observed NumRooms = 5 it will run the sampler on the updated CPT
+        /// Because Netica BNets are stateful, if you want to run the sampler multiple times, you have to clear the findings by running ClearObservations().
+        /// That will clear observations you have set manually.
         /// </summary>
-        /// <param name="clearFindings">Remove previously set observations.</param>
-        public BNet Sample(bool clearFindings = false)
+        public BNet Sample()
         {
-            if (clearFindings)
-            {
-                net.RetractFindings();
-            }
             int exit = net.GenerateRandomCase(net.Nodes);
+            bool isValid = ValidateSample();
 
-            if (exit == 0)
-            {
-                return net;
-            }
+            if (exit == 0 && isValid) return net;
             else
             {
                 net.RetractFindings();
-                throw new InvalidOperationException("There was a problem Sampling the network");
+                throw new InvalidOperationException($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}");
             }
 
         }
@@ -124,6 +111,9 @@ namespace BayesianPDG.SpaceGenerator
         }
         public double Value(string node) => Value(net.Nodes.get_Item(node));
         public double Value(FeatureType node) => Value(node.ToString());
+
+        public void ClearObservations() => net.RetractFindings();
+        public void ClearObservations(FeatureType node) => net.Nodes.get_Item(node.ToString()).RetractFindings();
         #endregion
 
 
@@ -134,6 +124,12 @@ namespace BayesianPDG.SpaceGenerator
             {
                 node.DeleteTables();
             }
+        }
+        private bool ValidateSample()
+        {
+            bool isCPTValid = Value(FeatureType.NumRooms) >= Value(FeatureType.CriticalPathLength); //critical path cannot be longer than the number of rooms
+            bool areDoorsValid = Value(FeatureType.NumDoors) >= Value(FeatureType.NumNeighbours);    //a room cannot have more neighbours than there are total number of connections in the map
+            return isCPTValid && areDoorsValid;
         }
         #endregion
     }

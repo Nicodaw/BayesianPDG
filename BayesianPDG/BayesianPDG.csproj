@@ -101,13 +101,7 @@
     <None Include="Resources\BNetworks\DungeonNet.neta">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\BNetworks\DungeonNetCount.neta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\BNetworks\DungeonNetEM.neta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\BNetworks\DungeonNetGD.neta">
+    <None Include="Resources\BNetworks\EMNet.neta">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Resources\Maps\17vertices.yml" />
