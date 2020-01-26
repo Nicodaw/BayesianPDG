@@ -340,3 +340,7 @@ ASALocalRun/
 healthchecksdb
 /BayesianPDG/Resources/Maps
 /BayesianPDG/Resources/Rooms
+
+# Dissertation Latex
+/Dissertation/build/*
+!/Dissertation/build/*.pdf

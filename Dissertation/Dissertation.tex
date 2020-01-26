@@ -1,0 +1,107 @@
+\documentclass{UoYCSproject}
+\addbibresource{bibl.bib}
+\author{Angel Simeonov}
+\title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
+\date{Version 2.20, 2018-September-21}
+\supervisor{Dr. Rob Alexander}
+\BEng
+
+\dedication{To all students everywhere}
+
+\acknowledgements{
+  I would like to thank my goldfish for all the help it gave me
+  writing this document.
+ 
+  As usual, my boss was an inspiring source of sagacious advice.
+}
+
+% More definitions & declarations in example.ldf
+
+\begin{document}
+\pagenumbering{roman}
+\maketitle
+\listoffigures
+\listoftables
+%\renewcommand*{\lstlistlistingname}{List of Listings}
+%\lstlistoflistings
+
+\begin{summary}
+Something to read \parencite{zobel2015writing}
+>At most two (2) pages, aimed a non-specialist, knowledgeable authorial peer.
+The summary must:
+--state the aim of the reported work,
+--motivate the work,
+--state methods used,
+--state results found, and
+--highlight any legal, social, ethical, professional, and commercial issues as appropriate to the topic of study (if none, then this should be explicitly stated).
+\end{summary}
+
+\chapter{Introduction}
+\label{cha:Introduction}
+
+\section{Role-playing games}
+\begin{enumerate}
+  \item Nature and goal  RP is trying to create a compelling narrative in which players can be involved in.
+    \item Contextualise RPs by comparing different genres. Digital vs Tabletop.
+  \item Interaction mechanisms. How the game is played and what is the role of the DM
+  \item Problems: DM has to create the narrative. Can we devise an algorithm that helps DMs create a compelling narrative?
+\end{enumerate}
+
+\paragraph{}
+Role-playing games (RPG) is a broad term encompassing a multitude of different games with often distinct mechanics and media. The common factor between all RPGs is that the player(s) portray a fictional character and is involved in a fictional world (or a subset of one). The interaction of the players with this world is governed by rules, defined by the media. The rules can be viewed as two sets: in one we have rules about how we play the game and in the other we have rules that define story elements. The first set can be viewed as "How I interact with the environment" (functional) and the second as "What is the meaning of the environment" (narrative). 
+
+\paragraph{}
+Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo and \textbf{[more games here]} have both sets of rules defined by the game designers. A functional rule in an RPG like Skyrim is that you can attack with the left mouse button and a narrative rule is that you are a Dragonborn with a quest (which is embodied in the main campaign). Good computer RPGs often have the ability to relax the narrative rules \textbf{[[A Tychsen The Game Master]]}, allowing for the player to have more freedom in the exploration of the world and also creating the sensation that the player has some impact on the narrative.
+
+\paragraph{}
+The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of creating the Dungeon is a laborious process and to facilitate that academics and the PnP community have been exploring different ways of automating it. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations.
+
+\section{Generation methods}
+\begin{enumerate}
+  \item Review various different algorithms for PDG
+    \item Non-digital: the Advanced DnD DM design kit book 3: Adventure Cookbook. Using dice tables to create different elements of the dungeon. Laborious process which requires the DM to remove any inconsistencies. Does not provide with an actual Dungeon structure.
+    \item Cellular automata: donjon [[Rouguebasin Cellular Automata Method for Generating Random Cave-Like Levels]]. Completely random topology and random content generation
+    \item 
+\end{enumerate}
+
+
+
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[height=3cm]{"./UOY-Logo-Stacked-shield-Black.png"}
+\end{center}
+\caption{A figure containing UoY logo and its caption.}
+\end{figure}
+
+Donec felis odio, ultricies maximus sem at, fringilla mollis ipsum. Etiam finibus diam vehicula, egestas ante sed, tincidunt neque. Maecenas porttitor euismod ultrices. Duis imperdiet dictum viverra. Donec in ligula quis enim hendrerit euismod. Aliquam vitae lectus massa. Proin id condimentum leo. Cras mollis, diam at faucibus interdum, dui nulla suscipit metus, nec suscipit leo nisl vel nisl. Ut dapibus dignissim iaculis. Etiam et ante sit amet lectus ultrices lobortis a nec turpis.
+
+\begin{table}[htb]
+\caption{ A table with its caption.}
+\begin{center}
+\begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
+\hline
+column A & column B \\\hline
+row 1 &
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quis quam at nisi iaculis aliquet vel et quam. \\\hline
+row 2 &
+Aliquam erat volutpat. Nam at velit a risus faucibus aliquet. Aenean egestas vehicula mi, quis rhoncus sem facilisis in. Interdum et malesuada fames ac ante ipsum primis in faucibus. Sed lobortis lacus quis mauris rutrum auctor. \\\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\chapter{Conclusion}
+\label{cha:conclusion}
+
+
+\appendix
+\chapter{Some appendix}
+\textit{Use this section for graphical showing of the models. Nets, result tables (or tables should be inline?)}
+
+\chapter{Another appendix}
+\textit{Use this section for questionnaires and external validation support}
+
+\printbibliography
+
+\end{document}
