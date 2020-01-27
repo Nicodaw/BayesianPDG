@@ -7,13 +7,10 @@
 \supervisor{Dr. Rob Alexander}
 \BEng
 
-\dedication{To all students everywhere}
+\dedication{<insert dedication>}
 
 \acknowledgements{
-  I would like to thank my goldfish for all the help it gave me
-  writing this document.
- 
-  As usual, my boss was an inspiring source of sagacious advice.
+  <insert acknowledgements>
 }
 
 % More definitions & declarations in example.ldf
@@ -54,15 +51,15 @@ Role-playing games (RPG) is a broad term encompassing a multitude of different g
 Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo and \textbf{[more games here]} have both sets of rules defined by the game designers. A functional rule in an RPG like Skyrim is that you can attack with the left mouse button and a narrative rule is that you are a Dragonborn with a quest (which is embodied in the main campaign). Good computer RPGs often have the ability to relax the narrative rules \parencite{TychsenGM}, allowing for the player to have more freedom in the exploration of the world and also creating the sensation that the player has some impact on the narrative.
 
 \paragraph{}
-The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of creating the Dungeon is a laborious process and to facilitate that academics and the PnP community have been exploring different ways of automating it. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations.
+The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and the PnP community have been exploring different ways of automating it. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in answering this question.
 
 \section{Generation methods}
 \begin{outline}
   \1 Review various different algorithms for PDG and discuss their take on solving the "is this dungeon interesting?" problem.
     \2 Non-digital: [[the Advanced DnD DM design kit book 3: Adventure Cookbook]]. Using dice tables to create different elements of the dungeon. Laborious process which requires the DM to remove any inconsistencies. Does not provide an actual Dungeon structure.
     \2 Cellular automata: donjon \parencite{donjonCA}. Issues associated with completely random topology and random content generation. Evaluated only on if the level is solvable (no evaluation of semantic content).
-    \2 Constraint Propagators and their related issues when formalising narrative as constraints
-    \2 BPTs + semantic additions[[citation needed Thrall and Brown]]. Difficulty proving the 'goodness' of the generator. Discuss difficulties with an objective HCI evaluation for PnP.
+    \2 Constraint Propagators and their related issues when formalising narrative as constraints.
+    \2 BPTs + semantic additions[[citation needed Thrall and Brown]]. Difficulty proving the 'goodness' of the generator. Discuss difficulties with an objective HCI evaluation for PnP (i.e. difficult to get a decent sample size, because playing a game is time consuming).
     \2 Formal language approach. Grammars \parencite{DormansMS,Deery,Cadogan} as a natural way of describing narrative structures.
     \2 Data-driven approaches. \parencite{SummervilleLearningOfZelda,SummervillePCGML,SummervilleSamplingHyrule} Relate the notion of learning from human-made dungeons as a way to create good structure + narrative. Note the lack of data. Expand more in the Mission and Space --> Aim sections
 \end{outline}
@@ -77,12 +74,12 @@ It is important to note that PnP RPGs and the various genres of computer RPGs al
 \section{Mission and Space}
 \begin{outline}
   \1 Introduce the notion of Mission and Space
-    \2 The reason for separating Mission and Space. We can model player experience better.
-  \1 
+  \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
 \end{outline}
 
 \paragraph{}
-As shown, most of the generator approaches would have an unique way to create the layout and then populate it with some content for the players to explore. This separation was formalised by Dormans when he introduced the notion of Space and Mission.
+\texttt{=== Discussion of Mission::Space separation ===}
+% As shown, most of the generator approaches would have an unique way to create the layout and then populate it with some content for the players to explore. This separation was formalised by Dormans when he introduced the notion of Space and Mission.
 
 \section{Aim}
 \begin{outline}
@@ -93,7 +90,7 @@ As shown, most of the generator approaches would have an unique way to create th
 \end{outline}
 
 \paragraph{}
-The dungeon’s topology (Space) and contents (Mission) are correlated and form the narrative. As we have seen, dungeon generators usually implore bottom up approaches in which they apply rules for topology and sometimes even introduce semantics in the dungeon content. The objective goal of all dungeon generators is if not to provide a full end-to-end narrative, then at least the baseline for a captivating narrative. I want to argue that from that definition we can say that the ultimate dungeon generator is the human designer as dungeons and therefore narratives produced by humans are the most compelling out of all created dungeons. Deery made the first steps by manually analysing submissions to the One Page Dungeon OPDC competition [[OPDC]] to extract a graph grammar  for Mission generation \parencite{Deery}. The Mission graph was then mapped to a physical Space in a 1:1 ratio and that was the end dungeon. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset. In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon.
+The dungeon’s topology (Space) and contents (Mission) are correlated and form the narrative. As we have seen, dungeon generators usually implore bottom up approaches in which they apply rules for topology and then introduce dungeon content. The objective goal of all dungeon generators is if not to provide a full end-to-end narrative, then at least set the baseline for a captivating one. I want to argue that from that definition we can say that the ultimate \textit{dungeon generator} is the human designer as dungeons and therefore narratives produced by humans are the most compelling out of all created dungeons. Deery made the first steps by manually analysing submissions to the One Page Dungeon OPDC competition [[OPDC]] to extract a graph grammar for Mission generation \parencite{Deery}. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset. In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon.
 
 \paragraph{}
 We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
