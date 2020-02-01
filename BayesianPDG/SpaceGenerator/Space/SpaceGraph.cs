@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Priority_Queue;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
@@ -25,7 +26,18 @@ namespace BayesianPDG.SpaceGenerator.Space
             return n;
         }
 
-        public void Connect(int parent, int child) => Node(parent).AddEdge(Node(child));
+        public void Connect(int parent, int child)
+        {
+            if (parent != child)
+            {
+                Node(parent).AddEdge(Node(child));
+            }
+            else
+            {
+                Debug.WriteLine($"Parent and child are the same node [{parent}]. Skipping...");
+            }
+            
+        }
 
         public void Disconnect(int parent, int child) => Node(parent).RemoveEdge(Node(child));
         #endregion
@@ -53,7 +65,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             return adj;
         }
         public List<List<int>> ConvertToAdjList()
-        { 
+        {
             List<List<int>> adj = new List<List<int>>();
             int?[,] matrix = ConvertToAdjMatrix();
             for (int row = 0; row < AllNodes.Count; row++)
@@ -72,32 +84,42 @@ namespace BayesianPDG.SpaceGenerator.Space
 
         private bool ValidateGraph()
         {
-            // is there a path from Entrance to G
-            List<int?> pathEG = PathTo(Entrance.Id, Goal.Id);
-            pathEG.ForEach(node => Debug.WriteLine($"path node {node}"));
+            List<int> pathEG = PathTo(Entrance.Id, Goal.Id);
+            Debug.WriteLine("[id] => cameFrom");
+            pathEG.ForEach(node => Debug.WriteLine($"[{pathEG.IndexOf(node)}] => {node}"));
 
             bool isConnected = true;
             foreach (Node node in AllNodes)
             {
-                if (node.Edges.Count == 0) isConnected = false;
+                if (node.Edges.Count == 0)
+                {
+                    isConnected = false;
+                    break;
+                }
             }
 
-
-            return pathEG.Any(_ => _ != null) && isConnected;
+            return pathEG.Count > 0 && isConnected;
         }
 
         /// <summary>
-        /// Using Breath First + early exit
+        /// Using Dijkstra
         /// </summary>
         /// <param name="A">Start</param>
         /// <param name="B">Goal</param>
         /// <returns>The shortest path b/w the nodes, if it exists. Otherwise null</returns>
-        private List<int?> PathTo(int A, int B)
+        private List<int> PathTo(int A, int B)
         {
-            Queue<int> frontier = new Queue<int>();
-            frontier.Enqueue(A);
+            SimplePriorityQueue<int> frontier = new SimplePriorityQueue<int>();
+            frontier.Enqueue(A, 0);
             List<int?> cameFrom = new List<int?>();
-            GraphList.ForEach(_ => cameFrom.Add(null));
+            List<int?> totalCost = new List<int?>();
+
+            GraphList.ForEach(_ =>
+            {
+                cameFrom.Add(null);
+                totalCost.Add(null);
+            });
+            totalCost[A] = 0;
 
             while (frontier.Count != 0)
             {
@@ -106,14 +128,29 @@ namespace BayesianPDG.SpaceGenerator.Space
 
                 foreach (int neighbour in GraphList[current])
                 {
-                    if (!cameFrom.Contains(neighbour))
+                    int? cost = totalCost[current] + 1;
+                    if (totalCost[neighbour] == null || cost < totalCost[neighbour])
                     {
-                        frontier.Enqueue(neighbour);
+                        totalCost[neighbour] = cost;
+                        frontier.Enqueue(neighbour, cost.Value);
                         cameFrom[neighbour] = current;
                     }
                 }
             }
-            return cameFrom;
+            //work your way back to reconstruct the path and remove null nodes
+            List<int> reduced = new List<int>();
+            if (cameFrom[B].HasValue)
+            {
+                int? current = B;
+                while (current != null)
+                {
+                    reduced.Add(current.Value);
+                    current = cameFrom[current.Value];
+                }
+                reduced.Reverse();
+            }
+            
+            return reduced;
 
 
         }
@@ -122,17 +159,21 @@ namespace BayesianPDG.SpaceGenerator.Space
             int?[,] matrix = ConvertToAdjMatrix();
             int Count = AllNodes.Count();
             StringBuilder builder = new StringBuilder();
-            builder.Append(' ', 7);
+            builder.Append(' ', 8);
             for (int i = 0; i < Count; i++)
             {
-                builder.AppendFormat("{0}  ", i);
+                builder.AppendFormat("{0}", i);
+                builder.Append(' ', (i >= 10) ? 1 : 2);
             }
 
             builder.AppendLine();
 
             for (int i = 0; i < Count; i++)
             {
-                builder.AppendFormat("{0} | [ ", i);
+
+                builder.AppendFormat("{0}", i);
+                builder.Append(' ',(i>=10)?1:2);
+                builder.Append("| [ ");
 
                 for (int j = 0; j < Count; j++)
                 {

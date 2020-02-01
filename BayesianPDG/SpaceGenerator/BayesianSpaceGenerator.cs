@@ -1,5 +1,6 @@
 ﻿using BayesianPDG.SpaceGenerator.Space;
 using Netica;
+using System;
 using System.Diagnostics;
 
 namespace BayesianPDG.SpaceGenerator
@@ -22,9 +23,9 @@ namespace BayesianPDG.SpaceGenerator
 
                 _ = dungeonModel.Sample();
                 //Get the global (Dungeon) parameters
-                double rooms = dungeonModel.Value(FeatureType.NumRooms);          //Hard constraint
-                double cpl = dungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-                double doors = dungeonModel.Value(FeatureType.NumDoors);          //Soft constraint
+                int rooms = (int)dungeonModel.Value(FeatureType.NumRooms);          //Hard constraint
+                int cpl = (int)dungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
+                int doors = (int)dungeonModel.Value(FeatureType.NumDoors);          //Soft constraint
 
                 //ToDo: support for the local (Room) parameters
 
@@ -59,13 +60,7 @@ namespace BayesianPDG.SpaceGenerator
                     //ToDo: room allocation
                 }
 
-                foreach (Node node in graph.AllNodes)
-                {
-                    if (node.Id + 1 < graph.AllNodes.Count)
-                    {
-                        graph.Connect(node.Id, node.Id + 1); //connect this and the next one | dummy logic
-                    }
-                }
+                RandomConnect(graph);
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is graph complete? {graph.isComplete}");
@@ -78,6 +73,22 @@ namespace BayesianPDG.SpaceGenerator
                 //clean-up
                 dungeonBNLoader.close();
             }
+        }
+        /// <summary>
+        /// Randomly select nodes and connect them until no dangling nodes remain
+        /// Dummy logic, does not maintain invariants
+        /// </summary>
+        private static SpaceGraph RandomConnect(SpaceGraph graph)
+        {
+            int rooms = graph.AllNodes.Count;
+            while (!graph.isComplete)
+            {
+                Random random = new Random();
+                int randParent = random.Next(1, rooms - 1);
+                int randChild = random.Next(1, rooms - 1);
+                graph.Connect(randParent, randChild);
+            }
+            return graph;
         }
 
     }
