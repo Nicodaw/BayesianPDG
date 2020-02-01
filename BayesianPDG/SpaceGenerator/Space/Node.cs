@@ -7,9 +7,12 @@ namespace BayesianPDG.SpaceGenerator.Space
     {
         public int Id;
         public List<Edge> Edges = new List<Edge>();
+        public bool IsConnected(Node other) => Edges.Find(edge => edge.Child == other || edge.Parent == other) != null;
+        public int CPDistance; // 0 is on the Critical Path
 
         public Node(int id)
         {
+            if (id == 0) CPDistance = 0;
             Id = id;
         }
 

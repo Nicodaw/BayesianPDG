@@ -33,12 +33,12 @@ namespace BayesianPDG.SpaceGenerator
         public BNet Sample()
         {
             int exit = net.GenerateRandomCase(net.Nodes);
-            bool isValid = ValidateSample();
+            bool isValid = ValidateSample();// ToDo: Remove temporary hardcoded validation upon finishing the dataset. Add retry.
 
             if (exit == 0 && isValid) return net;
             else
             {
-                net.RetractFindings();
+                ClearObservations();
                 throw new InvalidOperationException($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}");
             }
 
