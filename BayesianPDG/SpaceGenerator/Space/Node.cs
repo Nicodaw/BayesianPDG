@@ -5,17 +5,31 @@ namespace BayesianPDG.SpaceGenerator.Space
 {
     class Node
     {
+        #region Public Fields
         public int Id;
         public List<Edge> Edges = new List<Edge>();
         public bool IsConnected(Node other) => Edges.Find(edge => edge.Child == other || edge.Parent == other) != null;
-        public int CPDistance; // 0 is on the Critical Path
+        #endregion
 
+        #region Constraints
+        public int CPDistance; // 0 is on the Critical Path
+        public int Neighbours;
+        public int Depth;
+        #endregion
+
+        #region Constructor
         public Node(int id)
         {
-            if (id == 0) CPDistance = 0;
+            if (id == 0)
+            {
+                CPDistance = 0;
+                Depth = 0;
+            }
             Id = id;
         }
+        #endregion
 
+        #region Public Methods
         /// <summary>
         /// Create a new edge
         /// Also, it creates the inversed node in the passed node
@@ -53,5 +67,6 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             return this;
         }
+        #endregion
     }
 }

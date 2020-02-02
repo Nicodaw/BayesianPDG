@@ -13,9 +13,22 @@ namespace BayesianPDG.SpaceGenerator.Space
         public List<Node> AllNodes = new List<Node>();
         public Node Entrance => Node(0);
         public Node Goal => Node(AllNodes.Count - 1);
+        public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateGraph();
         public List<List<int>> GraphList => ConvertToAdjList();
         #endregion
+
+        #region Constructor
+        public SpaceGraph() 
+        { 
+            //default
+        }
+        public SpaceGraph(SpaceGraph other)
+        {
+            AllNodes = other.AllNodes;
+        }
+        #endregion
+
         #region Public Properties
         public Node Node(int id) => AllNodes.First(node => node.Id == id);
 
@@ -39,7 +52,10 @@ namespace BayesianPDG.SpaceGenerator.Space
             
         }
 
+        public void Connect(Node parent, Node child) => Connect(parent.Id, child.Id);
+
         public void Disconnect(int parent, int child) => Node(parent).RemoveEdge(Node(child));
+        public void Disconnect(Node parent, Node child) => Disconnect(parent.Id, child.Id);
         #endregion
 
         public int?[,] ConvertToAdjMatrix()
@@ -82,11 +98,14 @@ namespace BayesianPDG.SpaceGenerator.Space
             return adj;
         }
 
+        /// <summary>
+        /// Checks if a Critical Path is established and if all nodes are connected
+        /// </summary>
+        /// <returns>Is the graph ready to be printed as a dungeon?</returns>
         private bool ValidateGraph()
         {
-            List<int> pathEG = PathTo(Entrance.Id, Goal.Id);
             Debug.WriteLine("[id] => cameFrom");
-            pathEG.ForEach(node => Debug.WriteLine($"[{pathEG.IndexOf(node)}] => {node}"));
+            CriticalPath.ForEach(node => Debug.WriteLine($"[{CriticalPath.IndexOf(node)}] => {node}"));
 
             bool isConnected = true;
             foreach (Node node in AllNodes)
@@ -98,7 +117,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                 }
             }
 
-            return pathEG.Count > 0 && isConnected;
+            return CriticalPath.Count > 0 && isConnected;
         }
 
         /// <summary>

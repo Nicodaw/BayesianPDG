@@ -24,7 +24,7 @@ namespace BayesianPDG
         {
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
-            SpaceGraph graph = spaceGen.RunInference();
+            SpaceGraph graph = spaceGen.RunInference(1000);
           //  GenerateMap(graph);
 
             //Mission mg = new Mission();
