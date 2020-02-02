@@ -25,12 +25,16 @@ namespace BayesianPDG.SpaceGenerator
         }
 
         /// <summary>
-        /// Sample the network. Randomly observes values depending on their distribution. Sample() takes in account previously set observations and works around them
-        /// I.e. if you have Observed NumRooms = 5 it will run the sampler on the updated CPT
+        /// Sample the network. Randomly observes values depending on their distribution. Sample() takes in account previously set observations and performs inference with those facts.
+        /// I.e. if you have Observed NumRooms = 5 it will run the sampler on the updated CPT where it knows that there will be 5 rooms.
         /// Because Netica BNets are stateful, if you want to run the sampler multiple times, you have to clear the findings by running ClearObservations().
         /// That will clear observations you have set manually.
+        /// 
+        /// A simple retry mechanism is implemented. The assumption is that when there is a failure, we fix the global Dungeon parameters and resample the room
+        /// by propagating the dungeon parameters.
         /// </summary>
-        public BNet Sample()
+        /// <param name="retry">How many times to retry before failing. Set retry = 0 if you want imediate failure on invalid sample.</param>
+        public BNet Sample(int retry = 10)
         {
             int exit = net.GenerateRandomCase(net.Nodes);
             bool isValid = ValidateSample();// ToDo: Remove temporary hardcoded validation upon finishing the dataset. Add retry.
@@ -38,8 +42,22 @@ namespace BayesianPDG.SpaceGenerator
             if (exit == 0 && isValid) return net;
             else
             {
-                ClearObservations();
-                throw new InvalidOperationException($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}");
+                if(retry != 0)
+                {
+                    Debug.WriteLine($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}. Retrying...");
+                    var priorObservations = (rooms: (int) Value(FeatureType.NumRooms), doors: (int) Value(FeatureType.NumDoors), cpLength: (int) Value(FeatureType.CriticalPathLength));
+                    ClearObservations();
+                    Observe(FeatureType.NumRooms, priorObservations.rooms);
+                    Observe(FeatureType.NumDoors, priorObservations.doors);
+                    Observe(FeatureType.CriticalPathLength, priorObservations.cpLength);
+                    return Sample(retry--);
+                }
+                else
+                {
+                    ClearObservations();
+                    throw new InvalidOperationException($"There was a problem Sampling the network and it failed after retring 10 times. Exit code {exit}. Is sample valid? {isValid}.");
+                }
+                
             }
 
         }
@@ -104,7 +122,8 @@ namespace BayesianPDG.SpaceGenerator
             if (node.CalcState() != UndefinedState)
             {
                 return val;
-            } else
+            }
+            else
             {
                 throw new COMException($"No value is set for node {node.Name}. Make sure you have either set the observation of the node or have ran Sample()");
             }
@@ -125,11 +144,26 @@ namespace BayesianPDG.SpaceGenerator
                 node.DeleteTables();
             }
         }
+
+        /// <summary>
+        /// Checks for our heuristic clauses that must hold for the sample to be valid
+        /// </summary>
+        /// <returns>is the sample valid</returns>
         private bool ValidateSample()
         {
             bool isCPTValid = Value(FeatureType.NumRooms) >= Value(FeatureType.CriticalPathLength); //critical path cannot be longer than the number of rooms
-            bool areDoorsValid = Value(FeatureType.NumDoors) >= Value(FeatureType.NumNeighbours);    //a room cannot have more neighbours than there are total number of connections in the map
-            return isCPTValid && areDoorsValid;
+            bool areDoorsValid = Value(FeatureType.NumDoors) >= Value(FeatureType.NumNeighbours);   //a room cannot have more neighbours than there are total number of connections in the map
+            bool isDepthValid = Value(FeatureType.NumRooms) >= Value(FeatureType.Depth);            //a room cannot be at depth greater than the total number of rooms  
+
+            var isValid = (isCPTValid, areDoorsValid, isDepthValid) switch
+            {
+                (false, true, true) => (false, "CPT is invalid"),
+                (true, false, true) => (false, "Doors are invalid"),
+                (true, true, false) => (false, "Depth is invalid"),
+                _ => (true, "Everything is valid")
+            };
+            Debug.WriteLine($"Room validator reports:: {isValid.Item2}");
+            return isValid.Item1;
         }
         #endregion
     }

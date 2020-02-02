@@ -11,38 +11,42 @@ namespace BayesianPDG.SpaceGenerator
         /// Global reference to the Netica COM
         /// </summary>
         public static Application NeticaApp = new Application();
-        public SpaceGraph RunInference()
+        public SpaceGraph RunInference(int? seed = null)
         {
             DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
             SpaceModel dungeonModel = new SpaceModel(dungeonBNLoader);
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
-                int observedRooms = 6; // ToDo: Let user decide
+                int observedRooms = 2; // ToDo: Let user decide
                 dungeonModel.Observe(FeatureType.NumRooms, observedRooms);
 
                 _ = dungeonModel.Sample();
                 //Get the global (Dungeon) parameters
-                int rooms = (int)dungeonModel.Value(FeatureType.NumRooms);          //Hard constraint
-                int cpl = (int)dungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-                int doors = (int)dungeonModel.Value(FeatureType.NumDoors);          //Soft constraint
+                int rooms = (int)dungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
+                int cpLength = (int)dungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
+                int doors = (int)dungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
 
-                //ToDo: support for the local (Room) parameters
-
-                Debug.WriteLine($"Sampled: [{rooms},{cpl},{doors}]");
+                //ToDo: Get the local (Room) parameters
+                int depth = 0;
+                int neighbours = 0;
+                int cpDistance = 0;
+                Debug.WriteLine($"Dungeon Sampled: [{rooms},{cpLength},{doors}]");
 
                 SpaceGraph graph = new SpaceGraph();
 
-                // ~ Building the Space graph for the map generator ~ //
+                ///
+                /// ~ Building the Space graph for the map generator ~
+                /// 
                 for (int i = 0; i < rooms; i++)
                 {
                     graph.CreateNode(i);
                 }
 
                 // Create the critical path and set the distance for all nodes on it to 0
-                for (int parent = 0; parent < cpl ; parent++)
+                for (int parent = 0; parent < cpLength ; parent++)
                 {
-                    int child = (parent != cpl - 1) ? parent + 1 : graph.Goal.Id;
+                    int child = (parent != cpLength - 1) ? parent + 1 : graph.Goal.Id; // The critical path is comprised of consequtive rooms from the start + the last one (goal)
                     graph.Node(parent).CPDistance = 0;
                     graph.Node(child).CPDistance = 0;
                     graph.Connect(parent, child);
@@ -51,16 +55,27 @@ namespace BayesianPDG.SpaceGenerator
                 // Transform the basis dungeon in a per-room fashion
                 for (int i = 0; i < rooms; i++)
                 {
-                    //set Observations and maintain them :: clear -> sample -> reset
-                    //make sure you don't invalidate the hard constraints and log when the soft ones have to be adj
+                    //set global observations and maintain them :: clear -> sample -> reset
+                    //make sure you don't invalidate the hard constraints and log when the soft ones have to be adjusted
 
-                    //dungeonModel.ClearObservations();
-                    //dungeonModel.Observe(FeatureType.NumRooms, observedRooms);
-                    //_ = dungeonModel.Sample();
+                    dungeonModel.ClearObservations();
+                    dungeonModel.Observe(FeatureType.NumRooms, observedRooms);
+                    dungeonModel.Observe(FeatureType.CriticalPathLength, cpLength);
+                    dungeonModel.Observe(FeatureType.NumDoors, doors);
+                    _ = dungeonModel.Sample();
+
                     //ToDo: room allocation
+                    depth = (int)dungeonModel.Value(FeatureType.Depth);                     //Hard constraint
+                    neighbours = (int)dungeonModel.Value(FeatureType.NumNeighbours);        //Hard constraint
+                    cpDistance = (int)dungeonModel.Value(FeatureType.CriticalPathDistance); //Soft constraint
+
+                    Random rand = (seed == null) ? new Random() : new Random(seed.Value);
+
+                    Debug.WriteLine($"Rooms Sampled: [{depth},{neighbours},{cpDistance}]");
+
                 }
 
-                RandomConnect(graph);
+               // RandomConnect(graph);
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is graph complete? {graph.isComplete}");
