@@ -20,7 +20,7 @@ namespace BayesianPDG.SpaceGenerator
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
-                int observedRooms = 6; // ToDo: Let user decide
+                int observedRooms = 12; // ToDo: Let user decide
                 dungeonModel.Observe(FeatureType.NumRooms, observedRooms);
 
                 _ = dungeonModel.Sample();
@@ -92,11 +92,19 @@ namespace BayesianPDG.SpaceGenerator
                         // if connecting A:B does not invalidate the constraints => connect them
                         // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
                         // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
-                        Node child = graph.Node(rand.Next(1, rooms-1));
-                        if (ValidCPLength(graph, parent, child) && ValidNeighbours(parent, parent.Neighbours) && ValidNeighbours(child, child.Neighbours))
+                        Node child = graph.Node(rand.Next(0, rooms));
+
+                        SpaceGraph mutated = ValidCPLength(graph, parent, child);
+                        if (mutated != null)
                         {
-                            graph.Connect(parent, child);
-                            unconnectedNeighbours--;
+                            var mutParent = mutated.Node(par);
+                            var mutChild = mutated.Node(child.Id);
+                            if (ValidNeighbours(mutParent, mutParent.Neighbours) && ValidNeighbours(mutChild, mutChild.Neighbours))
+                            {
+                                graph.Connect(mutParent, mutChild);
+                                unconnectedNeighbours--;
+                            }
+                            else retries--;
                         }
                         else
                         {
@@ -145,13 +153,13 @@ namespace BayesianPDG.SpaceGenerator
         /// <param name="A">parent node</param>
         /// <param name="B">child node</param>
         /// <returns>If adding A:B is a valid operation</returns>
-        private bool ValidCPLength(SpaceGraph graph, Node A, Node B)
+        private SpaceGraph? ValidCPLength(SpaceGraph graph, Node A, Node B)
         {
             int originalCPLength = graph.CriticalPath.Count;
             SpaceGraph temp = new SpaceGraph(graph);
             temp.Connect(A, B);
 
-            return temp.CriticalPath.Count == originalCPLength;
+            return ((temp.CriticalPath.Count == originalCPLength) && temp.isPlanar)? temp : null;
         }
 
         /// <summary>
@@ -160,6 +168,7 @@ namespace BayesianPDG.SpaceGenerator
         /// <param name="A">node</param>
         /// <returns>If A has not exceeded its neighbour capacity</returns>
         private bool ValidNeighbours(Node A, int maxNe) => A.Edges.Count < maxNe;
+
 
     }
 }

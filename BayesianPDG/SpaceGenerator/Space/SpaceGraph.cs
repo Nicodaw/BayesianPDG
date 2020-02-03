@@ -15,6 +15,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public Node Goal => Node(AllNodes.Count - 1);
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateGraph();
+        public bool isPlanar => AllNodes.GroupBy(node => node.Edges).Count() >= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6;
         public List<List<int>> GraphList => ConvertToAdjList();
         #endregion
 
@@ -170,9 +171,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             
             return reduced;
-
-
-        }
+       }
         public override string ToString()
         {
             int?[,] matrix = ConvertToAdjMatrix();
