@@ -12,9 +12,9 @@ namespace BayesianPDG.SpaceGenerator.Space
         #endregion
 
         #region Constraints
-        public int CPDistance; // 0 is on the Critical Path
-        public int Neighbours;
-        public int Depth;
+        public int? CPDistance; // 0 is on the Critical Path
+        public int? MaxNeighbours;
+        public int? Depth;
         #endregion
 
         #region Constructor

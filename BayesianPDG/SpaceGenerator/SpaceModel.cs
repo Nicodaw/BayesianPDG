@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BayesianPDG.SpaceGenerator
 {
@@ -37,7 +35,7 @@ namespace BayesianPDG.SpaceGenerator
         public BNet Sample(int retry = 10)
         {
             int exit = net.GenerateRandomCase(net.Nodes);
-            bool isValid = ValidateSample();// ToDo: Remove temporary hardcoded validation upon finishing the dataset. Add retry.
+            bool isValid = ValidateDungeonSample();// ToDo: Remove temporary hardcoded validation upon finishing the dataset. Add retry.
 
             if (exit == 0 && isValid) return net;
             else
@@ -131,6 +129,20 @@ namespace BayesianPDG.SpaceGenerator
         public double Value(string node) => Value(net.Nodes.get_Item(node));
         public double Value(FeatureType node) => Value(node.ToString());
 
+        /// <summary>
+        /// Method for setting a belief framework
+        /// </summary>
+        /// <param name="clear">Shoud we clear the previous observations</param>
+        /// <param name="observations">The set of parameter:value pairs</param>
+        public void SetObservations(bool clear, params (FeatureType, int)[] observations)
+        {
+            if (clear) ClearObservations();
+            foreach((FeatureType,int) observation in observations)
+            {
+                Observe(observation.Item1, observation.Item2);
+            }
+        }
+
         public void ClearObservations() => net.RetractFindings();
         public void ClearObservations(FeatureType node) => net.Nodes.get_Item(node.ToString()).RetractFindings();
         #endregion
@@ -146,23 +158,23 @@ namespace BayesianPDG.SpaceGenerator
         }
 
         /// <summary>
-        /// Checks for our heuristic clauses that must hold for the sample to be valid
+        /// Checks for our heuristic clauses that must hold for the global dungeon parameters sampled to be valid
         /// </summary>
         /// <returns>is the sample valid</returns>
-        private bool ValidateSample()
+        private bool ValidateDungeonSample()
         {
             bool isCPTValid = Value(FeatureType.NumRooms) >= Value(FeatureType.CriticalPathLength); //critical path cannot be longer than the number of rooms
             bool areDoorsValid = Value(FeatureType.NumDoors) >= Value(FeatureType.NumNeighbours);   //a room cannot have more neighbours than there are total number of connections in the map
-            bool isDepthValid = Value(FeatureType.NumRooms) >= Value(FeatureType.Depth);            //a room cannot be at depth greater than the total number of rooms  
+            bool isDepthValid = Value(FeatureType.NumRooms) >= Value(FeatureType.Depth);            //a room cannot be at depth greater than the total number of rooms
 
             var isValid = (isCPTValid, areDoorsValid, isDepthValid) switch
             {
                 (false, true, true) => (false, "CPT is invalid"),
                 (true, false, true) => (false, "Doors are invalid"),
                 (true, true, false) => (false, "Depth is invalid"),
-                _ => (true, "Everything is valid")
+                _ => (true, "Dungeon is valid")
             };
-            Debug.WriteLine($"Room validator reports:: {isValid.Item2}");
+            Debug.WriteLine($"Dungeon validator reports:: {isValid.Item2}");
             return isValid.Item1;
         }
         #endregion
