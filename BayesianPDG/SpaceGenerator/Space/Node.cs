@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
-    class Node
+    public class Node
     {
         #region Public Fields
         public int Id;
@@ -27,6 +27,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             Id = id;
         }
+        public Node() { }
         #endregion
 
         #region Public Methods

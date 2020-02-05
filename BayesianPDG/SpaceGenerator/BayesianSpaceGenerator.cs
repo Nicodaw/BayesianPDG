@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace BayesianPDG.SpaceGenerator
 {
-    class BayesianSpaceGenerator
+    public class BayesianSpaceGenerator
     {
         /// <summary>
         /// Global reference to the Netica COM
@@ -74,74 +74,58 @@ namespace BayesianPDG.SpaceGenerator
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
 
-                
-                
+
+
                 List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
 
                 while (unconnected.Count != 0)
                 {
+                    Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
                     Node parent = unconnected[rand.Next(0, unconnected.Count)];
                     int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
                     int retries = 10;
-                    while (unconnectedNeighbours != 0 && retries >= 0)
+                    while (unconnectedNeighbours >= 0 && retries >= 0)
                     {
                         // if connecting A:B does not invalidate the constraints => connect them
                         // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
                         // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
-                        Node child = unconnected[rand.Next(0, unconnected.Count)];
 
-                        if (ValidCPLength(graph, parent, child)) //check if graph is planar
-                        {
-                            if (ValidNeighboursPostInc(parent) && ValidNeighboursPostInc(child))
+                        List<Node> temp = new List<Node>(unconnected); //avoid duplicates
+                        temp.Remove(parent);
+                        Node child = temp[rand.Next(0, temp.Count)];
+
+                        if (ValidCPLength(graph, parent, child))
+                        { //check if graph is planar
+                            var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
+                            if (!validNeigbours.parentIsValid)
                             {
+                           //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
+                                retries--;
+                            }
+                            else if (!validNeigbours.childIsValid)
+                            {
+                          //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
+                                retries--;
+                            }
+                            else
+                            {
+                          //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
                                 graph.Connect(parent, child);
                                 unconnectedNeighbours--;
                             }
-                            else retries--;
                         }
                         else
                         {
-                            Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
+                           // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
                             retries--;
                         }
                     }
                     if (unconnectedNeighbours == 0)
                     {
+                        Debug.WriteLine($"Finished [{parent.Id}], removing node...");
                         unconnected.Remove(parent);
                     }
                 }
-
-                //for (int par = 0; par < rooms; par++)
-                //{
-                //    Node parent = graph.Node(par);
-                //    int unconnectedNeighbours = parent.MaxNeighbours - parent.Edges.Count;
-                //    int retries = 10;
-                //    while (unconnectedNeighbours != 0 && retries >= 0)
-                //    {
-                //        // if connecting A:B does not invalidate the constraints => connect them
-                //        // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
-                //        // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
-                //        Node child = graph.Node(rand.Next(0, rooms));
-
-                //        SpaceGraph mutated = ValidCPLength(graph, parent, child);
-                //        if (mutated != null && mutated.isPlanar)
-                //        {
-                //            var mutParent = mutated.Node(par);
-                //            var mutChild = mutated.Node(child.Id);
-                //            if (ValidNeighbours(mutParent, mutParent.MaxNeighbours) && ValidNeighbours(mutChild, mutChild.MaxNeighbours))
-                //            {
-                //                graph.Connect(mutParent, mutChild);
-                //                unconnectedNeighbours--;
-                //            }
-                //            else retries--;
-                //        }
-                //        else
-                //        {
-                //            Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
-                //            retries--;
-                //        }
-                //    }
-                //}
 
 
                 // Validate if graph is complete.
@@ -247,13 +231,13 @@ namespace BayesianPDG.SpaceGenerator
         /// <param name="A">parent node</param>
         /// <param name="B">child node</param>
         /// <returns>If adding A:B is a valid operation</returns>
-        private bool ValidCPLength(SpaceGraph graph, Node A, Node B)
+        public bool ValidCPLength(SpaceGraph graph, Node A, Node B) //ToDo: do we need a deep copy ???
         {
             int originalCPLength = graph.CriticalPath.Count;
-            SpaceGraph temp = new SpaceGraph(graph);
-            temp.Connect(A, B);
-
-            return temp.CriticalPath.Count == originalCPLength;
+            graph.Connect(A, B);
+            bool isCPValid = graph.CriticalPath.Count == originalCPLength;
+            graph.Disconnect(A, B);
+            return isCPValid;
         }
 
         /// <summary>
@@ -262,7 +246,7 @@ namespace BayesianPDG.SpaceGenerator
         /// </summary>
         /// <param name="A">node</param>
         /// <returns>If A has not exceeded its neighbour capacity</returns>
-        private bool ValidNeighboursPostInc(Node A) => (A.Edges.Count + 1) <= A.MaxNeighbours;
+        private bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
         #endregion
 
 

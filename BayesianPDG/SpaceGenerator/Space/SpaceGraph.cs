@@ -7,7 +7,7 @@ using Priority_Queue;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
-    class SpaceGraph
+    public class SpaceGraph
     {
         #region Public Fields
         public List<Node> AllNodes = new List<Node>();
@@ -177,6 +177,8 @@ namespace BayesianPDG.SpaceGenerator.Space
             int?[,] matrix = ConvertToAdjMatrix();
             int Count = AllNodes.Count();
             StringBuilder builder = new StringBuilder();
+            builder.AppendFormat("CP: [{0}]", string.Join(", " , CriticalPath.ToArray()));
+            builder.AppendLine();
             builder.Append(' ', 8);
             for (int i = 0; i < Count; i++)
             {

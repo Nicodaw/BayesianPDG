@@ -1,8 +1,15 @@
-﻿namespace BayesianPDG.SpaceGenerator.Space
+﻿using System;
+
+namespace BayesianPDG.SpaceGenerator.Space
 {
-    class Edge
+    public class Edge: IEquatable<Edge>
     {
         public Node Parent;
         public Node Child;
+
+        public bool Equals(Edge other)
+        {
+            return (Parent.Equals(other.Parent) && Child.Equals(other.Child));
+        }
     }
 }
