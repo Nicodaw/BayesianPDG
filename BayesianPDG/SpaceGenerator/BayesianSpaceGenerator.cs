@@ -18,7 +18,7 @@ namespace BayesianPDG.SpaceGenerator
         {
             DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
             DungeonModel = new SpaceModel(dungeonBNLoader);
-            Random rand = (seed == null) ? new Random() : new Random(seed.Value);
+            Random rand = (seed == null) ? new Random() : new Random(seed.Value); //Maintain the same RNG throuought for consistency
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
@@ -55,58 +55,8 @@ namespace BayesianPDG.SpaceGenerator
                 // randomly assign neighbours and remove any fully connected node from the list
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
-
-                List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-                while (unconnected.Count != 0)
-                {
-                    //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
-                    Node parent = unconnected[rand.Next(0, unconnected.Count)];
-                    int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
-                    int retries = 10;
-                    while (unconnectedNeighbours >= 0 && retries >= 0)
-                    {
-                        // if connecting A:B does not invalidate the constraints => connect them
-                        // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
-                        // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
-
-                        List<Node> temp = new List<Node>(unconnected); //avoid duplicates
-                        temp.Remove(parent);
-                        if (temp.Count == 0) break;
-
-                        Node child = temp[rand.Next(0, temp.Count)];
-
-                        if (ValidCPLength(graph, parent, child))
-                        { //check if graph is planar
-                            var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
-                            if (!validNeigbours.parentIsValid)
-                            {
-                                //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
-                                retries--;
-                            }
-                            else if (!validNeigbours.childIsValid)
-                            {
-                                //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
-                                retries--;
-                            }
-                            else
-                            {
-                                //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
-                                graph.Connect(parent, child);
-                                unconnectedNeighbours--;
-                            }
-                        }
-                        else
-                        {
-                            // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
-                            retries--;
-                        }
-                    }
-                    if (unconnectedNeighbours == 0)
-                    {
-                        Debug.WriteLine($"Finished [{parent.Id}], removing node...");
-                        unconnected.Remove(parent);
-                    }
-                }
+                graph = NeighbourMapper(graph, rand);
+                
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is graph complete? {graph.isComplete}");
@@ -147,6 +97,65 @@ namespace BayesianPDG.SpaceGenerator
                 graph.Node(child).CPDistance = 0;
                 graph.Node(child).Depth = (child == graph.Goal.Id)? CPLength - 1 : pid + 1;
                 graph.Connect(pid, child);
+            }
+            return graph;
+        }
+
+        public SpaceGraph NeighbourMapper(SpaceGraph graph, Random rng)
+        {
+            List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
+
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (unconnected.Count != 0 && stopWatch.Elapsed.TotalMinutes < 0.5)
+            {
+                //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
+                Node parent = unconnected[rng.Next(0, unconnected.Count)];
+                int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
+                int retries = 10;
+                while (unconnectedNeighbours >= 0 && retries >= 0)
+                {
+                    // if connecting A:B does not invalidate the constraints => connect them
+                    // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
+                    // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
+
+                    List<Node> temp = new List<Node>(unconnected); //avoid duplicates
+                    temp.Remove(parent);
+                    if (temp.Count == 0) break;
+
+                    Node child = temp[rng.Next(0, temp.Count)];
+
+                    if (ValidCPLength(graph, parent, child))
+                    { //check if graph is planar
+                        var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
+                        if (!validNeigbours.parentIsValid)
+                        {
+                            //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
+                            retries--;
+                        }
+                        else if (!validNeigbours.childIsValid)
+                        {
+                            //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
+                            retries--;
+                        }
+                        else
+                        {
+                            //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
+                            graph.Connect(parent, child);
+                            unconnectedNeighbours--;
+                        }
+                    }
+                    else
+                    {
+                        // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
+                        retries--;
+                    }
+                }
+                if (unconnectedNeighbours == 0)
+                {
+                    Debug.WriteLine($"Finished [{parent.Id}], removing node...");
+                    unconnected.Remove(parent);
+                }
             }
             return graph;
         }

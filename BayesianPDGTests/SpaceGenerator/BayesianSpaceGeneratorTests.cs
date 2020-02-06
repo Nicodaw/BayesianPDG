@@ -71,7 +71,28 @@ namespace BayesianPDG.SpaceGenerator.Tests
         {
             Trace.WriteLine(testGraph.ToString());
             Assert.AreEqual(cpl, testGraph.AllNodes.FindAll(node => node.CPDistance != null).Count);
-            CollectionAssert.AreEqual(new List<int> {0,1,5},testGraph.CriticalPath);
+            CollectionAssert.AreEqual(new List<int> { 0, 1, 5 }, testGraph.CriticalPath);
+
+        }
+
+        [TestMethod()]
+        public void NeighbourMapperTest()
+        {
+            List<(int, int, int)> roomParams = new List<(int, int, int)>() { (0, 0, 1), (0, 1, 4), (2, 3, 1), (1, 2, 1), (1, 2, 1), (0, 2, 1) };
+            testGraph.AllNodes.ForEach(node =>
+            {
+                node.CPDistance = roomParams[node.Id].Item1;
+                node.Depth = roomParams[node.Id].Item2;
+                node.MaxNeighbours = roomParams[node.Id].Item3;
+            });
+
+            Random rand = new Random(1);
+            testGraph = generator.NeighbourMapper(testGraph, rand);
+
+            testGraph.AllNodes.ForEach(node => Assert.AreEqual(node.MaxNeighbours, node.Edges.Count()));
+
+
+
 
         }
     }

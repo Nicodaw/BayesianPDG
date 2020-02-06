@@ -14,7 +14,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public Node Entrance => Node(0);
         public Node Goal => Node(AllNodes.Count - 1);
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
-        public bool isComplete => ValidateGraph();
+        public bool isComplete => ValidateNodeConnected() && ValidateReachability();
         public bool isPlanar => AllNodes.GroupBy(node => node.Edges).Count() >= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6;
         public List<List<int>> GraphList => ConvertToAdjList();
         #endregion
@@ -102,8 +102,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <summary>
         /// Checks if a Critical Path is established and if all nodes are connected
         /// </summary>
-        /// <returns>Is the graph ready to be printed as a dungeon?</returns>
-        private bool ValidateGraph()
+        private bool ValidateNodeConnected()
         {
             Debug.WriteLine("[id] => cameFrom");
             CriticalPath.ForEach(node => Debug.WriteLine($"[{CriticalPath.IndexOf(node)}] => {node}"));
@@ -117,8 +116,28 @@ namespace BayesianPDG.SpaceGenerator.Space
                     break;
                 }
             }
-
             return CriticalPath.Count > 0 && isConnected;
+        }
+
+        /// <summary>
+        /// Checks there is a valid path b/w the entrance and each other room
+        /// </summary>
+        /// <returns>false if it finds at least one dangling room (there could be more)</returns>
+        private bool ValidateReachability()
+        {
+            bool areNodesReachable = true;
+
+            foreach(Node node in AllNodes)
+            {
+                if(node.Id != Entrance.Id && PathTo(Entrance.Id, node.Id).Count == 0)
+                {
+                    Debug.WriteLine($"FAILED GRAPH VALIDATION: Non-reachable node {node.Id} detected");
+                    areNodesReachable = false;
+                    break;
+                }
+            }
+            return areNodesReachable;
+            
         }
 
         /// <summary>
