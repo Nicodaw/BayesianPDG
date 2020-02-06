@@ -10,7 +10,7 @@ namespace BayesianPDG.SpaceGenerator
     /// The names of our parameters/features/RVs
     /// Each one is a unique node in the DAG 
     /// </summary>
-    enum FeatureType
+    public enum FeatureType
     {
         NumRooms,
         CriticalPathLength,

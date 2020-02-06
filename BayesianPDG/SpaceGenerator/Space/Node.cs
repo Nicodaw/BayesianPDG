@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace BayesianPDG.SpaceGenerator.Space
@@ -38,18 +39,26 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>this</returns>
         public Node AddEdge(Node child)
         {
-            Edges.Add(new Edge
+            if(!this.Edges.Exists(e => e.Parent == this && e.Child == child))
             {
-                Parent = this,
-                Child = child
-            });
+                Edges.Add(new Edge
+                {
+                    Parent = this,
+                    Child = child
+                });
 
-            if (!child.Edges.Exists(e => e.Parent == child && e.Child == this))
+                if (!child.Edges.Exists(e => e.Parent == child && e.Child == this))
+                {
+                    child.AddEdge(this);
+                }
+
+                return this;
+            } else
             {
-                child.AddEdge(this);
+                Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
+                return this;
             }
-
-            return this;
+            
         }
         /// <summary>
         /// Delete an existing edge

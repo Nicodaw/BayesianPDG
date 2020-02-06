@@ -14,32 +14,22 @@ namespace BayesianPDG.SpaceGenerator.Tests
     public class BayesianSpaceGeneratorTests
     {
         static SpaceGraph testGraph;
+        static BayesianSpaceGenerator generator;
+        static int rooms = 6;
+        static int cpl = (int)Math.Floor((double)rooms / 2);
 
         [TestInitialize]
         public void TestInitialize()
         {
             testGraph = new SpaceGraph();
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < rooms; i++)
             {
                 testGraph.CreateNode(i);
-
-                int cpd = (i < 3) ? 0 : i;
-                int depth = (i == 0) ? 0 : i;
-                int neighbours = (i == 0 || i == 4) ? 1 : i;
-
-                testGraph.Node(i).CPDistance = cpd;
-                testGraph.Node(i).Depth = depth;
-                testGraph.Node(i).MaxNeighbours = neighbours;
-
             }
-            testGraph.Connect(0, 1);
-            testGraph.Connect(1, 2);
-            testGraph.Connect(2, 3);
-            testGraph.Connect(3, 4);
-            Trace.WriteLine(testGraph.ToString());
 
-
+            generator = new BayesianSpaceGenerator();
+            testGraph = generator.CriticalPathMapper(testGraph, cpl);
         }
         [TestMethod]
         public void ValidCPLengthTest()
@@ -62,7 +52,6 @@ namespace BayesianPDG.SpaceGenerator.Tests
                 CPDistance = testGraph.Goal.CPDistance,
                 Id = testGraph.Goal.Id
             };
-            BayesianSpaceGenerator generator = new BayesianSpaceGenerator();
             bool isValid = generator.ValidCPLength(testGraph, testGraph.Entrance, testGraph.Goal);
 
             Assert.IsFalse(isValid);
@@ -77,6 +66,13 @@ namespace BayesianPDG.SpaceGenerator.Tests
             CollectionAssert.AreNotEqual(testGraph.CriticalPath, originalCP);
         }
 
+        [TestMethod()]
+        public void CriticalPathMapperTest()
+        {
+            Trace.WriteLine(testGraph.ToString());
+            Assert.AreEqual(cpl, testGraph.AllNodes.FindAll(node => node.CPDistance != null).Count);
+            CollectionAssert.AreEqual(new List<int> {0,1,5},testGraph.CriticalPath);
 
+        }
     }
 }

@@ -12,19 +12,21 @@ namespace BayesianPDG.SpaceGenerator
         /// Global reference to the Netica COM
         /// </summary>
         public static Application NeticaApp = new Application();
+        private SpaceModel DungeonModel;
+
         public SpaceGraph RunInference(int? seed = null)
         {
             DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
-            SpaceModel dungeonModel = new SpaceModel(dungeonBNLoader);
+            DungeonModel = new SpaceModel(dungeonBNLoader);
             Random rand = (seed == null) ? new Random() : new Random(seed.Value);
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
-                int observedRooms = 12; // ToDo: Let user decide
-
-                DungeonSampler(dungeonModel, (FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
-
                 SpaceGraph graph = new SpaceGraph();
+
+                int observedRooms = 6; // ToDo: Let user decide
+
+                DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
                 ///
                 /// ~ Building the Space graph for the map generator ~
@@ -35,52 +37,29 @@ namespace BayesianPDG.SpaceGenerator
                 }
 
                 // Create the critical path and set the distance for all nodes on it to 0
-                for (int pid = 0; pid < dungeonModel.Value(FeatureType.CriticalPathLength); pid++)
-                {
-                    int child = (pid != dungeonModel.Value(FeatureType.CriticalPathLength) - 1) ? pid + 1 : graph.Goal.Id; // The critical path is comprised of consequtive rooms from the start + the last one (goal)
-                    graph.Node(pid).CPDistance = 0;
-                    graph.Node(child).CPDistance = 0;
-                    graph.Node(pid).Depth = pid;
-                    graph.Node(child).Depth = pid + 1;
-                    graph.Connect(pid, child);
-                }
+                graph = CriticalPathMapper(graph, (int) DungeonModel.Value(FeatureType.CriticalPathLength));
 
                 // Sample room params and set the node constraints: Depth, MaxNeighbours, CPDistance
+                foreach (Node parent in graph.AllNodes)
+                {
+                    RoomSampler(parent);
+                }
 
-
+                Debug.WriteLine("=== Final set of rooms sampled ===");
+                Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
+                graph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
 
 
                 // Transform the basis dungeon in a per-room fashion
-                foreach (Node parent in graph.AllNodes)
-                {
-                    if (parent.CPDistance != null && parent.CPDistance == 0) //this room is already on the critical path so CPDist and Depth are set
-                    {
-                        SpaceModel roomModel = RoomSampler(dungeonModel);
-                        parent.MaxNeighbours = (int)dungeonModel.Value(FeatureType.NumNeighbours);
-                    }
-                    else
-                    {
-                        SpaceModel roomModel = RoomSampler(dungeonModel);
-                        parent.Depth = (int)dungeonModel.Value(FeatureType.Depth);
-                        parent.MaxNeighbours = (int)dungeonModel.Value(FeatureType.NumNeighbours);
-                        parent.CPDistance = (int)dungeonModel.Value(FeatureType.CriticalPathDistance);
-                    }
-                }
-
-
-
                 // Compose a list of all nodes that still don't have their full neighbours reached
                 // randomly assign neighbours and remove any fully connected node from the list
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
 
-
-
                 List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-
                 while (unconnected.Count != 0)
                 {
-                    Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
+                    //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
                     Node parent = unconnected[rand.Next(0, unconnected.Count)];
                     int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
                     int retries = 10;
@@ -92,6 +71,8 @@ namespace BayesianPDG.SpaceGenerator
 
                         List<Node> temp = new List<Node>(unconnected); //avoid duplicates
                         temp.Remove(parent);
+                        if (temp.Count == 0) break;
+
                         Node child = temp[rand.Next(0, temp.Count)];
 
                         if (ValidCPLength(graph, parent, child))
@@ -99,24 +80,24 @@ namespace BayesianPDG.SpaceGenerator
                             var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
                             if (!validNeigbours.parentIsValid)
                             {
-                           //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
+                                //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
                                 retries--;
                             }
                             else if (!validNeigbours.childIsValid)
                             {
-                          //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
+                                //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
                                 retries--;
                             }
                             else
                             {
-                          //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
+                                //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
                                 graph.Connect(parent, child);
                                 unconnectedNeighbours--;
                             }
                         }
                         else
                         {
-                           // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
+                            // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
                             retries--;
                         }
                     }
@@ -126,7 +107,6 @@ namespace BayesianPDG.SpaceGenerator
                         unconnected.Remove(parent);
                     }
                 }
-
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is graph complete? {graph.isComplete}");
@@ -158,67 +138,87 @@ namespace BayesianPDG.SpaceGenerator
             }
             return graph;
         }
+
+        public SpaceGraph CriticalPathMapper(SpaceGraph graph, int CPLength)
+        {
+            for (int pid = 0; pid < CPLength - 1; pid++)
+            {
+                int child = (pid != CPLength - 2) ? pid + 1 : graph.Goal.Id; // The critical path is comprised of consequtive rooms from the start + the last one (goal)
+                graph.Node(child).CPDistance = 0;
+                graph.Node(child).Depth = (child == graph.Goal.Id)? CPLength - 1 : pid + 1;
+                graph.Connect(pid, child);
+            }
+            return graph;
+        }
         #endregion
 
         #region Samplers
         /// <summary>
         /// Sample dungeon parameters given a set of observations.
         /// </summary>
-        /// <param name="dungeonModel">Inference model</param>
+        /// <param name="DungeonModel">Inference model</param>
         /// <param name="observations">Our beliefs/observations</param>
-        private static void DungeonSampler(SpaceModel dungeonModel, params (FeatureType, int)[] observations)
+        public void DungeonSampler( params (FeatureType, int)[] observations)
         {
-            dungeonModel.SetObservations(true, observations);
-            _ = dungeonModel.Sample();
+            DungeonModel.SetObservations(true, observations);
+            _ = DungeonModel.Sample();
             //Get the global (Dungeon) parameters
-            int rooms = (int)dungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
-            int cpLength = (int)dungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-            int doors = (int)dungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
+            int rooms = (int)DungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
+            int cpLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
+            int doors = (int)DungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
 
             Debug.WriteLine($"Dungeon Sampled: [{rooms},{cpLength},{doors}]");
         }
         /// <summary>
-        /// Sample room parameters from our SpaceModel and assign them to each node in the physical SpaceGraph
+        /// Sample room parameters from our SpaceModel and assign them to a node
         /// Must be run after evidence for the global dungeon parameters is set
         /// </summary>
-        /// <param name="dungeonModel">Inference model</param>
-        /// <param name="graph">Dungeon graph/layout</param>
-        private static SpaceModel RoomSampler(SpaceModel dungeonModel)
+        /// <param name="DungeonModel">Inference model</param>
+        /// <param name="node">room</param>
+        public Node RoomSampler(Node room)
         {
-            int rooms = (int)dungeonModel.Value(FeatureType.NumDoors);
-            int cpLength = (int)dungeonModel.Value(FeatureType.CriticalPathLength);
-            int doors = (int)dungeonModel.Value(FeatureType.NumDoors);
+            //Get dungeon params
+            int rooms = (int)DungeonModel.Value(FeatureType.NumDoors);
+            int cpLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);
+            int doors = (int)DungeonModel.Value(FeatureType.NumDoors);
 
-            // Transform the basis dungeon in a per-room fashion
-            //set global observations and maintain them :: clear -> sample -> reset
+            //1 set global observations and maintain them :: clear -> sample -> reset
+            //2 set any known room observations (i.e. depth and cpDistance for Entrance node and cpDistance for rooms on the critical path) 
             //make sure you don't invalidate the hard constraints and log when the soft ones have to be adjusted
 
-            dungeonModel.SetObservations(true,
+            DungeonModel.SetObservations(true,
                 (FeatureType.NumRooms, rooms),
                 (FeatureType.CriticalPathLength, cpLength),
                 (FeatureType.NumDoors, doors));
 
-            //ToDo: Get room parameters and do room allocation
-
-            _ = dungeonModel.Sample();
-
-            int depth = (int)dungeonModel.Value(FeatureType.Depth);                     //Hard constraint
-            int maxNeighbours = (int)dungeonModel.Value(FeatureType.NumNeighbours);     //Hard constraint
-            int cpDistance = (int)dungeonModel.Value(FeatureType.CriticalPathDistance); //Soft constraint therefore if we sample 0, we can retry
-
-            if (depth == 0 || cpDistance == 0) //retry if we've sampled an entrance room or a room on the critical path, because they are already set
+            if (room.CPDistance == 0 && room.Depth != null)  //room on critical path
             {
-                Debug.WriteLine($"Invalid room: [{cpDistance},{depth},{maxNeighbours}], retrying...");
-                return RoomSampler(dungeonModel);
+                DungeonModel.Observe(FeatureType.CriticalPathDistance, 0);
+                DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
+
+                _ = DungeonModel.Sample();
+
+                room.MaxNeighbours = (int)DungeonModel.Value(FeatureType.NumNeighbours);    //Hard constraint
             }
-            else
+            else // room not on critical path
             {
-                Debug.WriteLine($"Valid room: [{cpDistance},{depth},{maxNeighbours}]");
-                return dungeonModel;
+                _ = DungeonModel.Sample();
+
+                int depth = (int)DungeonModel.Value(FeatureType.Depth);                     //Soft constraint
+                int maxNeigh = (int)DungeonModel.Value(FeatureType.NumNeighbours);          //Hard constraint
+                int cpDistance = (int)DungeonModel.Value(FeatureType.CriticalPathDistance); //Hard constraint
+
+                if (depth != 0 && cpDistance != 0)
+                {
+                    room.Depth = depth;
+                    room.MaxNeighbours = maxNeigh;
+                    room.CPDistance = cpDistance;
+                }
+                else return RoomSampler(room);
             }
+            
 
-
-
+            return room;
         }
         #endregion
 
@@ -231,7 +231,7 @@ namespace BayesianPDG.SpaceGenerator
         /// <param name="A">parent node</param>
         /// <param name="B">child node</param>
         /// <returns>If adding A:B is a valid operation</returns>
-        public bool ValidCPLength(SpaceGraph graph, Node A, Node B) //ToDo: do we need a deep copy ???
+        public bool ValidCPLength(SpaceGraph graph, Node A, Node B)
         {
             int originalCPLength = graph.CriticalPath.Count;
             graph.Connect(A, B);

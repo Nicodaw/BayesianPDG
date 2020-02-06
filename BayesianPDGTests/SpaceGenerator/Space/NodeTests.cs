@@ -60,9 +60,8 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
 
             Assert.IsTrue(A.Edges.Contains(expectedA));
             Assert.IsTrue(B.Edges.Contains(expectedB));
-
-
         }
+
 
         [TestMethod()]
         public void RemoveEdgeTest()
