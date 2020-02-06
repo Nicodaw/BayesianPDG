@@ -3,6 +3,7 @@ using Netica;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace BayesianPDG.SpaceGenerator
 {
@@ -61,7 +62,12 @@ namespace BayesianPDG.SpaceGenerator
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is graph complete? {graph.isComplete}");
                 Debug.WriteLine($"Is graph planar? {graph.isPlanar}");
-
+                List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
+                List<Node> connected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
+                string unc = string.Join(", ", unconnected.Select(x => x.Id).ToArray());
+                string con = string.Join(", ", connected.Select(x => x.Id).ToArray());
+                Debug.WriteLine($"List of Unconected nodes {unc}");
+                Debug.WriteLine($"List of Connected nodes {con}");
                 Debug.Write(graph.ToString());
                 return graph;
             }
@@ -104,10 +110,9 @@ namespace BayesianPDG.SpaceGenerator
         public SpaceGraph NeighbourMapper(SpaceGraph graph, Random rng)
         {
             List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (unconnected.Count != 0 && stopWatch.Elapsed.TotalMinutes < 0.5)
+         //   List<Node> conncted = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
+            int globalRetries = 100;
+            while (unconnected.Count != 0 && globalRetries >= 0)
             {
                 //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
                 Node parent = unconnected[rng.Next(0, unconnected.Count)];
@@ -151,10 +156,28 @@ namespace BayesianPDG.SpaceGenerator
                         retries--;
                     }
                 }
-                if (unconnectedNeighbours == 0)
+                if (unconnectedNeighbours < 0)
                 {
                     Debug.WriteLine($"Finished [{parent.Id}], removing node...");
                     unconnected.Remove(parent);
+                  //  conncted.Add(parent);
+                }
+                else 
+                {
+             //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
+                    globalRetries--;
+                    ////add some noise in an attempt to avoid getting stuck. (no guarantees)
+                    //Node randParent = conncted[rng.Next(0, conncted.Count)];
+                    //Node randChild = (randParent.Edges.Count == 1)? randParent.Edges[0].Child : randParent.Edges[rng.Next(0, randParent.Edges.Count)].Child;
+                    //graph.Disconnect(randParent.Id, randChild.Id);
+                    //unconnected.Add(randParent);
+                    //conncted.Remove(randParent);
+                    //if (randChild.MaxNeighbours - randChild.Edges.Count == 0)
+                    //{
+                    //    unconnected.Add(randChild);
+                    //    conncted.Remove(randChild);
+                    //}
+
                 }
             }
             return graph;

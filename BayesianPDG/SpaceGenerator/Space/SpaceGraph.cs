@@ -16,12 +16,12 @@ namespace BayesianPDG.SpaceGenerator.Space
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateNodeConnected() && ValidateReachability();
         public bool isPlanar => AllNodes.GroupBy(node => node.Edges).Count() >= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6;
-        public List<List<int>> GraphList => ConvertToAdjList();
+       // public List<List<int>> GraphList => ConvertToAdjList();
         #endregion
 
         #region Constructor
-        public SpaceGraph() 
-        { 
+        public SpaceGraph()
+        {
             //default
         }
         public SpaceGraph(SpaceGraph other)
@@ -50,7 +50,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             {
                 Debug.WriteLine($"Parent and child are the same node [{parent}]. Skipping...");
             }
-            
+
         }
 
         public void Connect(Node parent, Node child) => Connect(parent.Id, child.Id);
@@ -81,21 +81,26 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             return adj;
         }
-        public List<List<int>> ConvertToAdjList()
+        public List<List<int>> ConvertToAdjList(bool isUndirected = true)
         {
             List<List<int>> adj = new List<List<int>>();
             int?[,] matrix = ConvertToAdjMatrix();
-            for (int row = 0; row < AllNodes.Count; row++)
+            foreach (Node row in AllNodes)
             {
                 adj.Add(new List<int>());
+            }
+            for (int row = 0; row < AllNodes.Count; row++)
+            {
                 for (int col = row; col < AllNodes.Count; col++)
                 {
                     if (matrix[row, col] != null)
                     {
                         adj[row].Add(col);
+                        if (isUndirected) adj[col].Add(row);
                     }
                 }
             }
+
             return adj;
         }
 
@@ -127,9 +132,9 @@ namespace BayesianPDG.SpaceGenerator.Space
         {
             bool areNodesReachable = true;
 
-            foreach(Node node in AllNodes)
+            foreach (Node node in AllNodes)
             {
-                if(node.Id != Entrance.Id && PathTo(Entrance.Id, node.Id).Count == 0)
+                if (node.Id != Entrance.Id && PathTo(Entrance.Id, node.Id).Count == 0)
                 {
                     Debug.WriteLine($"FAILED GRAPH VALIDATION: Non-reachable node {node.Id} detected");
                     areNodesReachable = false;
@@ -137,7 +142,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                 }
             }
             return areNodesReachable;
-            
+
         }
 
         /// <summary>
@@ -146,14 +151,15 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <param name="A">Start</param>
         /// <param name="B">Goal</param>
         /// <returns>The shortest path b/w the nodes, if it exists. Otherwise null</returns>
-        private List<int> PathTo(int A, int B)
+        public List<int> PathTo(int A, int B)
         {
+            List<List<int>> graphList = ConvertToAdjList();
             SimplePriorityQueue<int> frontier = new SimplePriorityQueue<int>();
             frontier.Enqueue(A, 0);
             List<int?> cameFrom = new List<int?>();
             List<int?> totalCost = new List<int?>();
 
-            GraphList.ForEach(_ =>
+            graphList.ForEach(_ =>
             {
                 cameFrom.Add(null);
                 totalCost.Add(null);
@@ -165,7 +171,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                 int current = frontier.Dequeue();
                 if (current == B) break;
 
-                foreach (int neighbour in GraphList[current])
+                foreach (int neighbour in graphList[current])
                 {
                     int? cost = totalCost[current] + 1;
                     if (totalCost[neighbour] == null || cost < totalCost[neighbour])
@@ -188,15 +194,15 @@ namespace BayesianPDG.SpaceGenerator.Space
                 }
                 reduced.Reverse();
             }
-            
+
             return reduced;
-       }
+        }
         public override string ToString()
         {
             int?[,] matrix = ConvertToAdjMatrix();
             int Count = AllNodes.Count();
             StringBuilder builder = new StringBuilder();
-            builder.AppendFormat("CP: [{0}]", string.Join(", " , CriticalPath.ToArray()));
+            builder.AppendFormat("CP: [{0}]", string.Join(", ", CriticalPath.ToArray()));
             builder.AppendLine();
             builder.Append(' ', 8);
             for (int i = 0; i < Count; i++)
@@ -211,7 +217,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             {
 
                 builder.AppendFormat("{0}", i);
-                builder.Append(' ',(i>=10)?1:2);
+                builder.Append(' ', (i >= 10) ? 1 : 2);
                 builder.Append("| [ ");
 
                 for (int j = 0; j < Count; j++)
@@ -234,7 +240,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             builder.Append("\r\n");
             // Adjacency list representation
-            List<List<int>> list = ConvertToAdjList();
+            List<List<int>> list = ConvertToAdjList(false);
             for (int i = 0; i < Count; i++)
             {
                 builder.AppendFormat("[{0}]: ", i);

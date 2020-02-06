@@ -154,6 +154,30 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             Assert.IsFalse(incomplete.isComplete);
         }
 
+
+        [TestMethod()]
+        public void PathToTest()
+        {
+            SpaceGraph validGraph = new SpaceGraph();
+
+            for (int i = 0; i < 6; i++)
+            {
+                validGraph.CreateNode(i);
+            }
+
+            validGraph.Connect(0, 2);
+            validGraph.Connect(0, 5);
+            validGraph.Connect(1, 4);
+            validGraph.Connect(3, 5);
+            validGraph.Connect(4, 5);
+
+            Trace.WriteLine(validGraph.ToString());
+
+            Assert.AreEqual(4, validGraph.PathTo(0, 1).Count);
+            CollectionAssert.AreEqual(new int[] { 0, 5, 4, 1 }.ToList(), validGraph.PathTo(0, 1));
+
+
+        }
        
     }
 }

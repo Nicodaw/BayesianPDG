@@ -25,7 +25,7 @@ namespace BayesianPDG
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
             SpaceGraph graph = spaceGen.RunInference(1000);
-          //  GenerateMap(graph);
+            GenerateMap(graph);
 
             //Mission mg = new Mission();
             //mg.GenerateDungeon(2, 2);
@@ -105,7 +105,7 @@ namespace BayesianPDG
             graph.AllNodes.ForEach(node => mapDescription.AddRoom(node.Id));
 
             //Add connections
-            List<List<int>> connections = graph.ConvertToAdjList();
+            List<List<int>> connections = graph.ConvertToAdjList(false);
             for (int node = 0; node < connections.Count; node++)
             {
                 for (int link = 0; link < connections[node].Count; link++)
