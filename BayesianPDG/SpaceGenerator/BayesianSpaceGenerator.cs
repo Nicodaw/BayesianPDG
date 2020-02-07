@@ -13,7 +13,17 @@ namespace BayesianPDG.SpaceGenerator
         /// Global reference to the Netica COM
         /// </summary>
         public static Application NeticaApp = new Application();
+
+        /// <summary>
+        /// Model reference
+        /// </summary>
         private SpaceModel DungeonModel;
+
+        #region Dungeon Parameters
+        private int Rooms;
+        private int CPLength;
+        private int Doors;
+        #endregion
 
         public SpaceGraph RunInference(int? seed = null)
         {
@@ -133,14 +143,8 @@ namespace BayesianPDG.SpaceGenerator
                     if (ValidCPLength(graph, parent, child))
                     { //check if graph is planar
                         var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
-                        if (!validNeigbours.parentIsValid)
+                        if (!validNeigbours.parentIsValid || !validNeigbours.childIsValid)
                         {
-                            //     Debug.WriteLine($"Invalid Parent {parent.Id}: [{parent.Edges.Count}]<=[{parent.MaxNeighbours}]");
-                            retries--;
-                        }
-                        else if (!validNeigbours.childIsValid)
-                        {
-                            //      Debug.WriteLine($"Child {child.Id}: [{child.Edges.Count}]<=[{child.MaxNeighbours}]");
                             retries--;
                         }
                         else
@@ -160,23 +164,13 @@ namespace BayesianPDG.SpaceGenerator
                 {
                     Debug.WriteLine($"Finished [{parent.Id}], removing node...");
                     unconnected.Remove(parent);
-                  //  conncted.Add(parent);
                 }
                 else 
                 {
              //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
                     globalRetries--;
                     ////add some noise in an attempt to avoid getting stuck. (no guarantees)
-                    //Node randParent = conncted[rng.Next(0, conncted.Count)];
-                    //Node randChild = (randParent.Edges.Count == 1)? randParent.Edges[0].Child : randParent.Edges[rng.Next(0, randParent.Edges.Count)].Child;
-                    //graph.Disconnect(randParent.Id, randChild.Id);
-                    //unconnected.Add(randParent);
-                    //conncted.Remove(randParent);
-                    //if (randChild.MaxNeighbours - randChild.Edges.Count == 0)
-                    //{
-                    //    unconnected.Add(randChild);
-                    //    conncted.Remove(randChild);
-                    //}
+                    
 
                 }
             }
@@ -195,11 +189,11 @@ namespace BayesianPDG.SpaceGenerator
             DungeonModel.SetObservations(true, observations);
             _ = DungeonModel.Sample();
             //Get the global (Dungeon) parameters
-            int rooms = (int)DungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
-            int cpLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-            int doors = (int)DungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
+            Rooms = (int)DungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
+            CPLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
+            Doors = (int)DungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
 
-            Debug.WriteLine($"Dungeon Sampled: [{rooms},{cpLength},{doors}]");
+            Debug.WriteLine($"Dungeon Sampled: [{Rooms},{CPLength},{Doors}]");
         }
         /// <summary>
         /// Sample room parameters from our SpaceModel and assign them to a node
@@ -209,24 +203,25 @@ namespace BayesianPDG.SpaceGenerator
         /// <param name="node">room</param>
         public Node RoomSampler(Node room)
         {
-            //Get dungeon params
-            int rooms = (int)DungeonModel.Value(FeatureType.NumDoors);
-            int cpLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);
-            int doors = (int)DungeonModel.Value(FeatureType.NumDoors);
+            //temp save of global dungeon params
+            int tempRooms = Rooms;
+            int tempCPLength = CPLength;
+            int tempDoors = Doors;
 
             //1 set global observations and maintain them :: clear -> sample -> reset
             //2 set any known room observations (i.e. depth and cpDistance for Entrance node and cpDistance for rooms on the critical path) 
             //make sure you don't invalidate the hard constraints and log when the soft ones have to be adjusted
 
             DungeonModel.SetObservations(true,
-                (FeatureType.NumRooms, rooms),
-                (FeatureType.CriticalPathLength, cpLength),
-                (FeatureType.NumDoors, doors));
+                (FeatureType.NumRooms, tempRooms),
+                (FeatureType.CriticalPathLength, tempCPLength),
+                (FeatureType.NumDoors, tempDoors));
+
 
             if (room.CPDistance == 0 && room.Depth != null)  //room on critical path
             {
                 DungeonModel.Observe(FeatureType.CriticalPathDistance, 0);
-                DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
+                //DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
 
                 _ = DungeonModel.Sample();
 
