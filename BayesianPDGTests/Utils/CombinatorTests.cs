@@ -60,9 +60,9 @@ namespace BayesianPDG.Utils.Tests
                 var neighbourCombinations = Combinator.Combinations(testGraph.AllNodes, node.MaxNeighbours.Value);
                 foreach (IEnumerable<Node> combination in neighbourCombinations)
                 {
-                    if (!combination.ToHashSet().Contains(node))
+                    if (!combination.ToList().Contains(node))
                     {
-                        node.Values.Add(combination.ToHashSet());
+                        node.Values.Add(combination.ToList());
                     }
                 }
             }

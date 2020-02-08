@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BayesianPDG.SpaceGenerator.Space;
+using BayesianPDG.Utils;
+using System.Diagnostics;
 
 namespace BayesianPDG.SpaceGenerator.CSP.Tests
 {
@@ -36,13 +38,30 @@ namespace BayesianPDG.SpaceGenerator.CSP.Tests
                 node.CPDistance = roomParams[node.Id].Item1;
                 node.Depth = roomParams[node.Id].Item2;
                 node.MaxNeighbours = roomParams[node.Id].Item3;
+                node.Values = new List<List<Node>>(node.MaxNeighbours.Value);
             });
+
+            foreach (Node node in testGraph.AllNodes)
+            {
+                var neighbourCombinations = Combinator.Combinations(testGraph.AllNodes, node.MaxNeighbours.Value);
+                foreach (IEnumerable<Node> combination in neighbourCombinations)
+                {
+                    if (!combination.ToList().Contains(node))
+                    {
+                        node.Values.Add(combination.ToList());
+                    }
+                }
+            }
+
         }
 
         [TestMethod()]
         public void ConstraintModelTest()
         {
+            testGraph.AllNodes.ForEach(node => Trace.WriteLine(node.PrintConnections()));
             ConstraintModel CSModel = new ConstraintModel(testGraph);
+
+           // throw new NotImplementedException();
         }
     }
 }

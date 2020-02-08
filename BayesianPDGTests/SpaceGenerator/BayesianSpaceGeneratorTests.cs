@@ -85,10 +85,6 @@ namespace BayesianPDG.SpaceGenerator.Tests
             testGraph = generator.NeighbourMapper(testGraph);
 
             testGraph.AllNodes.ForEach(node => Assert.AreEqual(node.MaxNeighbours, node.Edges.Count()));
-
-
-
-
         }
     }
 }

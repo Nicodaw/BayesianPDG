@@ -1,4 +1,5 @@
-﻿using BayesianPDG.SpaceGenerator.Space;
+﻿using BayesianPDG.SpaceGenerator.CSP;
+using BayesianPDG.SpaceGenerator.Space;
 using BayesianPDG.Utils;
 using Netica;
 using System;
@@ -73,13 +74,15 @@ namespace BayesianPDG.SpaceGenerator
                     var neighbourCombinations = Combinator.Combinations(graph.AllNodes, node.MaxNeighbours.Value);
                     foreach (IEnumerable<Node> combination in neighbourCombinations)
                     {
-                        if (!combination.ToHashSet().Contains(node))
+                        if (!combination.ToList().Contains(node))
                         {
-                            node.Values.Add(combination.ToHashSet());
+                            node.Values.Add(combination.ToList());
                         }
                     }
                 }
-                graph.AllNodes.ForEach(node => Debug.WriteLine($"Possible connections for [{node.Id}]:: [{string.Join(", ",node.Values.SelectMany(x => x.Select(y => y.Id)).ToList())}]"));
+                graph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
+
+                ConstraintModel CSModel = new ConstraintModel(graph);
 
 
                 // Transform the basis dungeon in a per-room fashion
@@ -148,45 +151,6 @@ namespace BayesianPDG.SpaceGenerator
             }
             return null;
         }
-
-        //private Node MapOne(Node A)
-        //{
-        //    if (A.Values.Count == 1)
-        //    {
-        //        return A;
-        //    }
-        //    else
-        //    {
-        //        foreach (HashSet<Node> value in A.Values)
-        //        {
-        //            Node reduced = Reduce(A, value);
-        //            //if no variable is reduced to the empty set 
-        //            // {
-        //            //  MapOne();
-        //            // }
-        //            //undo all updates in this iter
-        //        }
-        //    }
-        //}
-
-        //private SpaceGraph Map(SpaceGraph graph)
-        //{
-        //    foreach (Node room in graph.AllNodes)
-        //    {
-        //        MapOne(room);
-        //    }
-        //    return graph;
-        //}
-
-        //private Node Reduce(Node A, HashSet<Node> value)
-        //{
-        //    return A;
-        //}
-
-        //private bool Propagate(int constraint, Node modA )
-        //{
-
-        //}
 
         /// <summary>
         /// Select a random Node that still has unconnected edges and attempt to connect them
@@ -285,7 +249,7 @@ namespace BayesianPDG.SpaceGenerator
                 _ = DungeonModel.Sample();
 
                 room.MaxNeighbours = (int)DungeonModel.Value(FeatureType.NumNeighbours);    //Hard constraint
-                room.Values = new List<HashSet<Node>>(room.MaxNeighbours.Value);
+                room.Values = new List<List<Node>>(room.MaxNeighbours.Value);
             }
             else // room not on critical path
             {
@@ -300,7 +264,7 @@ namespace BayesianPDG.SpaceGenerator
                     room.Depth = depth;
                     room.MaxNeighbours = maxNeigh;
                     room.CPDistance = cpDistance;
-                    room.Values = new List<HashSet<Node>>(room.MaxNeighbours.Value);
+                    room.Values = new List<List<Node>>(room.MaxNeighbours.Value);
                 }
                 else return RoomSampler(room);
             }

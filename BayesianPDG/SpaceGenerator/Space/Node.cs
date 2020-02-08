@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
@@ -29,7 +30,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// Relationship:: Graph must be fully connected, isReachable(Node[Entrance],Node[i]) for any i
         /// Functional  :: Graph must be planar. Euler's method must hold as invariant
         /// </summary>
-        public List<HashSet<Node>> Values;
+        public List<List<Node>> Values;
         #endregion
 
         #region Constructor
@@ -92,5 +93,19 @@ namespace BayesianPDG.SpaceGenerator.Space
             return this;
         }
         #endregion
+
+        public string PrintConnections()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append($"{this.Values.Count} Potential connections for Room {this.Id}::");
+            foreach(List<Node> set in Values)
+            {
+                builder.Append('[');
+                builder.AppendFormat("{0}", string.Join(", ", set.Select(x => x.Id).ToList()));
+                builder.Append(']');
+            }
+
+            return builder.ToString();
+        }
     }
 }
