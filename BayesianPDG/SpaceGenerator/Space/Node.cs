@@ -18,6 +18,20 @@ namespace BayesianPDG.SpaceGenerator.Space
         public int? Depth;
         #endregion
 
+        #region CSP Definitions
+        /// <summary>
+        /// The potential candidates for connection.
+        /// Must satisfy
+        /// =============
+        /// Cardinality :: Values.Count == MaxNeighbours
+        /// Ordering    :: Node[Entrance] > Node[1] ... Node[Goal] && Node[Goal] < Node[Goal -1] ... Node[Entrance]
+        /// Relationship:: Node[i]::Node[j] must not change the CPLength for any i and j
+        /// Relationship:: Graph must be fully connected, isReachable(Node[Entrance],Node[i]) for any i
+        /// Functional  :: Graph must be planar. Euler's method must hold as invariant
+        /// </summary>
+        public List<HashSet<Node>> Values;
+        #endregion
+
         #region Constructor
         public Node(int id)
         {
@@ -55,7 +69,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                 return this;
             } else
             {
-                Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
+               // Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
                 return this;
             }
             

@@ -1,10 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BayesianPDG.SpaceGenerator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BayesianPDG.SpaceGenerator.Space;
 using System.Diagnostics;
 
@@ -85,9 +82,7 @@ namespace BayesianPDG.SpaceGenerator.Tests
                 node.Depth = roomParams[node.Id].Item2;
                 node.MaxNeighbours = roomParams[node.Id].Item3;
             });
-
-            Random rand = new Random(1);
-            testGraph = generator.NeighbourMapper(testGraph, rand);
+            testGraph = generator.NeighbourMapper(testGraph);
 
             testGraph.AllNodes.ForEach(node => Assert.AreEqual(node.MaxNeighbours, node.Edges.Count()));
 

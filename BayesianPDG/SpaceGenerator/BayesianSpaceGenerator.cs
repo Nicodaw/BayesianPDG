@@ -1,4 +1,5 @@
 ﻿using BayesianPDG.SpaceGenerator.Space;
+using BayesianPDG.Utils;
 using Netica;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,11 @@ namespace BayesianPDG.SpaceGenerator
         public static Application NeticaApp = new Application();
 
         /// <summary>
+        /// Maintain the same RNG throuought for consistency
+        /// </summary>
+        private Random RNG; 
+
+        /// <summary>
         /// Model reference
         /// </summary>
         private SpaceModel DungeonModel;
@@ -29,7 +35,7 @@ namespace BayesianPDG.SpaceGenerator
         {
             DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
             DungeonModel = new SpaceModel(dungeonBNLoader);
-            Random rand = (seed == null) ? new Random() : new Random(seed.Value); //Maintain the same RNG throuought for consistency
+            RNG = (seed == null) ? new Random() : new Random(seed.Value); 
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
@@ -60,13 +66,28 @@ namespace BayesianPDG.SpaceGenerator
                 Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
                 graph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
 
+                // Initialise the potential connections for formulating the CSP
+                // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
+                foreach(Node node in graph.AllNodes)
+                {
+                    var neighbourCombinations = Combinator.Combinations(graph.AllNodes, node.MaxNeighbours.Value);
+                    foreach (IEnumerable<Node> combination in neighbourCombinations)
+                    {
+                        if (!combination.ToHashSet().Contains(node))
+                        {
+                            node.Values.Add(combination.ToHashSet());
+                        }
+                    }
+                }
+                graph.AllNodes.ForEach(node => Debug.WriteLine($"Possible connections for [{node.Id}]:: [{string.Join(", ",node.Values.SelectMany(x => x.Select(y => y.Id)).ToList())}]"));
+
 
                 // Transform the basis dungeon in a per-room fashion
                 // Compose a list of all nodes that still don't have their full neighbours reached
                 // randomly assign neighbours and remove any fully connected node from the list
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
-                graph = NeighbourMapper(graph, rand);
+                graph = NeighbourMapper(graph);
                 
 
                 // Validate if graph is complete.
@@ -117,15 +138,70 @@ namespace BayesianPDG.SpaceGenerator
             return graph;
         }
 
-        public SpaceGraph NeighbourMapper(SpaceGraph graph, Random rng)
+        private SpaceGraph MapOne(Node A, Node B, SpaceGraph graph)
+        {
+            if (ValidCPLength(graph, A, B))
+            {
+                var validNeigbours = (parentIsValid: ValidNeighboursPostInc(A), childIsValid: ValidNeighboursPostInc(B));
+                if (!validNeigbours.parentIsValid || !validNeigbours.childIsValid) return null;
+                else graph.Connect(A, B);
+            }
+            return null;
+        }
+
+        //private Node MapOne(Node A)
+        //{
+        //    if (A.Values.Count == 1)
+        //    {
+        //        return A;
+        //    }
+        //    else
+        //    {
+        //        foreach (HashSet<Node> value in A.Values)
+        //        {
+        //            Node reduced = Reduce(A, value);
+        //            //if no variable is reduced to the empty set 
+        //            // {
+        //            //  MapOne();
+        //            // }
+        //            //undo all updates in this iter
+        //        }
+        //    }
+        //}
+
+        //private SpaceGraph Map(SpaceGraph graph)
+        //{
+        //    foreach (Node room in graph.AllNodes)
+        //    {
+        //        MapOne(room);
+        //    }
+        //    return graph;
+        //}
+
+        //private Node Reduce(Node A, HashSet<Node> value)
+        //{
+        //    return A;
+        //}
+
+        //private bool Propagate(int constraint, Node modA )
+        //{
+
+        //}
+
+        /// <summary>
+        /// Select a random Node that still has unconnected edges and attempt to connect them
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="rng"></param>
+        /// <returns></returns>
+        public SpaceGraph NeighbourMapper(SpaceGraph graph)
         {
             List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-         //   List<Node> conncted = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
             int globalRetries = 100;
             while (unconnected.Count != 0 && globalRetries >= 0)
             {
                 //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
-                Node parent = unconnected[rng.Next(0, unconnected.Count)];
+                Node parent = unconnected[RNG.Next(0, unconnected.Count)];
                 int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
                 int retries = 10;
                 while (unconnectedNeighbours >= 0 && retries >= 0)
@@ -138,25 +214,10 @@ namespace BayesianPDG.SpaceGenerator
                     temp.Remove(parent);
                     if (temp.Count == 0) break;
 
-                    Node child = temp[rng.Next(0, temp.Count)];
+                    Node child = temp[RNG.Next(0, temp.Count)];
 
-                    if (ValidCPLength(graph, parent, child))
-                    { //check if graph is planar
-                        var validNeigbours = (parentIsValid: ValidNeighboursPostInc(parent), childIsValid: ValidNeighboursPostInc(child));
-                        if (!validNeigbours.parentIsValid || !validNeigbours.childIsValid)
-                        {
-                            retries--;
-                        }
-                        else
-                        {
-                            //      Debug.WriteLine($"Connecting valid {parent.Id}::{child.Id} ...");
-                            graph.Connect(parent, child);
-                            unconnectedNeighbours--;
-                        }
-                    }
-                    else
+                    if (MapOne(parent, child, graph) == null)
                     {
-                        // Debug.WriteLine($"Did not find any match for [parent, child] :: [{parent.Id},{child.Id}], retring {retries} more times...");
                         retries--;
                     }
                 }
@@ -170,8 +231,6 @@ namespace BayesianPDG.SpaceGenerator
              //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
                     globalRetries--;
                     ////add some noise in an attempt to avoid getting stuck. (no guarantees)
-                    
-
                 }
             }
             return graph;
@@ -221,11 +280,12 @@ namespace BayesianPDG.SpaceGenerator
             if (room.CPDistance == 0 && room.Depth != null)  //room on critical path
             {
                 DungeonModel.Observe(FeatureType.CriticalPathDistance, 0);
-                //DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
+                DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
 
                 _ = DungeonModel.Sample();
 
                 room.MaxNeighbours = (int)DungeonModel.Value(FeatureType.NumNeighbours);    //Hard constraint
+                room.Values = new List<HashSet<Node>>(room.MaxNeighbours.Value);
             }
             else // room not on critical path
             {
@@ -240,6 +300,7 @@ namespace BayesianPDG.SpaceGenerator
                     room.Depth = depth;
                     room.MaxNeighbours = maxNeigh;
                     room.CPDistance = cpDistance;
+                    room.Values = new List<HashSet<Node>>(room.MaxNeighbours.Value);
                 }
                 else return RoomSampler(room);
             }
