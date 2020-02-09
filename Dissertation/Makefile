@@ -3,12 +3,14 @@ RM = rm -f
 
 DOCNAME = Dissertation
 
-all: doc
-doc: pdf
-pdf: $(DOCNAME).pdf
+all: batch
+batch: LIVE_ARG=
+continuous: LIVE_ARG=-pvc
+
+batch continuous: $(DOCNAME).pdf
 
 %.pdf: %.tex
-	$(LATEXMK) -pdf -M -MP -MF build/$*.d $*
+	$(LATEXMK) $(LIVE_ARG) -pdf -M -MP -MF build/$*.d $*
 
 mostlyclean:
 	$(LATEXMK) -silent -c
@@ -19,7 +21,7 @@ clean: mostlyclean
 	$(RM) *.run.xml
 	$(RM) *.d
 
-.PHONY: all clean doc mostlyclean pdf
+.PHONY: all clean mostlyclean batch continuous
 
 -include build/*.d
 

@@ -45,15 +45,20 @@ The summary must:
 \end{outline}
 
 \paragraph{}
-Role-playing games (RPG) is a broad term encompassing a multitude of different games with often distinct mechanics and media. The common factor between all RPGs is that the player(s) portray a fictional character and is involved in a fictional world (or a subset of one). The interaction of the players with this world is governed by rules, defined by the media. The rules can be viewed as two sets: in one we have rules about how we play the game and in the other we have rules that define story elements. The first set can be viewed as "How I interact with the environment" (functional) and the second as "What is the meaning of the environment" (narrative). 
+Role-playing game (RPG) is a broad term encompassing a multitude of different games with often distinct mechanics and platforms of interaction (the media). The common factor between all RPGs is that the player(s) portray a fictional character and is involved in a fictional world (or a subset of one). The interaction of the players with this world is governed by rules, defined by the media. To better understand the structure of RPGs, we can view it in terms of two sets: 
+\begin{outline}[enumerate]
+  \1 Rules defining how we play the game. Describe the allowed actions for the player at any given moment in the game.
+  \1 Narrative elements. Provide the \textit{purpose} of the players to interact with the fictional world. 
+\end{outline}
+The first set can be viewed as "How I interact with the environment" (functional) and the second as "What is the meaning of the environment" (narrative).
 
 \paragraph{}
-Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo and \textbf{[more games here]} have both sets of rules defined by the game designers. A functional rule in an RPG like Skyrim is that you can attack with the left mouse button and a narrative rule is that you are a Dragonborn with a quest (which is embodied in the main campaign). Good computer RPGs often have the ability to relax the narrative rules \parencite{TychsenGM}, allowing for the player to have more freedom in the exploration of the world and also creating the sensation that the player has some impact on the narrative.
+Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo, Fallout and many alike have both sets of rules defined by the game designers. A functional rule in an RPG like Skyrim is that you can attack with the left mouse button and a story element is that you are a Dragonborn with a quest. This quest is defined by the writers and designers of the game and as such exploring the narrative in a digital RPG can be comparable to an interactive reading of a fiction book. Good computer RPGs often have the ability to relax the narrative \parencite{TychsenGM}, allowing for the player to have more freedom in the exploration of the world and as such create the sensation that the player has some impact on this pre-programmed fictional environment.
 
 \paragraph{}
-The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and the PnP community have been exploring different ways of automating it. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in answering this question.
+The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and the PnP community have been exploring different ways of automating Dungeon creation. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in an attempt to answer this question.
 
-\section{Generation methods}
+\section{State of the Art Generative methods}
 \begin{outline}
   \1 Review various different algorithms for PDG and discuss their take on solving the "is this dungeon interesting?" problem.
     \2 Non-digital: [[the Advanced DnD DM design kit book 3: Adventure Cookbook]]. Using dice tables to create different elements of the dungeon. Laborious process which requires the DM to remove any inconsistencies. Does not provide an actual Dungeon structure.
@@ -64,12 +69,25 @@ The ability for a player to influence the narrative is one of the defining featu
     \2 Data-driven approaches. \parencite{SummervilleLearningOfZelda,SummervillePCGML,SummervilleSamplingHyrule} Relate the notion of learning from human-made dungeons as a way to create good structure + narrative. Note the lack of data. Expand more in the Mission and Space --> Aim sections
 \end{outline}
 
+
+
+\subsection{Non-digital Generators}
+\paragraph{}
+The designers of the classic PnP modules acknowledge the issue of Dungeon creation and often incorporate \textit{Loot} or \textit{Encounter} tables in the rule-books. The tables are a reference over a set of treasures or monsters respectively, which can be chosen by rolling the specified die \textbf{need figure of loot/encounter table}. As noted before, a PnP RPG can evolve rapidly outside the planned narrative structure prepared by the DM and a simple way to quickly define new adaptive story elements via a loot table can be useful. Some early modules even provided a step-by-step guide for creating a full campaign from the plot, villains' obsessions and story setting to the various encounters and and treasures \parencite{ADnD} entirely based on randomised content tables. An issue arises when using loot tables when a randomly selected element from one table is contradicted by an item selected from another. \textbf{show an example from the ADND module}. It is up to the DM to resolve such disparities. As can be seen, this process although providing some degree of creative assistance, it does little to facilitate the laborious nature of creating elements for a compelling narrative. Furthermore, these methods pay no attention to providing guidance of what would mean a good Dungeon as they are occupied with solving global narrative questions. \textbf{Argue that DMs know what they want to do, they just need a facilitator that will create a dungeon based on their requirements ? citation needed for what people use dungeon generators for.}
+
+\subsection{Digital Generators}
 \paragraph{}
 It is important to note that PnP RPGs and the various genres of computer RPGs although differing in the mechanisms of interaction, they share the same narrative goal \parencite{Tychsen2006}. Therefore we will not limit ourselves to looking only at existing tabletop solutions.
 
-\paragraph{}
-\texttt{=== Discussion of generative methods ===}
+\subsubsection{Cellular Automata}
 
+\subsubsection{Constraint Propagators}
+
+\subsubsection{Binary Partitioning}
+
+\subsubsection{Formal Languages}
+
+\subsubsection{Data-driven approaches}
 
 \section{Mission and Space}
 \begin{outline}
