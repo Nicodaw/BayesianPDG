@@ -92,8 +92,8 @@ namespace BayesianPDG.SpaceGenerator
                 // randomly assign neighbours and remove any fully connected node from the list
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
-                DungeonGraph = NeighbourMapper(DungeonGraph);
-
+                //DungeonGraph = NeighbourMapper(DungeonGraph);
+                Map();
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
@@ -156,32 +156,33 @@ namespace BayesianPDG.SpaceGenerator
 
         private void Map()
         {
-            foreach (Node node in DungeonGraph.AllNodes)
-            {
-                MapOne(node);
-            }
+            //foreach (Node node in DungeonGraph.AllNodes)
+            //{
+            //    MapOne(node);
+            //}
+            DungeonGraph.AllNodes.ForEach(_ => MapOne());
         }
 
-        private void MapOne(Node A)
+        private void MapOne()
         {
-
-            if (A.Values.Count == 1)
+            //if all nodes are reduced to a single possible value, finish
+            if (DungeonGraph.AllNodes.FindAll(x => x.Values.Count == 1).Count == DungeonGraph.AllNodes.Count)
             {
-                Debug.WriteLine($"Done selecting values for {A.Id}::[{string.Join(", ", A.Values[0])}]");
+                var result = DungeonGraph.AllNodes.SelectMany(x => x.Values.SelectMany(y => y[0].PrintConnections())).ToList();
+                Debug.WriteLine($"Done selecting values for this Space Graph::[{string.Join(", ", result)}]");
             }
             else
             {
                 List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
-                Node selected = possible[new Random().Next(0, possible.Count - 1)];
+                Node selected = possible[RNG.Next(0, possible.Count - 1)];
                 foreach (List<Node> value in selected.Values)
                 {
                     try
                     {
-                        bool isReduced = Reduce(A, new List<List<Node>>() { value });
-                        if (isReduced != true)
-                        {
-                            MapOne(selected);
-                        }
+                        Reduce(selected, new List<List<Node>>() { value });
+                        //if reduce didn't throw an exception, repeat
+                        MapOne();
+
                     }
                     catch (Exception e)
                     {
@@ -196,42 +197,70 @@ namespace BayesianPDG.SpaceGenerator
         /// Reduce the possible values to a single one
         /// </summary>
         /// <param name = "A" > Node to be reduced</param>
-        /// <param name = "set" > Singleton list of neighbours chosen for A</param>
+        /// <param name = "set" >Potential values for A</param>
         /// <returns>Valid reduction? A : null</returns>
-        private bool Reduce(Node A, List<List<Node>> set)
+        private void Reduce(Node A, List<List<Node>> set)
         {
             if (set.Count == 0)
             {
                 throw new Exception($"Reduced {A.Id} to empty set. Backtracking...");
             }
-            if (A.Values.Count == 1 &&
-                !(A.Values.Except(set).ToList().Any() && set.Except(A.Values).ToList().Any()))
+            if (//A.Values.Count == 1 &&
+                !(A.Values.Except(set).ToList().Any() && set.Except(A.Values).ToList().Any())) // A.Values != set
             {
                 A.Values = set;
-                foreach (var constraint in A.Values)
+                foreach (var other in A.Values)
                 {
-                    if (!Propagate(constraint, A)) return false;
+                    Propagate(other, A);
                 }
             }
-            return true;
         }
 
-        private bool Propagate(List<Node> constrained, Node modified)
+        private void Propagate(List<Node> otherNodes, Node modA)
         {
-            foreach (Node v in constrained)
+            foreach (Node v in otherNodes)
             {
-                if (v.Id != modified.Id)
+                if (v.Id != modA.Id)
                 {
                     List<List<Node>> allowedValues = new List<List<Node>>(); //ToDo: Compute possible values for v given all the node sets
-                    if (!Reduce(v, allowedValues))
+
+                    // select the sets of values of the constrained var that ::
+
+                    // include our modA (constraining, i.e. already set variable)
+                    allowedValues = v.Values.FindAll(set => set.Contains(modA));
+
+                    // do not invalidate the CPLength
+                    foreach (var set in allowedValues)
                     {
-                        return false;
+                        foreach (var node in set)
+                        {
+                            if (!DungeonGraph.ValidCPLength(node, modA))
+                            {
+                                allowedValues.Remove(set);
+                            }
+                           
+                        }
                     }
+
+                    // do not exceed MaxNeighbours
+                    foreach (var set in allowedValues)
+                    {
+                        foreach (var node in set)
+                        {
+                            if (!DungeonGraph.ValidNeighboursPostInc(node))
+                            {
+                                allowedValues.Remove(set);
+                            }
+
+                        }
+                    }
+
+
+
+                    Reduce(v, allowedValues);
                 }
-                return true;
             }
             Debug.WriteLine("Propagate finished");
-            return true;
         }
 
 
@@ -359,7 +388,7 @@ namespace BayesianPDG.SpaceGenerator
         }
         #endregion
 
-        
+
 
     }
 }

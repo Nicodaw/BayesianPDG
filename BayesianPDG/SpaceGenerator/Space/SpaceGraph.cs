@@ -149,7 +149,6 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// Validate if adding node A to node B will break the invariant
         /// i.e. if it will change the critical path length
         /// </summary>
-        /// <param name="graph">Dungeon topology graph</param>
         /// <param name="A">parent node</param>
         /// <param name="B">child node</param>
         /// <returns>If adding A:B is a valid operation</returns>
