@@ -144,6 +144,34 @@ namespace BayesianPDG.SpaceGenerator.Space
 
         }
 
+        #region Constraints
+        /// <summary>
+        /// Validate if adding node A to node B will break the invariant
+        /// i.e. if it will change the critical path length
+        /// </summary>
+        /// <param name="graph">Dungeon topology graph</param>
+        /// <param name="A">parent node</param>
+        /// <param name="B">child node</param>
+        /// <returns>If adding A:B is a valid operation</returns>
+        public bool ValidCPLength(Node A, Node B)
+        {
+            int originalCPLength = CriticalPath.Count;
+            Connect(A, B);
+            bool isCPValid = CriticalPath.Count == originalCPLength;
+            Disconnect(A, B);
+            return isCPValid;
+        }
+
+        /// <summary>
+        /// Assume we've added an edge to A.
+        /// Validate if A is still within capacity.
+        /// </summary>
+        /// <param name="A">node</param>
+        /// <returns>If A has not exceeded its neighbour capacity</returns>
+        public bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
+        #endregion
+
+
         /// <summary>
         /// Using Dijkstra
         /// </summary>

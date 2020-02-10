@@ -154,6 +154,40 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             Assert.IsFalse(incomplete.isComplete);
         }
 
+        [TestMethod]
+        public void ValidCPLengthTest()
+        {
+            var originalCP = testGraph.CriticalPath;
+            Node originalEntrance = new Node()
+            {
+
+                Edges = testGraph.Entrance.Edges,
+                Depth = testGraph.Entrance.Depth,
+                MaxNeighbours = testGraph.Entrance.MaxNeighbours,
+                CPDistance = testGraph.Entrance.CPDistance,
+                Id = testGraph.Entrance.Id
+            };
+            Node originalGoal = new Node()
+            {
+                Edges = testGraph.Goal.Edges,
+                Depth = testGraph.Goal.Depth,
+                MaxNeighbours = testGraph.Goal.MaxNeighbours,
+                CPDistance = testGraph.Goal.CPDistance,
+                Id = testGraph.Goal.Id
+            };
+            bool isValid = testGraph.ValidCPLength(testGraph.Entrance, testGraph.Goal);
+
+            Assert.IsFalse(isValid);
+
+            CollectionAssert.AreEqual(testGraph.CriticalPath, originalCP);
+            CollectionAssert.AreEqual(originalEntrance.Edges, testGraph.Entrance.Edges);
+            CollectionAssert.AreEqual(originalGoal.Edges, testGraph.Goal.Edges);
+
+
+            testGraph.Connect(testGraph.Entrance, testGraph.Goal);
+
+            CollectionAssert.AreNotEqual(testGraph.CriticalPath, originalCP);
+        }
 
         [TestMethod()]
         public void PathToTest()

@@ -35,6 +35,7 @@ namespace BayesianPDG.Utils.Tests
         [TestMethod()]
         public void CombinationsTest()
         {
+            throw new NotImplementedException();
             List<int> lst = new List<int> { 0, 1, 2 };
             List<List<int>> expected = new List<List<int>> 
             {
@@ -55,6 +56,7 @@ namespace BayesianPDG.Utils.Tests
         [TestMethod()]
         public void NonSelfReferentialRoomCombinationsTest()
         {
+            throw new NotImplementedException();
             foreach (Node node in testGraph.AllNodes)
             {
                 var neighbourCombinations = Combinator.Combinations(testGraph.AllNodes, node.MaxNeighbours.Value);

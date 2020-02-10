@@ -19,12 +19,17 @@ namespace BayesianPDG.SpaceGenerator
         /// <summary>
         /// Maintain the same RNG throuought for consistency
         /// </summary>
-        private Random RNG; 
+        private Random RNG;
 
         /// <summary>
         /// Model reference
         /// </summary>
         private SpaceModel DungeonModel;
+
+        /// <summary>
+        /// Dungeon graph reference
+        /// </summary>
+        private SpaceGraph DungeonGraph;
 
         #region Dungeon Parameters
         private int Rooms;
@@ -36,11 +41,11 @@ namespace BayesianPDG.SpaceGenerator
         {
             DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
             DungeonModel = new SpaceModel(dungeonBNLoader);
-            RNG = (seed == null) ? new Random() : new Random(seed.Value); 
+            RNG = (seed == null) ? new Random() : new Random(seed.Value);
             try
             {
                 //Configure observations, i.e. how many rooms in the dungeon
-                SpaceGraph graph = new SpaceGraph();
+                DungeonGraph = new SpaceGraph();
 
                 int observedRooms = 6; // ToDo: Let user decide
 
@@ -51,27 +56,27 @@ namespace BayesianPDG.SpaceGenerator
                 /// 
                 for (int i = 0; i < observedRooms; i++)
                 {
-                    graph.CreateNode(i);
+                    DungeonGraph.CreateNode(i);
                 }
 
                 // Create the critical path and set the distance for all nodes on it to 0
-                graph = CriticalPathMapper(graph, (int) DungeonModel.Value(FeatureType.CriticalPathLength));
+                DungeonGraph = CriticalPathMapper(DungeonGraph, (int)DungeonModel.Value(FeatureType.CriticalPathLength));
 
                 // Sample room params and set the node constraints: Depth, MaxNeighbours, CPDistance
-                foreach (Node parent in graph.AllNodes)
+                foreach (Node parent in DungeonGraph.AllNodes)
                 {
                     RoomSampler(parent);
                 }
 
                 Debug.WriteLine("=== Final set of rooms sampled ===");
                 Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
-                graph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
+                DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
 
                 // Initialise the potential connections for formulating the CSP
                 // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
-                foreach(Node node in graph.AllNodes)
+                foreach (Node node in DungeonGraph.AllNodes)
                 {
-                    var neighbourCombinations = Combinator.Combinations(graph.AllNodes, node.MaxNeighbours.Value);
+                    var neighbourCombinations = Combinator.Combinations(DungeonGraph.AllNodes, node.MaxNeighbours.Value);
                     foreach (IEnumerable<Node> combination in neighbourCombinations)
                     {
                         if (!combination.ToList().Contains(node))
@@ -80,30 +85,27 @@ namespace BayesianPDG.SpaceGenerator
                         }
                     }
                 }
-                graph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
-
-                ConstraintModel CSModel = new ConstraintModel(graph);
-
+                DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
 
                 // Transform the basis dungeon in a per-room fashion
                 // Compose a list of all nodes that still don't have their full neighbours reached
                 // randomly assign neighbours and remove any fully connected node from the list
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
-                graph = NeighbourMapper(graph);
-                
+                DungeonGraph = NeighbourMapper(DungeonGraph);
+
 
                 // Validate if graph is complete.
-                Debug.WriteLine($"Is graph complete? {graph.isComplete}");
-                Debug.WriteLine($"Is graph planar? {graph.isPlanar}");
-                List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-                List<Node> connected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
+                Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
+                Debug.WriteLine($"Is DungeonGraph planar? {DungeonGraph.isPlanar}");
+                List<Node> unconnected = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
+                List<Node> connected = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
                 string unc = string.Join(", ", unconnected.Select(x => x.Id).ToArray());
                 string con = string.Join(", ", connected.Select(x => x.Id).ToArray());
                 Debug.WriteLine($"List of Unconected nodes {unc}");
                 Debug.WriteLine($"List of Connected nodes {con}");
-                Debug.Write(graph.ToString());
-                return graph;
+                Debug.Write(DungeonGraph.ToString());
+                return DungeonGraph;
             }
             finally
             {
@@ -135,22 +137,105 @@ namespace BayesianPDG.SpaceGenerator
             {
                 int child = (pid != CPLength - 2) ? pid + 1 : graph.Goal.Id; // The critical path is comprised of consequtive rooms from the start + the last one (goal)
                 graph.Node(child).CPDistance = 0;
-                graph.Node(child).Depth = (child == graph.Goal.Id)? CPLength - 1 : pid + 1;
+                graph.Node(child).Depth = (child == graph.Goal.Id) ? CPLength - 1 : pid + 1;
                 graph.Connect(pid, child);
             }
             return graph;
         }
 
-        private SpaceGraph MapOne(Node A, Node B, SpaceGraph graph)
+        private SpaceGraph MapOne(Node A, Node B)
         {
-            if (ValidCPLength(graph, A, B))
+            if (DungeonGraph.ValidCPLength(A, B))
             {
-                var validNeigbours = (parentIsValid: ValidNeighboursPostInc(A), childIsValid: ValidNeighboursPostInc(B));
+                var validNeigbours = (parentIsValid: DungeonGraph.ValidNeighboursPostInc(A), childIsValid: DungeonGraph.ValidNeighboursPostInc(B));
                 if (!validNeigbours.parentIsValid || !validNeigbours.childIsValid) return null;
-                else graph.Connect(A, B);
+                else DungeonGraph.Connect(A, B);
             }
             return null;
         }
+
+        private void Map()
+        {
+            foreach (Node node in DungeonGraph.AllNodes)
+            {
+                MapOne(node);
+            }
+        }
+
+        private void MapOne(Node A)
+        {
+
+            if (A.Values.Count == 1)
+            {
+                Debug.WriteLine($"Done selecting values for {A.Id}::[{string.Join(", ", A.Values[0])}]");
+            }
+            else
+            {
+                List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
+                Node selected = possible[new Random().Next(0, possible.Count - 1)];
+                foreach (List<Node> value in selected.Values)
+                {
+                    try
+                    {
+                        bool isReduced = Reduce(A, new List<List<Node>>() { value });
+                        if (isReduced != true)
+                        {
+                            MapOne(selected);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //ToDo: undo all updates in this iter
+                    }
+
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reduce the possible values to a single one
+        /// </summary>
+        /// <param name = "A" > Node to be reduced</param>
+        /// <param name = "set" > Singleton list of neighbours chosen for A</param>
+        /// <returns>Valid reduction? A : null</returns>
+        private bool Reduce(Node A, List<List<Node>> set)
+        {
+            if (set.Count == 0)
+            {
+                throw new Exception($"Reduced {A.Id} to empty set. Backtracking...");
+            }
+            if (A.Values.Count == 1 &&
+                !(A.Values.Except(set).ToList().Any() && set.Except(A.Values).ToList().Any()))
+            {
+                A.Values = set;
+                foreach (var constraint in A.Values)
+                {
+                    if (!Propagate(constraint, A)) return false;
+                }
+            }
+            return true;
+        }
+
+        private bool Propagate(List<Node> constrained, Node modified)
+        {
+            foreach (Node v in constrained)
+            {
+                if (v.Id != modified.Id)
+                {
+                    List<List<Node>> allowedValues = new List<List<Node>>(); //ToDo: Compute possible values for v given all the node sets
+                    if (!Reduce(v, allowedValues))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            Debug.WriteLine("Propagate finished");
+            return true;
+        }
+
+
+
 
         /// <summary>
         /// Select a random Node that still has unconnected edges and attempt to connect them
@@ -180,7 +265,7 @@ namespace BayesianPDG.SpaceGenerator
 
                     Node child = temp[RNG.Next(0, temp.Count)];
 
-                    if (MapOne(parent, child, graph) == null)
+                    if (MapOne(parent, child) == null)
                     {
                         retries--;
                     }
@@ -190,9 +275,9 @@ namespace BayesianPDG.SpaceGenerator
                     Debug.WriteLine($"Finished [{parent.Id}], removing node...");
                     unconnected.Remove(parent);
                 }
-                else 
+                else
                 {
-             //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
+                    //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
                     globalRetries--;
                     ////add some noise in an attempt to avoid getting stuck. (no guarantees)
                 }
@@ -207,7 +292,7 @@ namespace BayesianPDG.SpaceGenerator
         /// </summary>
         /// <param name="DungeonModel">Inference model</param>
         /// <param name="observations">Our beliefs/observations</param>
-        public void DungeonSampler( params (FeatureType, int)[] observations)
+        public void DungeonSampler(params (FeatureType, int)[] observations)
         {
             DungeonModel.SetObservations(true, observations);
             _ = DungeonModel.Sample();
@@ -268,39 +353,13 @@ namespace BayesianPDG.SpaceGenerator
                 }
                 else return RoomSampler(room);
             }
-            
+
 
             return room;
         }
         #endregion
 
-        #region Constraints
-        /// <summary>
-        /// Validate if adding node A to node B will break the invariant
-        /// i.e. if it will change the critical path length
-        /// </summary>
-        /// <param name="graph">Dungeon topology graph</param>
-        /// <param name="A">parent node</param>
-        /// <param name="B">child node</param>
-        /// <returns>If adding A:B is a valid operation</returns>
-        public bool ValidCPLength(SpaceGraph graph, Node A, Node B)
-        {
-            int originalCPLength = graph.CriticalPath.Count;
-            graph.Connect(A, B);
-            bool isCPValid = graph.CriticalPath.Count == originalCPLength;
-            graph.Disconnect(A, B);
-            return isCPValid;
-        }
-
-        /// <summary>
-        /// Assume we've added an edge to A.
-        /// Validate if A is still within capacity.
-        /// </summary>
-        /// <param name="A">node</param>
-        /// <returns>If A has not exceeded its neighbour capacity</returns>
-        private bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
-        #endregion
-
+        
 
     }
 }

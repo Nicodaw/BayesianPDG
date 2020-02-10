@@ -55,13 +55,13 @@ namespace BayesianPDG.SpaceGenerator.CSP.Tests
 
         }
 
-        [TestMethod()]
-        public void ConstraintModelTest()
-        {
-            testGraph.AllNodes.ForEach(node => Trace.WriteLine(node.PrintConnections()));
-            ConstraintModel CSModel = new ConstraintModel(testGraph);
+        //[TestMethod()]
+        //public void ConstraintModelTest()
+        //{
+        //    throw new NotImplementedException();
+        //    testGraph.AllNodes.ForEach(node => Trace.WriteLine(node.PrintConnections()));
+        //    ConstraintModel CSModel = new ConstraintModel(testGraph);
 
-           // throw new NotImplementedException();
-        }
+        //}
     }
 }

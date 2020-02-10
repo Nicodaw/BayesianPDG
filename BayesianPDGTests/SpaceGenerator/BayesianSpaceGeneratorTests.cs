@@ -28,40 +28,6 @@ namespace BayesianPDG.SpaceGenerator.Tests
             generator = new BayesianSpaceGenerator();
             testGraph = generator.CriticalPathMapper(testGraph, cpl);
         }
-        [TestMethod]
-        public void ValidCPLengthTest()
-        {
-            var originalCP = testGraph.CriticalPath;
-            Node originalEntrance = new Node()
-            {
-
-                Edges = testGraph.Entrance.Edges,
-                Depth = testGraph.Entrance.Depth,
-                MaxNeighbours = testGraph.Entrance.MaxNeighbours,
-                CPDistance = testGraph.Entrance.CPDistance,
-                Id = testGraph.Entrance.Id
-            };
-            Node originalGoal = new Node()
-            {
-                Edges = testGraph.Goal.Edges,
-                Depth = testGraph.Goal.Depth,
-                MaxNeighbours = testGraph.Goal.MaxNeighbours,
-                CPDistance = testGraph.Goal.CPDistance,
-                Id = testGraph.Goal.Id
-            };
-            bool isValid = generator.ValidCPLength(testGraph, testGraph.Entrance, testGraph.Goal);
-
-            Assert.IsFalse(isValid);
-
-            CollectionAssert.AreEqual(testGraph.CriticalPath, originalCP);
-            CollectionAssert.AreEqual(originalEntrance.Edges, testGraph.Entrance.Edges);
-            CollectionAssert.AreEqual(originalGoal.Edges, testGraph.Goal.Edges);
-
-
-            testGraph.Connect(testGraph.Entrance, testGraph.Goal);
-
-            CollectionAssert.AreNotEqual(testGraph.CriticalPath, originalCP);
-        }
 
         [TestMethod()]
         public void CriticalPathMapperTest()
@@ -75,6 +41,7 @@ namespace BayesianPDG.SpaceGenerator.Tests
         [TestMethod()]
         public void NeighbourMapperTest()
         {
+            throw new NotImplementedException();
             List<(int, int, int)> roomParams = new List<(int, int, int)>() { (0, 0, 1), (0, 1, 4), (2, 3, 1), (1, 2, 1), (1, 2, 1), (0, 2, 1) };
             testGraph.AllNodes.ForEach(node =>
             {

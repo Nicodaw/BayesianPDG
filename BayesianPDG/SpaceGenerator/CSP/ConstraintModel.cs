@@ -1,5 +1,6 @@
 ﻿using BayesianPDG.SpaceGenerator.Space;
 using Decider.Csp.BaseTypes;
+using Decider.Csp.Global;
 using Decider.Csp.Integer;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,9 @@ namespace BayesianPDG.SpaceGenerator.CSP
 {
     public class ConstraintModel
     {
-        private IList<VariableInteger> Variables { get; set; }
+        //      private IList<VariableInteger> Variables { get; set; }
+        //private IList<VariableInteger[][]> Variables { get; set; }
+        private IList<VariableInteger[]> Variables { get; set; }
         private IList<IConstraint> Constraints { get; set; }
         public IState<int> State { get; private set; }
         public IList<IDictionary<string, IVariable<int>>> Solutions { get; private set; }
@@ -20,31 +23,36 @@ namespace BayesianPDG.SpaceGenerator.CSP
         public ConstraintModel(SpaceGraph graph)
         {
             // Each node should choose the subset of those edges that fit the constraints
-
             // Create the variables.
+            //   Variables = new VariableInteger[graph.AllNodes.Count];
+            //   graph.AllNodes.ForEach(node => Variables[node.Id] = new VariableInteger($"{node.Id}", 0, graph.AllNodes.Count - 1));
 
-            // The graph should already contain initialised Values with respect to the samples
-            // int[][,] conMatrix = new int[graph.AllNodes.Count][,]; //jagged array that will containt int[] for all combinations
-            //List<List<List<int>>> con2DList = new List<List<List<int>>>();
-            //graph.AllNodes.ForEach(room =>
+            //Variables = new List<VariableInteger[][]>(graph.AllNodes.Count);
+            //graph.AllNodes.ForEach(node =>
             //{
-            //    List<List<int>> row = new List<List<int>>();
-            //    foreach (List<Node> valueSet in room.Values)
+            //    Variables.Add(new VariableInteger[node.Values.Count][]);
+            //    foreach (List<Node> valueSet in node.Values) 
             //    {
-            //        List<int> set = new List<int>();
-            //        foreach (Node connection in valueSet)
-            //        {
-            //            set.Add(connection.Id);
-            //        }
-            //        row.Add(set);
+            //        int[] ids = valueSet.Select(x => x.Id).ToArray();
+            //        Variables[node.Id][node.Id].Append<VariableInteger>(new VariableInteger($"{node.Id}:[{string.Join(",",ids)}]", ids));
             //    }
-            //    con2DList.Add(row);
             //});
 
-            Variables = new VariableInteger[graph.AllNodes.Count];
+            Variables = new List<VariableInteger[]>(graph.AllNodes.Count);
+            graph.AllNodes.ForEach(node =>
+            {
+            Variables.Add(new VariableInteger[node.MaxNeighbours.Value]);
+            for (int i = 0; i < Variables[node.Id].Length; i++)
+            {
+                Variables[node.Id][i] = new VariableInteger($"{node.Id}:{i}", 0, graph.AllNodes.Count - 1);
+                }
+            });
 
-            graph.AllNodes.ForEach(node => Variables[node.Id] = new VariableInteger($"{node.Id}", 0, graph.AllNodes.Count - 1));
 
+            foreach (var val in Variables)
+            {
+                Debug.WriteLine($"CONSTRAINT VARIBLES {string.Join(",", val.Select(x => x).ToList())}");
+            }
 
             /// Constraints
             /// =======================================================================================================
@@ -54,13 +62,74 @@ namespace BayesianPDG.SpaceGenerator.CSP
             /// Relationship:: Graph must be fully connected, isReachable(Node[Entrance],Node[i]) for any i
             /// Functional  :: Graph must be planar. Euler's method must hold as invariant
             /// 
-
-            //Not allowed to be connected to oneself
             Constraints = new List<IConstraint>();
-            foreach (VariableInteger con in Variables)
+
+
+            //Cannot be connected to onesself
+            foreach (VariableInteger[] set in Variables)
             {
-                Constraints.Add(new ConstraintInteger(con != int.Parse(con.Name)));
+                foreach (VariableInteger con in set)
+                {
+                    Constraints.Add(new ConstraintInteger(con != int.Parse(con.Name[0].ToString())));
+                }
             }
+
+            //cannot be connected to the same one twice
+            foreach (VariableInteger[] set in Variables)
+            {
+                Constraints.Add(new AllDifferentInteger(set));
+            }
+
+            int[][] adjMatrix = new int[Variables.Count][];
+            for (int row = 0; row < Variables.Count; row++)
+            {
+                adjMatrix[row] = new int[Variables.Count];
+                for (int col = 0; col < Variables.Count; col++)
+                {
+                    adjMatrix[row][col] = 0;
+                }
+            }
+
+            ConstrainedArray[] consAdjMatrix = new ConstrainedArray[Variables.Count * Variables.Count];
+
+            for (int row = 0; row < Variables.Count; row++)
+            {
+                for (int col = 0; col < Variables.Count; col++)
+                {
+                    adjMatrix[row][col] = 1;
+                    adjMatrix[col][row] = 1;
+                    consAdjMatrix[row] = new ConstrainedArray(adjMatrix[row]);
+                    consAdjMatrix[col] = new ConstrainedArray(adjMatrix[col]);
+                    adjMatrix[row][col] = 0;
+                    adjMatrix[col][row] = 0;
+                }
+            }
+
+
+
+            //Symmetric connections A->B means that B->A
+            for (int row = 0; row < Variables.Count(); row++)
+            {
+                for (int col = 0; col < Variables[row].Count(); col++)
+                {
+                    var constant = new VariableInteger("const", 0, Variables.Count());
+                    Constraints.Add(new ConstraintInteger(consAdjMatrix[row][col] == constant & consAdjMatrix[col][row] == constant));
+                }
+            }
+
+            // Entrance must be before the others
+            //foreach(VariableInteger[] set in Variables)
+            //{
+            //    if (!set[0].Name[0].Equals('0')) 
+            //    {
+            //      foreach(VariableInteger con in set)
+            //        {
+            //            Constraints.Add(new ConstraintInteger());
+            //        }
+            //    }
+            //}
+
+
 
             //Done setting up the model. Now we just have to surch over solutions
             Search();
@@ -69,9 +138,10 @@ namespace BayesianPDG.SpaceGenerator.CSP
 
         public void Search()
         {
-            State = new StateInteger(Variables, Constraints);
+            State = new StateInteger(Variables.SelectMany(x => x.Select(y => y)), Constraints);
             State.StartSearch(out StateOperationResult searchResult, out IList<IDictionary<string, IVariable<int>>> solutions);
             Solutions = solutions;
+            if (Solutions.Count == 0) throw new Exception("No solutions found");
         }
 
         public void PrintAllSolutions()
@@ -94,12 +164,12 @@ namespace BayesianPDG.SpaceGenerator.CSP
 
         public void PrintRandomSolution(int? seed)
         {
-            Random rng = (seed != null)? new Random(seed.Value): new Random();
+            Random rng = (seed != null) ? new Random(seed.Value) : new Random();
 
             IDictionary<string, IVariable<int>> solution = Solutions[rng.Next(0, State.NumberOfSolutions - 1)];
             for (int i = 0; i < solution.Count; i++)
             {
-                Debug.WriteLine($"Node[{solution.Keys.ToArray()[i]}]:{solution.Values.ToArray()[i]}");
+                Console.WriteLine($"Node[{solution.Keys.ToArray()[i]}]:{solution.Values.ToArray()[i]}");
             }
         }
     }
