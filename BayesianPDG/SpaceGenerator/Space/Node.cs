@@ -97,7 +97,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public string PrintConnections()
         {
             StringBuilder builder = new StringBuilder();
-            builder.Append($"{this.Values.Count} Potential connections for Room {this.Id}::");
+            builder.Append($"{this.Values.Count}x{this.MaxNeighbours} for room {this.Id}::");
             foreach(List<Node> set in Values)
             {
                 builder.Append('[');

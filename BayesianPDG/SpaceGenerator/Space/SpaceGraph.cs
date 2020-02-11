@@ -16,6 +16,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateNodeConnected() && ValidateReachability();
         public bool isPlanar => AllNodes.GroupBy(node => node.Edges).Count() >= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6;
+        public bool areNodesInstantiated => AllNodes.FindAll(x => x.Values.Count == 1).Count == AllNodes.Count; //All room nodes have only 1 value
         #endregion
 
         #region Constructor
