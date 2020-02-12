@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
-    public class Node
+    public class Node: IEquatable<Node>
     {
         #region Public Fields
         public int Id;
@@ -81,7 +82,7 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             else
             {
-                // Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
+                Debug.WriteLine($"Edge b/w [{Id}:{child.Id}] already added, skipping...");
                 return this;
             }
 
@@ -108,7 +109,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public string PrintConnections()
         {
             StringBuilder builder = new StringBuilder();
-            builder.Append($"{this.Values.Count}x{this.MaxNeighbours} for room {this.Id}::");
+            builder.Append($"{Values.Count}x{MaxNeighbours} for room {Id}::");
             foreach (List<Node> set in Values)
             {
                 builder.Append('[');
@@ -117,6 +118,11 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
 
             return builder.ToString();
+        }
+
+        public bool Equals(Node other)
+        {
+            return Id == other.Id;
         }
     }
 }

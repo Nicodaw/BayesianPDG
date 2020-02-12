@@ -31,7 +31,7 @@ namespace BayesianPDG.SpaceGenerator
         /// <summary>
         /// Dungeon graph reference
         /// </summary>
-        private SpaceGraph DungeonGraph;
+        public SpaceGraph DungeonGraph;
 
         #region Dungeon Parameters
         private int Rooms;
@@ -88,17 +88,8 @@ namespace BayesianPDG.SpaceGenerator
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
                 //DungeonGraph = NeighbourMapper(DungeonGraph);
-                Task task = new Task(Map);
-                try
-                {
-                    int secondsTimeout = 5;
-                    task.Start();
-                    task.Wait(secondsTimeout * 1000);
-                }
-                finally
-                {
-                    Debug.WriteLine($"Is mapping successful? {task.IsCompleted}");
-                }
+
+                Map();
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
@@ -159,20 +150,11 @@ namespace BayesianPDG.SpaceGenerator
             return null;
         }
 
-        private void Map()
+        public void Map()
         {
             foreach (Node node in DungeonGraph.AllNodes.ToList())
             {
-                //Thread thread = new Thread(MapOne);
-                //thread.Start();
-                try 
-                {
-                    MapOne();
-                }
-                catch (StackOverflowException so)
-                {
-                    throw new StackOverflowException(so.StackTrace);
-                }
+                MapOne();
             }
         }
 
@@ -182,6 +164,7 @@ namespace BayesianPDG.SpaceGenerator
             //if all nodes are reduced to a single possible value, finish
             if (DungeonGraph.areNodesInstantiated)
             {
+                Debug.WriteLine("=== Solution === ");
                 DungeonGraph.AllNodes.ForEach(room => Debug.WriteLine(room.PrintConnections()));
             }
             else
@@ -189,7 +172,7 @@ namespace BayesianPDG.SpaceGenerator
                 int frame = undoStack.Count;
                 undoStack.Push(new Stack<Node>());
                 List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
-                Node selected = possible[RNG.Next(0, possible.Count - 1)];
+                Node selected = (possible.Count == 1) ? possible[0] : possible[RNG.Next(0, possible.Count - 1)];
                 foreach (List<Node> value in selected.Values)
                 {
                     try
@@ -239,13 +222,13 @@ namespace BayesianPDG.SpaceGenerator
             }
         }
 
-        private void Propagate(List<Node> otherNodes, Node modA, Stack<Stack<Node>> undoStack)
+        private void Propagate(List<Node> neighbours, Node modA, Stack<Stack<Node>> undoStack)
         {
-            foreach (Node child in otherNodes)
+            foreach (Node child in neighbours)
             {
-                if (child.Id != modA.Id && !modA.IsConnected(child))
+                if (child.Id != modA.Id && !modA.IsConnected(child) && child.Values.Count != 1)
                 {
-                    List<List<Node>> allowedValues = new List<List<Node>>(); //ToDo: Compute possible values for v given all the node sets
+                    List<List<Node>> allowedValues = new List<List<Node>>();
 
                     // select the sets of values of the constrained var that ::
 
@@ -256,7 +239,7 @@ namespace BayesianPDG.SpaceGenerator
                     {
                         foreach (var node in set)
                         {
-                            if (node.Id != modA.Id && !DungeonGraph.ValidCPLength(node, modA))
+                            if (!DungeonGraph.ValidCPLength(node, child))
                             {
                                 allowedValues.Remove(set);
                             }
@@ -269,7 +252,7 @@ namespace BayesianPDG.SpaceGenerator
                     {
                         foreach (var node in set)
                         {
-                            if (!DungeonGraph.ValidNeighboursPostInc(node))
+                            if (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child))
                             {
                                 allowedValues.Remove(set);
                             }
