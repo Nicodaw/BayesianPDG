@@ -25,11 +25,17 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
 
                 int cpd = (i < 3) ? 0 : i;
                 int depth = (i == 0) ? 0 : i;
+                int maxN = (i == 0 || i == 4) ? 1 : 2;
 
                 testGraph.Node(i).CPDistance = cpd;
                 testGraph.Node(i).Depth = depth;
+                testGraph.Node(i).MaxNeighbours = maxN;
             }
-
+            //node: neighbours
+            // 1 : 1
+            // 2 : 2
+            // 3 : 2
+            // 4 : 1
 
             testGraph.Connect(0, 1);
             testGraph.Connect(1, 2);
@@ -212,6 +218,36 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
 
 
         }
-       
+
+        [TestMethod()]
+        public void ReducePotentialValuesTest()
+        {
+            SpaceGraph valueGraph = new SpaceGraph();
+
+            for (int i = 0; i < 6; i++)
+            {
+                valueGraph.CreateNode(i);
+            }
+
+            List<(int, int, int)> roomParams = new List<(int, int, int)>() { (0, 0, 1), (0, 1, 4), (2, 3, 1), (1, 2, 1), (1, 2, 1), (0, 2, 1) };
+            valueGraph.AllNodes.ForEach(node =>
+            {
+                node.CPDistance = roomParams[node.Id].Item1;
+                node.Depth = roomParams[node.Id].Item2;
+                node.MaxNeighbours = roomParams[node.Id].Item3;
+            });
+
+            //map CP
+            valueGraph.Connect(0, 1);
+            valueGraph.Connect(1, 5);
+
+            valueGraph.ReducePotentialValues();
+
+            List<int> actual = valueGraph.AllNodes.SelectMany(x => x.Values.SelectMany(y => y.Select(z => z.Id))).ToList();
+            valueGraph.AllNodes.ForEach(node => Trace.WriteLine(node.PrintConnections()));
+            Trace.WriteLine(string.Join(", ", actual));
+            ///////////////////////////////////  [0][                 1                ][    2       ][     3       ][       4     ][5]
+            CollectionAssert.AreEqual(new int[] { 1, 0, 2, 3, 5, 0, 2, 4, 5, 0, 3, 4, 5, 0, 1, 3, 4, 5, 0, 1, 2, 4, 5, 0, 1, 2, 3, 5, 1 }.ToList(), actual);
+        }
     }
 }

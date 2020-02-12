@@ -42,6 +42,16 @@ namespace BayesianPDG.SpaceGenerator.Space
                 Depth = 0;
             }
             Id = id;
+            Values = new List<List<Node>>();
+        }
+        public Node(Node other)
+        {
+            Id = other.Id;
+            Edges = other.Edges;
+            CPDistance = other.CPDistance;
+            MaxNeighbours = other.MaxNeighbours;
+            Depth = other.Depth;
+            Values = other.Values;
         }
         public Node() { }
         #endregion
@@ -54,7 +64,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>this</returns>
         public Node AddEdge(Node child)
         {
-            if(!this.Edges.Exists(e => e.Parent == this && e.Child == child))
+            if (!this.Edges.Exists(e => e.Parent == this && e.Child == child))
             {
                 Edges.Add(new Edge
                 {
@@ -68,12 +78,13 @@ namespace BayesianPDG.SpaceGenerator.Space
                 }
 
                 return this;
-            } else
+            }
+            else
             {
-               // Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
+                // Debug.WriteLine($"Edge b/w [{this.Id}:{child.Id}] already added, skipping...");
                 return this;
             }
-            
+
         }
         /// <summary>
         /// Delete an existing edge
@@ -98,7 +109,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         {
             StringBuilder builder = new StringBuilder();
             builder.Append($"{this.Values.Count}x{this.MaxNeighbours} for room {this.Id}::");
-            foreach(List<Node> set in Values)
+            foreach (List<Node> set in Values)
             {
                 builder.Append('[');
                 builder.AppendFormat("{0}", string.Join(", ", set.Select(x => x.Id).ToList()));

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using BayesianPDG.Utils;
 using Priority_Queue;
 
 namespace BayesianPDG.SpaceGenerator.Space
@@ -32,6 +35,7 @@ namespace BayesianPDG.SpaceGenerator.Space
 
         #region Public Properties
         public Node Node(int id) => AllNodes.First(node => node.Id == id);
+        //public Node Node(int id) => Task.Factory.StartNew(() => AllNodes.First(node => node.Id == id)).Result;
 
         public Node CreateNode(int id)
         {
@@ -169,6 +173,27 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <param name="A">node</param>
         /// <returns>If A has not exceeded its neighbour capacity</returns>
         public bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
+
+        public void ReducePotentialValues()
+        {
+            foreach (Node node in AllNodes)
+            {
+                var neighbourCombinations = Combinator.Combinations(AllNodes, node.MaxNeighbours.Value);
+                foreach (IEnumerable<Node> combination in neighbourCombinations)
+                {
+                    //Possible combinations are the sets that:: do not contain the node itself 
+                    if (!combination.ToList().Contains(node)) //&& (node.Edges.Count == 0 || combination.Any(con => con.IsConnected(node))))
+                    {
+                        node.Values.Add(combination.ToList());
+                    }
+                }
+                //Values must contain already created edges (if any)
+                foreach (Node child in node.Edges.Select(edge => edge.Child).ToList())
+                {
+                    node.Values = node.Values.FindAll(set => set.Contains(child));
+                }
+            }
+        }
         #endregion
 
 

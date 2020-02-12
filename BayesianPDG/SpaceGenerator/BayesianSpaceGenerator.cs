@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BayesianPDG.SpaceGenerator
 {
@@ -74,18 +76,9 @@ namespace BayesianPDG.SpaceGenerator
 
                 // Initialise the potential connections for formulating the CSP
                 // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
-                foreach (Node node in DungeonGraph.AllNodes)
-                {
-                    var neighbourCombinations = Combinator.Combinations(DungeonGraph.AllNodes, node.MaxNeighbours.Value);
-                    foreach (IEnumerable<Node> combination in neighbourCombinations)
-                    {
-                        //Possible combinations are the sets that:: do not contain the node itself && contain any already created edges
-                        if (!combination.ToList().Contains(node) && (node.Edges.Count == 0 || combination.Any(con => con.IsConnected(node))))
-                        {
-                            node.Values.Add(combination.ToList());
-                        }
-                    }
-                }
+                DungeonGraph.ReducePotentialValues();
+
+
                 Debug.WriteLine("Potential room connections before CP mapping");
                 DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
 
@@ -95,7 +88,17 @@ namespace BayesianPDG.SpaceGenerator
                 // repeat untill all have been assigned
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
                 //DungeonGraph = NeighbourMapper(DungeonGraph);
-                Map();
+                Task task = new Task(Map);
+                try
+                {
+                    int secondsTimeout = 5;
+                    task.Start();
+                    task.Wait(secondsTimeout * 1000);
+                }
+                finally
+                {
+                    Debug.WriteLine($"Is mapping successful? {task.IsCompleted}");
+                }
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
@@ -160,7 +163,16 @@ namespace BayesianPDG.SpaceGenerator
         {
             foreach (Node node in DungeonGraph.AllNodes.ToList())
             {
-                MapOne();
+                //Thread thread = new Thread(MapOne);
+                //thread.Start();
+                try 
+                {
+                    MapOne();
+                }
+                catch (StackOverflowException so)
+                {
+                    throw new StackOverflowException(so.StackTrace);
+                }
             }
         }
 
@@ -183,7 +195,7 @@ namespace BayesianPDG.SpaceGenerator
                     try
                     {
                         Reduce(selected, new List<List<Node>>() { value }, undoStack);
-                        //if reduce didn't throw an exception, repeat, assign and repeat
+                        //if reduce didn't throw an exception, assign and repeat
                         DungeonGraph.Node(selected.Id).Values[0].ForEach(child => DungeonGraph.Connect(selected.Id, child.Id));
                         MapOne();
 
@@ -218,27 +230,27 @@ namespace BayesianPDG.SpaceGenerator
             if (//A.Values.Count == 1 &&
                 !(A.Values.Except(set).ToList().Any() && set.Except(A.Values).ToList().Any())) // A.Values != set
             {
-                undoStack.Peek().Push(A); // save the pre-modified values
+                undoStack.Peek().Push(new Node(A)); // save the pre-modified values
                 A.Values = set;
                 foreach (var other in A.Values)
                 {
-                    Propagate(other, A, undoStack);
+                    Propagate(other, A, undoStack); //other are the ones that are about to be connected
                 }
             }
         }
 
         private void Propagate(List<Node> otherNodes, Node modA, Stack<Stack<Node>> undoStack)
         {
-            foreach (Node v in otherNodes)
+            foreach (Node child in otherNodes)
             {
-                if (v.Id != modA.Id)
+                if (child.Id != modA.Id && !modA.IsConnected(child))
                 {
                     List<List<Node>> allowedValues = new List<List<Node>>(); //ToDo: Compute possible values for v given all the node sets
 
                     // select the sets of values of the constrained var that ::
 
                     // include our modA (constraining, i.e. already set variable)
-                    allowedValues = v.Values.FindAll(set => set.Contains(modA));
+                    allowedValues = child.Values.FindAll(set => set.Contains(modA)); //the modA does not work because its been modified ==> will not be in
                     // do not invalidate the CPLength
                     foreach (var set in allowedValues.ToList())
                     {
@@ -264,14 +276,11 @@ namespace BayesianPDG.SpaceGenerator
 
                         }
                     }
-                    Reduce(v, allowedValues, undoStack);
+                    Reduce(child, allowedValues, undoStack);
                 }
             }
             Debug.WriteLine("Propagate finished");
         }
-
-
-
 
         /// <summary>
         /// Select a random Node that still has unconnected edges and attempt to connect them
