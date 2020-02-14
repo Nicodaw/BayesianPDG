@@ -135,14 +135,12 @@ namespace BayesianPDG.SpaceGenerator
             return graph;
         }
 
-        public void Map()
+        public void Map() //TODO: handle unsatisfiable cases
         {
-           // foreach (Node node in DungeonGraph.AllNodes.ToList())
-            while(!DungeonGraph.areNodesInstantiated)
+            while (!DungeonGraph.areNodesInstantiated)
             {
                 MapOne();
             }
-
             DungeonGraph.InstantiateGraph();
         }
 
@@ -159,9 +157,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
                 Node selected = (possible.Count == 1) ? possible[0] : possible[RNG.Next(0, possible.Count - 1)];
-                //foreach (List<Node> value in selEnum.Values)
-               // for (int i = 0; i < selected.Values.ToList().Count; i++)
-               while(selected.Values.Count != 1)
+                while (selected.Values.Count != 1)
                 {
                     List<Node> value = selected.Values[0];
                     int frame = undoStack.Count;
@@ -218,39 +214,39 @@ namespace BayesianPDG.SpaceGenerator
             {
                 //if (child.Id != modA.Id && !modA.IsConnected(child) && child.Values.Count != 1)
                 //{
-                    List<List<Node>> allowedValues = new List<List<Node>>();
+                List<List<Node>> allowedValues = new List<List<Node>>();
 
-                    // select the sets of values of the constrained var that ::
+                // select the sets of values of the constrained var that ::
 
-                    // in the child node that is to be connected, find only the possible values that include the parent (modA)
-                    allowedValues = child.Values.FindAll(set => set.Contains(modA)); //Comparison is done only based on id
-                    // do not invalidate the CPLength
-                    foreach (var set in allowedValues.ToList())
+                // in the child node that is to be connected, find only the possible values that include the parent (modA)
+                allowedValues = child.Values.FindAll(set => set.Contains(modA)); //Comparison is done only based on id
+                                                                                 // do not invalidate the CPLength
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
                     {
-                        foreach (var node in set)
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidCPLength(node, child))
                         {
-                            if (!node.IsConnected(child) && !DungeonGraph.ValidCPLength(node, child))
-                            {
-                                allowedValues.Remove(set);
-                            }
-
+                            allowedValues.Remove(set);
                         }
-                    }
 
-                    // do not exceed MaxNeighbours
-                    foreach (var set in allowedValues.ToList())
-                    {
-                        foreach (var node in set)
-                        {
-                            if (!node.IsConnected(child) && (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child)))
-                            {
-                                allowedValues.Remove(set);
-                            }
-
-                        }
                     }
-                    Reduce(child, allowedValues, undoStack);
                 }
+
+                // do not exceed MaxNeighbours
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
+                        if (!node.IsConnected(child) && (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child)))
+                        {
+                            allowedValues.Remove(set);
+                        }
+
+                    }
+                }
+                Reduce(child, allowedValues, undoStack);
+            }
             //}
             Debug.WriteLine("Propagate finished");
         }

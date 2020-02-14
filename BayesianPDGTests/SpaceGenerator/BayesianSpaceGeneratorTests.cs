@@ -70,5 +70,36 @@ namespace BayesianPDG.SpaceGenerator.Tests
             gen.DungeonGraph.AllNodes.ForEach(room => Trace.WriteLine(room.PrintConnections()));
             CollectionAssert.AreEqual(new int[] { 1, 0, 2, 3, 1, 1 }.ToList(), gen.DungeonGraph.AllNodes.SelectMany(x => x.Values.SelectMany(y => y.Select(z => z.Id))).ToList());
         }
+        [TestMethod()]
+        public void UnsolvableMapTest()
+        {
+            BayesianSpaceGenerator gen = new BayesianSpaceGenerator();
+            gen.DungeonGraph = new SpaceGraph();
+
+            for (int i = 0; i < 4; i++)
+            {
+                gen.DungeonGraph.CreateNode(i);
+            }
+            List<(int, int, int)> roomParams = new List<(int, int, int)>() { (0, 0, 1), (0, 1, 2), (1, 2, 1), (0, 2, 1) };
+            gen.DungeonGraph.AllNodes.ForEach(node =>
+            {
+                node.CPDistance = roomParams[node.Id].Item1;
+                node.Depth = roomParams[node.Id].Item2;
+                node.MaxNeighbours = roomParams[node.Id].Item3;
+            });
+            gen.CriticalPathMapper(gen.DungeonGraph, 3);
+            gen.DungeonGraph.ReducePotentialValues();
+            Trace.WriteLine("Before");
+            gen.DungeonGraph.AllNodes.ForEach(room => Trace.WriteLine(room.PrintConnections()));
+            //       2
+            //        
+            // 0 --- 1 --- 3  No valid configs
+            //
+            //
+            gen.Map();
+            Trace.WriteLine("After");
+            gen.DungeonGraph.AllNodes.ForEach(room => Trace.WriteLine(room.PrintConnections()));
+            Assert.IsFalse(gen.DungeonGraph.areNodesInstantiated);
+        }
     }
 }
