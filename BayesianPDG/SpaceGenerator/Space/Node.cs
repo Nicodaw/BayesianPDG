@@ -120,6 +120,28 @@ namespace BayesianPDG.SpaceGenerator.Space
             return builder.ToString();
         }
 
+        public bool ValuesEqual(Node other) => ValuesEqual(other.Values);
+
+        public bool ValuesEqual(List<List<Node>> otherValues)
+        {
+            if (Values.Count != otherValues.Count)
+                return false;
+            else
+            {
+                for (int i = 0; i < Values.Count; i++)
+                {
+                    for (int j = 0; j < Values[i].Count; j++)
+                    {
+                        if (!Values[i].Contains(otherValues[i][j]))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
         public bool Equals(Node other)
         {
             return Id == other.Id;

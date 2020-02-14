@@ -40,22 +40,6 @@ namespace BayesianPDG.SpaceGenerator.Tests
         }
 
         [TestMethod()]
-        public void NeighbourMapperTest()
-        {
-            throw new NotImplementedException();
-            List<(int, int, int)> roomParams = new List<(int, int, int)>() { (0, 0, 1), (0, 1, 4), (2, 3, 1), (1, 2, 1), (1, 2, 1), (0, 2, 1) };
-            testGraph.AllNodes.ForEach(node =>
-            {
-                node.CPDistance = roomParams[node.Id].Item1;
-                node.Depth = roomParams[node.Id].Item2;
-                node.MaxNeighbours = roomParams[node.Id].Item3;
-            });
-            testGraph = generator.NeighbourMapper(testGraph);
-
-            testGraph.AllNodes.ForEach(node => Assert.AreEqual(node.MaxNeighbours, node.Edges.Count()));
-        }
-
-        [TestMethod()]
         public void MapTest()
         {
             BayesianSpaceGenerator gen = new BayesianSpaceGenerator();
@@ -84,7 +68,7 @@ namespace BayesianPDG.SpaceGenerator.Tests
             gen.Map();
             Trace.WriteLine("After");
             gen.DungeonGraph.AllNodes.ForEach(room => Trace.WriteLine(room.PrintConnections()));
-            CollectionAssert.AreEqual(new int[] { 1, 0, 2, 2 }.ToList(), gen.DungeonGraph.AllNodes.SelectMany(x => x.Values.SelectMany(y => y.Select(z => z.Id))).ToList());
+            CollectionAssert.AreEqual(new int[] { 1, 0, 2, 3, 1, 1 }.ToList(), gen.DungeonGraph.AllNodes.SelectMany(x => x.Values.SelectMany(y => y.Select(z => z.Id))).ToList());
         }
     }
 }

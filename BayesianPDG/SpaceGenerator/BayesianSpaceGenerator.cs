@@ -1,13 +1,9 @@
-﻿using BayesianPDG.SpaceGenerator.CSP;
-using BayesianPDG.SpaceGenerator.Space;
-using BayesianPDG.Utils;
+﻿using BayesianPDG.SpaceGenerator.Space;
 using Netica;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BayesianPDG.SpaceGenerator
 {
@@ -49,7 +45,7 @@ namespace BayesianPDG.SpaceGenerator
                 //Configure observations, i.e. how many rooms in the dungeon
                 DungeonGraph = new SpaceGraph();
 
-                int observedRooms = 6; // ToDo: Let user decide
+                int observedRooms = 9; // ToDo: Let user decide
 
                 DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
@@ -139,23 +135,15 @@ namespace BayesianPDG.SpaceGenerator
             return graph;
         }
 
-        private SpaceGraph MapOne(Node A, Node B)
-        {
-            if (DungeonGraph.ValidCPLength(A, B))
-            {
-                var validNeigbours = (parentIsValid: DungeonGraph.ValidNeighboursPostInc(A), childIsValid: DungeonGraph.ValidNeighboursPostInc(B));
-                if (!validNeigbours.parentIsValid || !validNeigbours.childIsValid) return null;
-                else DungeonGraph.Connect(A, B);
-            }
-            return null;
-        }
-
         public void Map()
         {
-            foreach (Node node in DungeonGraph.AllNodes.ToList())
+           // foreach (Node node in DungeonGraph.AllNodes.ToList())
+            while(!DungeonGraph.areNodesInstantiated)
             {
                 MapOne();
             }
+
+            DungeonGraph.InstantiateGraph();
         }
 
         private void MapOne()
@@ -169,12 +157,15 @@ namespace BayesianPDG.SpaceGenerator
             }
             else
             {
-                int frame = undoStack.Count;
-                undoStack.Push(new Stack<Node>());
                 List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
                 Node selected = (possible.Count == 1) ? possible[0] : possible[RNG.Next(0, possible.Count - 1)];
-                foreach (List<Node> value in selected.Values)
+                //foreach (List<Node> value in selEnum.Values)
+               // for (int i = 0; i < selected.Values.ToList().Count; i++)
+               while(selected.Values.Count != 1)
                 {
+                    List<Node> value = selected.Values[0];
+                    int frame = undoStack.Count;
+                    undoStack.Push(new Stack<Node>());
                     try
                     {
                         Reduce(selected, new List<List<Node>>() { value }, undoStack);
@@ -188,12 +179,12 @@ namespace BayesianPDG.SpaceGenerator
                         while (undoStack.Count != frame)
                         {
                             Node savedNode = undoStack.Peek().Pop();
+                            savedNode.Values.Remove(value); //remove what didn't work
+                            selected = savedNode;
                             DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
                             if (undoStack.Peek().Count == 0) undoStack.Pop();
                         }
                     }
-
-                    //undoStack.currentFrame = frame
                 }
             }
         }
@@ -210,8 +201,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 throw new Exception($"Reduced {A.Id} to empty set. Backtracking...");
             }
-            if (//A.Values.Count == 1 &&
-                !(A.Values.Except(set).ToList().Any() && set.Except(A.Values).ToList().Any())) // A.Values != set
+            if (!A.ValuesEqual(set))
             {
                 undoStack.Peek().Push(new Node(A)); // save the pre-modified values
                 A.Values = set;
@@ -226,20 +216,20 @@ namespace BayesianPDG.SpaceGenerator
         {
             foreach (Node child in neighbours)
             {
-                if (child.Id != modA.Id && !modA.IsConnected(child) && child.Values.Count != 1)
-                {
+                //if (child.Id != modA.Id && !modA.IsConnected(child) && child.Values.Count != 1)
+                //{
                     List<List<Node>> allowedValues = new List<List<Node>>();
 
                     // select the sets of values of the constrained var that ::
 
-                    // include our modA (constraining, i.e. already set variable)
-                    allowedValues = child.Values.FindAll(set => set.Contains(modA)); //the modA does not work because its been modified ==> will not be in
+                    // in the child node that is to be connected, find only the possible values that include the parent (modA)
+                    allowedValues = child.Values.FindAll(set => set.Contains(modA)); //Comparison is done only based on id
                     // do not invalidate the CPLength
                     foreach (var set in allowedValues.ToList())
                     {
                         foreach (var node in set)
                         {
-                            if (!DungeonGraph.ValidCPLength(node, child))
+                            if (!node.IsConnected(child) && !DungeonGraph.ValidCPLength(node, child))
                             {
                                 allowedValues.Remove(set);
                             }
@@ -252,7 +242,7 @@ namespace BayesianPDG.SpaceGenerator
                     {
                         foreach (var node in set)
                         {
-                            if (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child))
+                            if (!node.IsConnected(child) && (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child)))
                             {
                                 allowedValues.Remove(set);
                             }
@@ -261,56 +251,8 @@ namespace BayesianPDG.SpaceGenerator
                     }
                     Reduce(child, allowedValues, undoStack);
                 }
-            }
+            //}
             Debug.WriteLine("Propagate finished");
-        }
-
-        /// <summary>
-        /// Select a random Node that still has unconnected edges and attempt to connect them
-        /// </summary>
-        /// <param name="graph"></param>
-        /// <param name="rng"></param>
-        /// <returns></returns>
-        public SpaceGraph NeighbourMapper(SpaceGraph graph)
-        {
-            List<Node> unconnected = graph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
-            int globalRetries = 100;
-            while (unconnected.Count != 0 && globalRetries >= 0)
-            {
-                //Debug.WriteLine($"Unconnected nodes left {unconnected.Count}");
-                Node parent = unconnected[RNG.Next(0, unconnected.Count)];
-                int unconnectedNeighbours = parent.MaxNeighbours.Value - parent.Edges.Count;
-                int retries = 10;
-                while (unconnectedNeighbours >= 0 && retries >= 0)
-                {
-                    // if connecting A:B does not invalidate the constraints => connect them
-                    // hard constraints, maintain :: cpLength | A neighbours & depth | B neighbours & depth
-                    // soft constraints, maintain :: doors    | A cpDistance         | B cpDistance
-
-                    List<Node> temp = new List<Node>(unconnected); //avoid duplicates
-                    temp.Remove(parent);
-                    if (temp.Count == 0) break;
-
-                    Node child = temp[RNG.Next(0, temp.Count)];
-
-                    if (MapOne(parent, child) == null)
-                    {
-                        retries--;
-                    }
-                }
-                if (unconnectedNeighbours < 0)
-                {
-                    Debug.WriteLine($"Finished [{parent.Id}], removing node...");
-                    unconnected.Remove(parent);
-                }
-                else
-                {
-                    //       Debug.WriteLine($"Failed to match all neighbours for node {parent.Id}, retrting {globalRetries} times more");
-                    globalRetries--;
-                    ////add some noise in an attempt to avoid getting stuck. (no guarantees)
-                }
-            }
-            return graph;
         }
         #endregion
 

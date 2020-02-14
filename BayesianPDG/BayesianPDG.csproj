@@ -155,7 +155,6 @@
     <None Include="Resources\Rooms\tutorial_basicRooms.yml" />
     <None Include="Resources\Rooms\tutorial_corridors.yml" />
     <None Include="Resources\Rooms\tutorial_differentProbabilities.yml" />
-    <Compile Include="SpaceGenerator\CSP\ConstraintModel.cs" />
     <Compile Include="SpaceGenerator\Enums\FeatureType.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -181,15 +180,6 @@
   <ItemGroup>
     <Reference Include="BenchmarkUtils">
       <HintPath>..\BenchmarkUtils.dll</HintPath>
-    </Reference>
-    <Reference Include="Decider.Csp.BaseTypes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Decider.0.3.12\lib\netstandard2.0\Decider.Csp.BaseTypes.dll</HintPath>
-    </Reference>
-    <Reference Include="Decider.Csp.Global.AllDifferentInteger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Decider.0.3.12\lib\netstandard2.0\Decider.Csp.Global.AllDifferentInteger.dll</HintPath>
-    </Reference>
-    <Reference Include="Decider.Csp.Integer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Decider.0.3.12\lib\netstandard2.0\Decider.Csp.Integer.dll</HintPath>
     </Reference>
     <Reference Include="GeneralAlgorithms">
       <HintPath>..\GeneralAlgorithms.dll</HintPath>

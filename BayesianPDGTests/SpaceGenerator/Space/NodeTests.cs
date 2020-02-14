@@ -67,7 +67,7 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
         public void RemoveEdgeTest()
         {
             A.AddEdge(B);
-            
+
             Edge expectedA = new Edge();
             expectedA.Parent = A;
             expectedA.Child = B;
@@ -82,6 +82,66 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             A.RemoveEdge(B);
             CollectionAssert.AreEqual(A.Edges, new List<Edge>());
             CollectionAssert.AreEqual(B.Edges, new List<Edge>());
+        }
+
+        [TestMethod()]
+        public void ValuesEqualTest()
+        {
+            Node C = new Node(3);
+            Node D = new Node(4);
+            Node E = new Node(5);
+
+            Node C2 = new Node(3);
+            Node D2 = new Node(4);
+            Node E2 = new Node(5);
+
+            List<Node> val1 = new List<Node> { C, D, E };
+            List<Node> val2 = new List<Node> { C2, D2, E2};
+
+            A.Values = new List<List<Node>>() { val1 };
+            B.Values = new List<List<Node>>() { val2 };
+
+            Assert.IsTrue(A.ValuesEqual(B));
+        }
+
+        [TestMethod()]
+        public void ValuessDontEqualTest()
+        {
+            Node C = new Node(3);
+            Node D = new Node(4);
+            Node E = new Node(6);
+
+            Node C2 = new Node(3);
+            Node D2 = new Node(4);
+            Node E2 = new Node(5);
+
+            List<Node> val1 = new List<Node> { C, D, E };
+            List<Node> val2 = new List<Node> { C2, D2, E2 };
+
+            A.Values = new List<List<Node>>() { val1 };
+            B.Values = new List<List<Node>>() { val2 };
+
+            Assert.IsFalse(A.ValuesEqual(B));
+        }
+
+        [TestMethod()]
+        public void ValuesRearrangedEqualTest()
+        {
+            Node C = new Node(3);
+            Node D = new Node(4);
+            Node E = new Node(5);
+
+            Node C2 = new Node(3);
+            Node D2 = new Node(4);
+            Node E2 = new Node(5);
+
+            List<Node> val1 = new List<Node> { C, D, E };
+            List<Node> val2 = new List<Node> { E2, C2, D2 };
+
+            A.Values = new List<List<Node>>() { val1 };
+            B.Values = new List<List<Node>>() { val2 };
+
+            Assert.IsTrue(A.ValuesEqual(B));
         }
     }
 }

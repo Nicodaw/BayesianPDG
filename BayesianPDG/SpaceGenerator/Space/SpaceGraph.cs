@@ -174,6 +174,8 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>If A has not exceeded its neighbour capacity</returns>
         public bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
 
+        #endregion
+        #region Potential Value instantiations CSP
         public void ReducePotentialValues()
         {
             foreach (Node node in AllNodes)
@@ -192,6 +194,18 @@ namespace BayesianPDG.SpaceGenerator.Space
                 {
                     node.Values = node.Values.FindAll(set => set.Contains(child));
                 }
+            }
+        }
+
+        public void InstantiateGraph()
+        {
+            if (!areNodesInstantiated)
+            {
+                throw new InvalidOperationException("Cannot create a graph from non-singleton values.");
+            }
+            else
+            {
+                AllNodes.ForEach(parent => parent.Values[0].ForEach(child => Connect(parent.Id, child.Id)));
             }
         }
         #endregion
