@@ -88,7 +88,6 @@ Constraint Satisfaction Problems (CSPs) define a discrete set of variables with 
 
 \subsubsection{Binary Partitioning}
 
-
 \subsubsection{Formal Languages}
 
 \subsubsection{Data-driven approaches}
@@ -116,8 +115,39 @@ The dungeon’s topology (Space) and contents (Mission) are correlated and embod
 \paragraph{}
 Deery made the first steps by manually analysing submissions to the One Page Dungeon OPDC competition [[OPDC]] to extract a graph grammar for Mission generation \parencite{Deery}. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset.
 
-\paragraph{}
+\paragraph{} % TODO: make this more succinct and make the goal clear: this model has successfully mimicked a human authored dungeon. We astablish this 
+In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical capabilities using various scoring rules. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
+
 In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
+
+
+
+\chapter{Bayesian Inference Networks}
+
+\chapter{Methods}
+
+\section{Data acquisition}
+\subsection{Data selection} % what dataset should we choose
+\subsection{Extracting Features} % transforming the data to something useful for the BNet
+
+\section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
+\subsection{Bayesian Network structure}
+\subsubsection{TAN}
+\subsubsection{Summerville's Sparse Model}
+
+\subsection{Parameter Learning}
+\subsubsection{Count}
+\subsubsection{Expectation Maximisation EM}
+\subsubsection{Gradient Descent GD}
+
+\section{Implementation} %from chosen model --> dungeon graph, assumptions about constraints specifics etc
+
+\chapter{Results}
+%compare the different algos and structures
+\section{Internal Validation} %Choosing the best model
+\section{External Validation} %user study
+
+\chapter{Discussion}
 
 % \begin{figure}[htb]
 % \begin{center}
