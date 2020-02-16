@@ -118,20 +118,29 @@ Deery made the first steps by manually analysing submissions to the One Page Dun
 \paragraph{} % TODO: make this more succinct and make the goal clear: this model has successfully mimicked a human authored dungeon. We astablish this 
 In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical capabilities using various scoring rules. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
 
-In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
+% In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
 
 \chapter{Bayesian Inference Networks}
+% why use Bayesian networks?
 
-\chapter{Methods}
-
+\chapter{Methods and Implementation}
 \section{Data acquisition}
-\subsection{Data selection} % what dataset should we choose
+\subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
+% What problems can we encounter? Sparsity of data. Very different dungeons some 
 \subsection{Extracting Features} % transforming the data to something useful for the BNet
+% Is the data ready to be used in BNets? No, it needs to be transformed from a textual description to 
+
+\paragraph{}
+The final dataset consists of \textbf{[[size]]} organic entries and \textbf{[[synthetic]]} linearly interpolated entries for a total of \textbf{[[dungeon params]]} and \textbf{[[room params]]}. %ToDo: insert statistical figures about the dataset. Histograms of the different features, mean, variance and lower/upper bounds.
 
 \section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
 \subsection{Bayesian Network structure}
-\subsubsection{TAN}
 \subsubsection{Summerville's Sparse Model}
+% Summerville applied a BNet approach to learning levels of the ARPG game Legend of Zelda. As noted before, digital RPGs differ from PnP RPGs only in mechanics of interaction and therefore we can cautiously analyse his findings. He found out that for limited amounts of data (\textbf{[[insert his dataset size]]}) a sparse model is able to produce the highest factor of learning against a Bayesian Informational Criterion (BIC). His network structure includes both Space and Mission parameters \textbf{[[fig of sparse model]]}. We don't need that because X. We apply vertex absorption, which removes the unnecessary nodes whilst preserving global conditional dependencies. We can do this because in our case we can treat the unused Mission nodes as constantly observed and not giving us any new dimensions to explore. The adapted sparse DAG from Summerville can be seen in \textbf{[[fig of PnP Inference DAG]]}
+
+\subsubsection{TAN}
+% We will also just in case compare the simplified DAG to a learned DAG structure. Explain how it works
+
 
 \subsection{Parameter Learning}
 \subsubsection{Count}
