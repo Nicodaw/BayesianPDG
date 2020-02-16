@@ -56,7 +56,7 @@ The first set can be viewed as "How I interact with the environment" (functional
 Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo, Fallout and many alike have both sets of rules defined by the game designers. A functional rule in an RPG like Skyrim is that you can attack with the left mouse button and a story element is that you are a Dragonborn with a quest. This quest is defined by the writers and designers of the game and as such exploring the narrative in a digital RPG can be comparable to an interactive reading of a fiction book. Good computer RPGs often have the ability to relax the narrative \parencite{TychsenGM}, allowing for the player to have more freedom in the exploration of the world and as such create the sensation that the player has some impact on this pre-programmed fictional environment.
 
 \paragraph{}
-The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and the PnP community have been exploring different ways of automating Dungeon creation. Arguably the greatest problem posed by automating Dungeon creation is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in an attempt to answer this question.
+The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons \parencite{DnD}. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and various gaming communities have been exploring different ways of automating Dungeon creation. We will refer to this process as Procedural Dungeon Generation (PDG). Arguably the greatest problem posed by automating PDG is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in an attempt to answer this question.
 
 \section{State of the Art Generative methods}
 \begin{outline}
@@ -84,7 +84,7 @@ Unlike the original non-digital generators, computerised ones rarely allow for h
 Cellular automata (CA) utilises a procedural generation mechanism in which a $N \times M$ grid space is mutated incrementally by a set of agents\textbf{[citation needed for CA and fig. showing agents in action?]]}. The implementation of these mutation operators define if the CA will simulate erosion \parencite{donjonCA} or man-made structures such as rooms and corridors. The latter is the case of the donjon dungeon generator \parencite{donjonPDG}. Its simplicity and degrees of customisations of both layout and style has made donjon a popular generator choice with more than 2500 generated dungeons in the last 12 hours and 100 donations in the last 3 months \textbf{[[citation needed?]]}. Despite its popularity, donjon (as well as other CA) implores purely random generation techniques which are only evaluated based on a notion of the solvability of the level. The criteria for donjon's level is only if each room is reachable (i.e. there is a path to each room). As it can be observed, although we have control over the input parameters for the topological randomness, the semantic elements (the contents, rather than the structure) of the dungeon are entirely arbitrary and often contradictory \textbf{[[citation of brown and thrall or elaboration?]]}. In terms of the aforementioned solvability, when accounting for reachability donjon does not take in account the randomly allocated locked doors as the key allocation is left at the DM's discretion. That ultimately limits the usefulness of the tool and only provides a skeleton for the dungeon. All information generated about the monsters, treasures and other quest elements are discarded by the DM \textbf{[[citation needed on how people use dungeon generators]]}
 
 \subsubsection{Constraint Propagators}
-Constraint Satisfaction Problems (CSPs) define a discrete set of variables with corresponding constraints that restrict the possible variable instantiations \textbf{[[ce  of CSPs]]}. Dungeon generation has been described as a CSP on occasions where the variables and constraints define the layout \textbf{[[ce]]}, contents \textbf{[[ce]]} or both layout and content\textbf{[[ce]]} of a dungeon. Constraint Propagation (CP) is a particular method proven useful for solving CSP in the context of dungeon level generation. The algorithm selects a set of possible values for a particular variable and \textit{propagates} the result to the rest of the variables, adjusting their possible values accordingly. If the selected value narrows another variable's possible values to the empty set, we infer that this instantiation is suboptimal and we backpropagate to the last viable solution and retry. Furthermore it can be generalised that if an instantiation for all variables that does not narrow any variable to the empty set exists, the level is solvable. Utilising this formalisation of the \textit{solvability} of a level we can populate a level with varying degrees of complexity from ensuring that keys are always spawned before the door that they must unlock to adjusting difficulty by measuring survivability metrics between rooms \textbf{[[ce]]}. Even thought CPs have solved some problems of the completely random generators, formulating a numerical constraint for a narrative element can be difficult. The complication is both in the translation of a story element to a numerical representation and in the usual computational expense that comes with computing large amounts of permutations.
+Constraint Satisfaction Problems (CSPs) define a discrete set of variables with corresponding constraints that restrict the possible variable instantiations \textbf{[[cn  of CSPs]]}. Dungeon generation has been described as a CSP on occasions where the variables and constraints define the layout \textbf{[[cn]]}, contents \textbf{[[cn]]} or both layout and content\textbf{[[cn]]} of a dungeon. Constraint Propagation (CP) is a particular method proven useful for solving CSP in the context of dungeon level generation. The algorithm selects a set of possible values for a particular variable and \textit{propagates} the result to the rest of the variables, adjusting their possible values accordingly. If the selected value narrows another variable's possible values to the empty set, we infer that this instantiation is suboptimal and we backpropagate to the last viable solution and retry. Furthermore it can be generalised that if an instantiation for all variables that does not narrow any variable to the empty set exists, the level is solvable. Utilising this formalisation of the \textit{solvability} of a level we can populate a level with varying degrees of complexity from ensuring that keys are always spawned before the door that they must unlock to adjusting difficulty by measuring survivability metrics between rooms \textbf{[[cn]]}. Even thought CPs have solved some problems of the completely random generators, formulating a numerical constraint for a narrative element can be difficult. The complication is both in the translation of a story element to a numerical representation and in the computational expense that comes with computing large amounts of permutations.
 
 \subsubsection{Binary Partitioning}
 
@@ -98,17 +98,17 @@ Constraint Satisfaction Problems (CSPs) define a discrete set of variables with 
   \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
 \end{outline}
 
-\paragraph{}
-\texttt{=== Discussion of Mission::Space separation ===}
-% As shown, most of the generator approaches would have an unique way to create the layout and then populate it with some content for the players to explore. This separation was formalised by Dormans when he introduced the notion of Space and Mission.
+\paragraph{} %ToDo: Finish Mission & Space Argument. Why do we have this section?
+An attentive reader would have noted that distinguishing between the level layout and contents is a common occurrence in popular PDG algorithms. This discrimination was formalised by Dormans\parencite{DormansMS} in his definitions of \textit{Mission} and \textit{Space}.
+The \textit{Space} of a dungeon embodies it's topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion.
 
 \section{Aim}
-\begin{outline}
-  \1 The only \textit{"dungeon generator"} that has been empirically proven to have the ability of creating a truly compelling narrative is the human designer
-  \1 Discuss attempts at the data-driven approaches from \textbf{Generation Methods} in detail
-    \2 Deery's data inspired approach, but not data-driven
-    \2 Summerville's Learning of Zelda
-\end{outline}
+%\begin{outline}
+%  \1 The only \textit{"dungeon generator"} that has been empirically proven to have the ability of creating a truly compelling narrative is the human designer
+%  \1 Discuss attempts at the data-driven approaches from \textbf{Generation Methods} in detail
+%    \2 Deery's data inspired approach, but not data-driven
+%    \2 Summerville's Learning of Zelda
+%\end{outline}
 
 \paragraph{}
 The dungeon’s topology (Space) and contents (Mission) are correlated and embody the narrative of the game. As we have seen, dungeon generators usually implore bottom up approaches in which they apply rules for topology and then introduce dungeon content in an attempt to provide the structure for a captivating narrative. The various algorithmic methods have clear strengths and shortcomings in achieving the complex goal of creating an interesting story. I want to argue that from these observations we can affirm that the ultimate \textit{dungeon generator} is the human designer. Dungeons and therefore narratives produced by humans are the most compelling out of all created dungeons. As noted by others \textbf{[[cn]]}, if we implore a top-down approach of analysing what makes a good man-made dungeon, we could potentially achieve higher levels of narrative automation.
@@ -119,8 +119,6 @@ Deery made the first steps by manually analysing submissions to the One Page Dun
 In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical capabilities using various scoring rules. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
 
 In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
-
-
 
 \chapter{Bayesian Inference Networks}
 
@@ -141,13 +139,67 @@ In this paper we will investigate if we can use the OPDC dataset and apply a dat
 \subsubsection{Gradient Descent GD}
 
 \section{Implementation} %from chosen model --> dungeon graph, assumptions about constraints specifics etc
+\paragraph{Dungeon Sampling} %What 
+We can define characteristics of the desired dungeon by leveraging the inference nature of BNs. Generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter. The user can choose virtually any permutation of parameters to be fixed or inferred. For consistency purposes we are observing only the size of the dungeon via \texttt{NumRooms}.
+
+\paragraph{Room Sampling}
+% fix dungeon, sample the rest
+% Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
+
+\paragraph{Converting from samples to Space}
+%considerations.
+%Propositions:
+%1. Ad-hoc implementation : not pretty, cannot guarantee its valid without assuming soft constraints
+%2. Heuristic search ==> I could not conceptualise an intuitive way to use search. Search over the space of potential room connections. The heuristic is going to be a production of the sampled parameters (sounds like CSP with an extra step?)
+%3. Graph grammars  
+% + intuitive, just apply graph production rules until we satisfy the sampled params.
+% - Not extensible, if we create a representation now for Space, if we want to extend it to include Mission parameters we have to make the graph typed, which is not a trivial thing to do.
+% - Our production rules (grammar) will be heuristically created.
+%4. Constraint solvers
+% + intuitive, the sampled params are our constraints.
+% + Extensible: if expanding to Mission, we just add new constraints to be satisfied.
+% + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
+% + can be generalised and optimised :: potentially translate it for general linear solvers
 
 \chapter{Results}
 %compare the different algos and structures
 \section{Internal Validation} %Choosing the best model
+\begin{table}[htb]
+  \caption{ Structure and parameter learning comparison.}
+  \begin{center}
+  %\begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+  \hline
+  & \multicolumn{3}{|c|}{Count} & \multicolumn{3}{|c|}{EM} & \multicolumn{3}{|c|}{GD} \\
+  \hline
+  & log loss & quadr loss & sphere pay & log loss & quadr loss & sphere pay &log loss & quadr loss & sphere pay \\
+  \hline
+  Summerville's Sparse & - & - & - & - & - & - & - & - & - \\
+  \hline
+  TAN & - & - & - & - & - & - & - & - & -\\
+  \hline
+  \end{tabular}
+  \end{center}
+  \label{table:BNetCompare}
+  \end{table}
+
 \section{External Validation} %user study
 
 \chapter{Discussion}
+
+\section{Critique}
+\begin{outline}[enumerate]
+  \1 Data
+    \2 availability and extraction. 
+      \3 Could extend to include even non-winning entries for the sake of having a greater sample size. More datasets can be considered. We've use OPDC due to its CC license, but paid modules exist.
+      \3 Data extraction has been a manual process. Although due diligence is paid, noise introduced from human error is inevitable. 
+  \1 Method
+    \2 Cannot generalise to unseen cases. We can interpolate for missing data, but we cannot extrapolate. Argue that this is an issue of all ML approaches, not just BNets, because we're trying to capture properties of One-Page dungeon.
+    \2 This paper is considering only Space gen. A more robust approach would be needed to extract consistent and meaningful parameters for Mission. For Legend of Zelda there is a discrete subset of things you can do so that is why Mission extraction is possible. Deery has shown that formalising Mission in PnP RPG's is difficult due to the variant and creative nature of the human made dungeons.
+  \1 Validation
+    \2 We have decided to approach the external evaluation in a quantitative, rather qualitative measuring. That is due to the fact that conducting a study with a high environmental index is difficult due to multiple confound factors that are due to the nature of a tabletop RPG session. Not only does a one-session adventure usually take around 3 hours \textbf{[[cn]]}, but they are extremely variant between groups of players and DMs. An experiment that analyses how players use the generated dungeon rather than just discriminating between different dungeons topologies would give us more insight in the success of the recreation of a human-made dungeon.
+  
+\end{outline}
 
 % \begin{figure}[htb]
 % \begin{center}
@@ -155,20 +207,6 @@ In this paper we will investigate if we can use the OPDC dataset and apply a dat
 % \end{center}
 % \caption{A figure containing UoY logo and its caption.}
 % \end{figure}
-
-% \begin{table}[htb]
-% \caption{ A table with its caption.}
-% \begin{center}
-% \begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
-% \hline
-% column A & column B \\\hline
-% row 1 &
-% text for row 1 \\\hline
-% row 2 &
-% text for row 1
-% \end{tabular}
-% \end{center}
-% \end{table}
 
 
 \chapter{Conclusion}
