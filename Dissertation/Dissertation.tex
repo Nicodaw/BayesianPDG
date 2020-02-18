@@ -115,13 +115,29 @@ The dungeon’s topology (Space) and contents (Mission) are correlated and embod
 \paragraph{}
 Deery made the first steps by manually analysing submissions to the One Page Dungeon OPDC competition [[OPDC]] to extract a graph grammar for Mission generation \parencite{Deery}. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset.
 
-\paragraph{} % TODO: make this more succinct and make the goal clear: this model has successfully mimicked a human authored dungeon. We astablish this 
+\paragraph{} % TODO: make this more succinct and make the goal clear: this model has successfully mimicked a human authored dungeon. We establish this 
 In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical capabilities using various scoring rules. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
 
 % In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
 
 \chapter{Bayesian Inference Networks}
-% why use Bayesian networks?
+\paragraph{What are Bayesian networks?}
+Bayesian Networks \textit{BNs} \parencite{pearl1985bayesian} (also referred to as Inference Networks, Belief Networks, Directed Acyclical Graph (DAG) Models and others) assumes our domain is defined in terms of a joint probability distribution \(P(X_1, \ldots , X_n)\) over a set of random variables \textit{RVs} \(X\), each of which has a set of potential values it can take \(X_i(\Omega) = \{x_1, \ldots, x_j\}\) with an associated probability (example: \(P(X_i = x_j) = \frac{1}{2}\) ). Each vertex in this graph is an RV whose edges indicate our belief of causality. % say something about the conditioning set and inferring
+
+To contextualise this, we can look into Summerville's transcription of the Legend of Zelda dungeons \parencite{SummervilleLearningOfZelda,SummervilleSamplingHyrule}. After annotating the dungeon maps with elements of both Mission and Space (total number of rooms, treasures, monsters, critical path CP, etc.), he extracts features for the BN by parsing them as RVs. Given our data, if we condition on total number of rooms (i.e. \textit{observe} that RV), the probability distribution for the possible CP would reflect our new knowledge. Then by sampling the RV for the CP length we can fix the parameter and get a point estimate for critical path length given that number of rooms in the dungeon. This inference process can take various degrees of complexity 
+
+\paragraph{Why use Bayesian networks?}
+% causal structures gives us a natural interpretation of complex non-linear problems, compared to other methods (think NNs and their inability to be interpreted)
+% they are fast once trained. Updating belief is a simple arithmetic operation on the different CPT
+% gives us precise control over the parameters. Deery had an approximation of how big a dungeon should be because he would just repeat the rules X number of times. We can precisely fix every parameter that we have and even do permutations. This gives new degrees of freedom for the user to select the desired properties of his dungeon without compromising on automation.
+The structure BNs provide allows us to create a natural description
+
+\paragraph{What we need to do to use Bayesian Networks?}
+In order for us to create an inference network that reflects our beliefs we need to define two key attributes of the BN:
+\begin{outline}[enumerate]
+  \1 The causal structure
+  \1 Conditional probability tables \textit{CPTs} for each RV
+\end{outline}
 
 \chapter{Methods and Implementation}
 \section{Data acquisition}
@@ -135,7 +151,7 @@ The final dataset consists of \textbf{[[size]]} organic entries and \textbf{[[sy
 
 \section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
 \subsection{Bayesian Network structure}
-\subsubsection{Summerville's Sparse Model}
+\subsubsection{Summerville's Extreme Sparse Model}
 % Summerville applied a BNet approach to learning levels of the ARPG game Legend of Zelda. As noted before, digital RPGs differ from PnP RPGs only in mechanics of interaction and therefore we can cautiously analyse his findings. He found out that for limited amounts of data (\textbf{[[insert his dataset size]]}) a sparse model is able to produce the highest factor of learning against a Bayesian Informational Criterion (BIC). His network structure includes both Space and Mission parameters \textbf{[[fig of sparse model]]}. We don't need that because X. We apply vertex absorption, which removes the unnecessary nodes whilst preserving global conditional dependencies. We can do this because in our case we can treat the unused Mission nodes as constantly observed and not giving us any new dimensions to explore. The adapted sparse DAG from Summerville can be seen in \textbf{[[fig of PnP Inference DAG]]}
 
 \subsubsection{TAN}
@@ -183,7 +199,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
   \hline
   & log loss & quadr loss & sphere pay & log loss & quadr loss & sphere pay &log loss & quadr loss & sphere pay \\
   \hline
-  Summerville's Sparse & - & - & - & - & - & - & - & - & - \\
+  Summerville's ES & - & - & - & - & - & - & - & - & - \\
   \hline
   TAN & - & - & - & - & - & - & - & - & -\\
   \hline
