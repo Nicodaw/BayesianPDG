@@ -1,6 +1,8 @@
 \documentclass{UoYCSproject}
 \usepackage{outlines}
 \usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{graphicx}
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
@@ -215,23 +217,38 @@ We can define characteristics of the desired dungeon by leveraging the inference
 
 \chapter{Results}
 %compare the different algos and structures
-\section{Internal Validation} %Choosing the best model
+% \section{Internal Validation} %Choosing the best model
+% \begin{table}[htb]
+%   \caption{ Structure and parameter learning comparison.}
+%   \begin{center}
+%   %\begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
+%   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+%   \hline
+%   & \multicolumn{3}{|c|}{Count} & \multicolumn{3}{|c|}{EM} & \multicolumn{3}{|c|}{GD} \\
+%   \hline
+%   & log loss & quadr loss & sphere pay & log loss & quadr loss & sphere pay &log loss & quadr loss & sphere pay \\
+%   \hline
+%   Summerville's ES & - & - & - & - & - & - & - & - & - \\
+%   \hline
+%   TAN & - & - & - & - & - & - & - & - & -\\
+%   \hline
+%   \end{tabular}
+%   \end{center}
+%   \label{table:BNetCompare}
+%   \end{table}
+
 \begin{table}[htb]
-  \caption{ Structure and parameter learning comparison.}
-  \begin{center}
-  %\begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
-  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
-  \hline
-  & \multicolumn{3}{|c|}{Count} & \multicolumn{3}{|c|}{EM} & \multicolumn{3}{|c|}{GD} \\
-  \hline
-  & log loss & quadr loss & sphere pay & log loss & quadr loss & sphere pay &log loss & quadr loss & sphere pay \\
-  \hline
-  Summerville's ES & - & - & - & - & - & - & - & - & - \\
-  \hline
-  TAN & - & - & - & - & - & - & - & - & -\\
-  \hline
-  \end{tabular}
-  \end{center}
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}llllllllll@{}}
+  \toprule
+                        & \multicolumn{3}{c}{Count}                                                        & \multicolumn{3}{c}{EM}                                                           & \multicolumn{3}{c}{GD}                                                           \\ \midrule
+  \multicolumn{1}{l|}{} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} \\ \midrule
+  Extreme Sparse        &                         &                          &                             &                         &                          &                             &                         &                          &                             \\
+  TAN                   &                         &                          &                             &                         &                          &                             &                         &                          &                             \\ \bottomrule
+  \end{tabular}%
+  }
+  \caption{Structure and parameter learning comparison.}
   \label{table:BNetCompare}
   \end{table}
 
