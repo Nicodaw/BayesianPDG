@@ -3,6 +3,7 @@
 \usepackage{tikz}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
@@ -40,12 +41,12 @@ The summary must:
 \label{cha:Introduction}
 
 \section{Role-playing games}
-\begin{outline}
-  \1 Nature and goal  RP is trying to create a compelling narrative in which players can be involved in.
-    \2 Contextualise RPs by comparing different genres. Digital vs Tabletop.
-  \1 Interaction mechanisms. How the game is played and what is the role of the DM
-  \1 Problems: DM has to create the narrative. Can we devise an algorithm that helps DMs create a compelling narrative?
-\end{outline}
+%\begin{outline}
+%  \1 Nature and goal  RP is trying to create a compelling narrative in which players can be involved in.
+%    \2 Contextualise RPs by comparing different genres. Digital vs Tabletop.
+%  \1 Interaction mechanisms. How the game is played and what is the role of the DM
+%  \1 Problems: DM has to create the narrative. Can we devise an algorithm that helps DMs create a compelling narrative?
+%\end{outline}
 
 \paragraph{}
 Role-playing game (RPG) is a broad term encompassing a multitude of different games with often distinct mechanics and platforms of interaction (the media). The common factor between all RPGs is that the player(s) portray a fictional character and is involved in a fictional world (or a subset of one). The interaction of the players with this world is governed by rules, defined by the media. To better understand the structure of RPGs, we can view it in terms of two sets: 
@@ -62,17 +63,15 @@ Computer RPGs like the Action RPG (ARPG) Legend of Zelda, Diablo, Fallout and ma
 The ability for a player to influence the narrative is one of the defining features of tabletop RPGs (TRPG a.k.a pen-and-paper PnP) like Dungeons and Dragons \parencite{DnD}. In them, the functional rules are usually defined by a rulebook (like the Player’s Handbook) and players verbally describe their interactions with the environment. The narrative is an ever evolving amalgam between the input of players and the Dungeon Master (DM). The DM’s task is to create a narrative outline and guide the player interaction. Because of the verbal nature of the game, the narrative does not suffer the limitations of its digital counterparts. But because there are no hard constraints to how the narrative is told, the DM has the non-trivial task of introducing consistency and outlining a structure for the story that would result in a compelling and ideally immersive experience for the players. This is often achieved by focusing the adventure’s act on a particular and detailed location. These locations are often referred to as Dungeons and in practice can be anything from the villain's mansion or a beast’s cave to a city under siege. A good dungeon design is crucial for creating a compelling narrative. The creative task of making the Dungeon is a laborious process. To facilitate that, academics and various gaming communities have been exploring different ways of automating Dungeon creation. We will refer to this process as Procedural Dungeon Generation (PDG). Arguably the greatest problem posed by automating PDG is answering the question of “What is a compelling Dungeon?”. In the next section we will review different generative methods for Dungeons and their associated limitations in an attempt to answer this question.
 
 \section{State of the Art Generative methods}
-\begin{outline}
-  \1 Review various different algorithms for PDG and discuss their take on solving the "is this dungeon interesting?" problem.
-    \2 Non-digital: [[the Advanced DnD DM design kit book 3: Adventure Cookbook]]. Using dice tables to create different elements of the dungeon. Laborious process which requires the DM to remove any inconsistencies. Does not provide an actual Dungeon structure.
-    \2 Cellular automata: donjon \parencite{donjonPDG}. Issues associated with completely random topology and random content generation. Evaluated only on if the level is solvable (no evaluation of semantic content).
-    \2 Constraint Propagators and their related issues when formalising narrative as constraints.
-    \2 BPTs + semantic additions[[citation needed Thrall and Brown]]. Difficulty proving the 'goodness' of the generator. Discuss difficulties with an objective HCI evaluation for PnP (i.e. difficult to get a decent sample size, because playing a game is time consuming).
-    \2 Formal language approach. Grammars \parencite{DormansMS,Deery,Cadogan} as a natural way of describing narrative structures.
-    \2 Data-driven approaches. \parencite{SummervilleLearningOfZelda,SummervillePCGML,SummervilleSamplingHyrule} Relate the notion of learning from human-made dungeons as a way to create good structure + narrative. Note the lack of data. Expand more in the Mission and Space --> Aim sections
-\end{outline}
-
-
+% \begin{outline}
+%   \1 Review various different algorithms for PDG and discuss their take on solving the "is this dungeon interesting?" problem.
+%     \2 Non-digital: [[the Advanced DnD DM design kit book 3: Adventure Cookbook]]. Using dice tables to create different elements of the dungeon. Laborious process which requires the DM to remove any inconsistencies. Does not provide an actual Dungeon structure.
+%     \2 Cellular automata: donjon \parencite{donjonPDG}. Issues associated with completely random topology and random content generation. Evaluated only on if the level is solvable (no evaluation of semantic content).
+%     \2 Constraint Propagators and their related issues when formalising narrative as constraints.
+%     \2 BPTs + semantic additions[[citation needed Thrall and Brown]]. Difficulty proving the 'goodness' of the generator. Discuss difficulties with an objective HCI evaluation for PnP (i.e. difficult to get a decent sample size, because playing a game is time consuming).
+%     \2 Formal language approach. Grammars \parencite{DormansMS,Deery,Cadogan} as a natural way of describing narrative structures.
+%     \2 Data-driven approaches. \parencite{SummervilleLearningOfZelda,SummervillePCGML,SummervilleSamplingHyrule} Relate the notion of learning from human-made dungeons as a way to create good structure + narrative. Note the lack of data. Expand more in the Mission and Space --> Aim sections
+% \end{outline}
 
 \subsection{Non-digital Generators}
 \paragraph{}
@@ -96,14 +95,14 @@ Constraint Satisfaction Problems (CSPs) define a discrete set of variables with 
 \subsubsection{Data-driven approaches}
 
 \section{Mission and Space}
-\begin{outline}
-  \1 Introduce the notion of Mission and Space
-  \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
-\end{outline}
+% \begin{outline}
+%   \1 Introduce the notion of Mission and Space
+%   \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
+% \end{outline}
 
 \paragraph{} %ToDo: Finish Mission & Space Argument. Why do we have this section? insert a fig of Dormans Mission to Space mapping ??
 An attentive reader would have noted that distinguishing between the level layout and contents is a common occurrence in popular PDG algorithms. This discrimination was formalised by Dormans\parencite{DormansMS} in his definitions of \textit{Mission} and \textit{Space} in relation to the ARPG Legend of Zelda game series.
-The \textit{Space} of a dungeon embodies it's topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. It is clear to see that the gameplay experience is defined in the interaction of the two graphs. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns and it is by understanding the necessities of the two separate entities that we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data \parencite{SummervilleLearningOfZelda}
+The \textit{Space} of a dungeon embodies it's topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. It is clear to see that the gameplay experience is defined in the interaction of the two graphs. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns and it is by understanding the necessities of the two separate entities that we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data \parencite{SummervilleLearningOfZelda}.
 
 \section{Aim}
 %\begin{outline}
@@ -119,69 +118,101 @@ The dungeon’s topology (Space) and contents (Mission) are correlated and embod
 Deery made the first steps by manually analysing submissions to the One Page Dungeon Contest \textit{OPDC} \parencite{OPDC} to extract a graph grammar for Mission generation \parencite{Deery}. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset.
 
 \paragraph{} % TODO: make this more succinct and make the goal clear: this model has successfully mimicked a human authored dungeon. We establish this 
-In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical capabilities using various scoring rules. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
+In this paper we will investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human-made dungeon topologies. We will define a meaningful set of features to be extracted from the OPDC dataset and use those features as random variables defining an Inference (Bayesian) Network. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical predictive capabilities using various scoring rules. We will use the best model to generate a dungeon and conclude with a user study to externally validate how well the generator has approximated human-made dungeon topologies. %We will discuss how we convert from sample to dungeon, concluding by using a Mondrian study to externally validate if our model is able to generate topologies that are indistinguishable from human-made  
 
 % In this paper we will investigate if we can use the OPDC dataset and apply a data-driven approach of sampling an Inference (Bayesian) Network to create the layout of a small (one session long) dungeon. We will first explore the availability of data and the selections of parameters we want to learn. We will discuss the choice of using inference networks for our generator. Then we will do a comparative analysis of different graph structures and algorithms for fitting our parameters. The comparison will be based on our internal validation Scoring Rules \parencite{PearlScoringRules} assessing which model has the greatest statistical predictive capabilities. We will conclude by externally validating our best model’s capability to create human-like topologies with a user study.
 
 \chapter{Bayesian Inference Networks}
 \paragraph{What are Bayesian networks?}
-Bayesian Networks \textit{BNs} \parencite{pearl1985bayesian} (also referred to as Inference Networks, Belief Networks, Directed Acyclic Graph (DAG) Models and others) are a graphical probabilistic model in which vertices are random variables \textit{RVs} whose edges indicate causal beliefs. BNs assert that our domain is defined in terms of a joint probability distribution \(P(X_1, \ldots , X_n)\) over a set of RVs \(X\), each of which has a set of potential values it can take \(X_i(\Omega) = \{x_1, \ldots, x_j\}\) with an associated probability distribution \textit{PD}. The network structure shows how the full join distribution factorises given the causal dependencies. This property gives us a way to encode our prior domain knowledge about the dependencies between our RVs.
-Once we have encoded our knowledge about the RV interaction, using a BN as an inference tool is a matter of querying with a conditional set of RVs and noting how the CPTs change given our new knowledge. In practice, conditioning is done by \textit{observing} (i.e. instantiating) an RV to be a particular value.
+Bayesian Networks \textit{BNs} \parencite{pearl1985bayesian} (also referred to as Inference Networks, Belief Networks, Directed Acyclic Graph (DAG) Models and others) are a graphical probabilistic model in which vertices are random variables \textit{RVs} whose edges indicate causal beliefs. BNs assert that our domain is defined in terms of a joint probability distribution \textit{PD} \(P(X_1, \ldots , X_n)\) over a finite set of RVs \(X\), each of which has a set of potential values it can take \(X_i(\Omega) = \{x_1, \ldots, x_j\}\) with an associated PD. The network structure shows how the full join distribution factorises given the causal dependencies. This property gives us a way to encode our prior domain knowledge about the relationships between our RVs.
+Once we have encoded our knowledge about the RV interaction, using a BN as an inference tool is a matter of querying with a conditional set of RVs and noting how the CPTs change given our new knowledge. In practice, conditioning is done by \textit{observing} (i.e. instantiating) an RV to be a particular value. Extracting information from our newly formed conditional distributions is done by sampling. Sampling involves simulating our network with respect to the observations in order to obtain point estimates. The sampling methodology will be discussed in \ref{sec:implementation}.
 
-To contextualise this, we can look into Summerville's work on the Legend of Zelda dungeons \parencite{SummervilleLearningOfZelda}. After annotating the dungeon maps with elements of both Mission and Space (total number of rooms, treasures, monsters, critical path CP, etc.), he extracts features for the BN by parsing them as RVs. If we condition on total number of rooms (i.e. observe \(P(NumRooms = n) = 1\))), the PD for the possible CP would reflect our new knowledge. Most likely the CPs that are greater than the total number of rooms would be impossible \(P(CriticalPathLength > n \mid NumRooms = n) \rightarrow 0 \), which is logical. Then by sampling the RV for the CP length we can fix the parameter and get a point estimate for critical path length given that number of rooms in the dungeon. This \textit{observe-then-infer} process can be done with any permutation of our RVs.
+To contextualise the inference process, we can look into Summerville's work on the Legend of Zelda dungeons \parencite{SummervilleLearningOfZelda}. After annotating the dungeon maps with elements of both Mission and Space (total number of rooms, treasures, monsters, critical path CP, etc.), he extracts features for the BN by parsing them as RVs. If we condition on total number of rooms (i.e. observe \(P(NumRooms = n) = 1\))), the PD for the possible CP would reflect our new knowledge. Most likely the CPs that are greater than the total number of rooms would be impossible \(P(CriticalPathLength > n \mid NumRooms = n) \rightarrow 0 \), which is logical. Then by sampling the network we can get a point estimate for critical path length given that number of rooms in the dungeon. This \textit{observe-then-infer} process can be done with any permutation of our RVs.
 
 \paragraph{Why use Bayesian networks?}
 % causal structures gives us a natural interpretation of complex non-linear problems, compared to other methods (think NNs and their inability to be interpreted)
 % they are fast once trained. Updating belief is a simple arithmetic operation on the different CPT
 % gives us precise control over the parameters. Deery had an approximation of how big a dungeon should be because he would just repeat the rules X number of times. We can precisely fix every parameter that we have and even do permutations. This gives new degrees of freedom for the user to select the desired properties of his dungeon without compromising on automation.
-The reasoning behind choosing BNs is that the probabilistic causal structures have been shown to perform well in capturing properties from data for PDG tasks in ARPGs \parencite{SummervilleLearningOfZelda,SummervilleSamplingHyrule}. Furthermore they give us a natural description about the dependencies in our model, which can be used as a supplemental analysis tool for investigating human made dungeons. As a PDG tool itself, the \textit{observe-then-infer} pattern gives the user precise control over the desired properties of his dungeon without loss of automation. If a user observes a dungeon with 5 rooms and critical path of length of 3, they will be guaranteed in the final product. This solves the problem previous graph grammar data-driven approaches encountered, whereby the dungeon size input was used as an approximation for the actual number of rooms in the dungeon \parencite{Deery}.
+The reasoning behind choosing BNs is that the probabilistic causal structures have been shown to perform well in capturing properties from data for PDG tasks in ARPGs \parencite{SummervilleLearningOfZelda,SummervilleSamplingHyrule}. Furthermore they give us a natural description about the dependencies in our model, which can be used as a supplemental analysis tool for investigating human-made dungeons. As a PDG tool itself, the \textit{observe-then-infer} pattern gives the user precise control over the desired properties of his dungeon without loss of automation. If a user observes a dungeon with 5 rooms and critical path of length of 3, they will be guaranteed in the final product. This solves the problem previous graph grammar data-driven approaches encountered, whereby the dungeon size input was used as an approximation for the actual number of rooms in the dungeon \parencite{Deery}.
 
 The downside of BNs is that their generalisation capabilities are highly dependent on the availability of data. If conditioning on an undefined set (e.g. there was never a data entry that showed a 5 room dungeon with CP of 3), the inference will fail. A proposed way to solve this issue is by creating artificial data entries for the undefined cases. We will use linear interpolation due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. This can potentially solve the problems of undefined dungeons within the range of sizes of our dataset, but it cannot extrapolate to infer arbitrarily large dungeons. We would argue that that generalisation is not necessary as we are trying to capture properties of One-Page dungeons which are designed to be small enough to be fit in a single gameplay session. 
 
-\paragraph{What we need to do to use Bayesian Networks?}
-We need to define two key attributes of the BN:
-\begin{outline}[enumerate]
-  \1 The causal structure
-  \1 Conditional probability tables \textit{CPTs} for each RV
-\end{outline}
-In section \ref{sec:model_selection} we will compare in detail two structures with three CPT learning algorithms for a total of six models. The structures are the proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} modified for Space only parameters and an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes. The CPT learning algorithms will be a simple joint occurrence count, Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}.
+% \paragraph{What we need to do to use Bayesian Networks?}
+% We need to define two key attributes of the BN:
+% \begin{outline}[enumerate]
+%   \1 The causal structure
+%   \1 Conditional probability tables \textit{CPTs} for each RV
+% \end{outline}
+% In this paper we will apply an empirical approach and evaluate different models in search of the model with highest statistical predictive capabilities. In section \ref{sec:model_selection} we will compare in detail two structures with three CPT learning algorithms for a total of six models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only) and an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes. The CPT learning algorithms will be a simple joint occurrence count, Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}.
 
 \chapter{Methods and Implementation}
 \section{Data acquisition}
 \subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
 % What problems can we encounter? Sparsity of data. Very different dungeons, some are unusable (say unusable criteria)
+\paragraph{}
 Unsurprisingly the first priority of a data-driven method is the acquisition of a suitable dataset. The criteria we have chosen for our data is the following:
 \begin{outline}[enumerate]
   \1 Data must be consistent. Dungeons have to be representatives of a similar and comparable category.
-  \1 Data must be available under a research or similar open use license.
+  \1 Data must be available under a research or similar open-source license.
 \end{outline}
-The \textit{OPDC} supplies a dataset that satisfies our requirements. All dungeons are in the same category of a one-session long dungeon and each dungeon is issued under Creative Commons CC license. Furthermore due to the fact that it is a competition, we have an exemplar answer of our main question "What makes compelling dungeon?" in the form of the competition winners. Due to the creative freedom the human designers have, it is na\"{i}ve to assume that the dungeon Space necessarily a dominant factor in all dungeons. In order to narrow down to dungeons that do have a consistent representation of Space as an important asset, we apply a second filter by omitting dungeons that have:
+The \textit{OPDC} supplies a dataset that satisfies our requirements. All dungeons are in the same category of a one-session long dungeon and each dungeon is issued under Creative Commons CC license. Furthermore due to the fact that it is a competition, we have an exemplar answer of our main question "What makes compelling dungeon?" in the form of the competition winners. We apply the first filter and review only entries by competition winners. Due to the creative freedom the human designers have, it is na\"{i}ve to assume that the dungeon Space is necessarily a dominant factor in all dungeons. In order to narrow down to dungeons that do have a consistent representation of Space as an important asset, we apply a second filter by omitting dungeons that have:
 \begin{outline}[enumerate]
   \1 exclusively linear topologies
   \1 no map (no Space)
-  \1 non-standard Space traversal
+  \1 non-standard Space traversal (the map topology is ignored due to a functional mechanism e.g. time-travel, game of political control, etc.)
   \1 inconsistent map (our Space parameters are allowed to change e.g. intrigue campaigns where the objective constantly changes locations)
   \1 no goal defined by the designer (introduces the same problem as 4.)
 \end{outline}
 
 \subsection{Extracting Features}
-We will base our feature selection on the work done by Summerville \parencite{SummervilleSamplingHyrule} by selecting the Space related parameters from his Extreme Sparse model due to its simplicity and effectiveness. We extract five parameters in two categories: 
+\paragraph{}
+We will base our feature selection on the work done by Summerville \parencite{SummervilleSamplingHyrule} by selecting Space related parameters from his Extreme Sparse model due to its simplicity and effectiveness. We extract five parameters in two categories: 
 \begin{outline}[enumerate]
   \1 Dungeon (Global): total number of rooms and how many rooms are on the critical path
-  \2 Room (Local): depth (how far away the room is from the entrance), critical path distance (how far away is the room from a critical path room, 0 indicates it is on the CP), total number of neighbours
+  \1 Room (Local): depth (how far away the room is from the entrance), critical path distance (how far away is the room from a critical path room, 0 indicates it is on the CP), total number of neighbours
 \end{outline}
-Each global set of parameters is defined by the joint probability distribution \(P(NumRooms, CPLength)\) and each room by \(P(CPDistance, Depth, Neighbours)\) making a full dungeon characterised by \(P(NumRooms, CPLength) \prod_{i=1}^{r} P(CPDistance_i, Depth_i, Neighbours_i)\) where \(r\) is the total number of rooms defined by the instantiation of \(NumRooms\). To extract the five parameters the artistic and graphically rich textual representation of a dungeon in our dataset need to be transformed. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
+Each global and local set of parameters is defined by the joint PDs respectively \(P(NumRooms, CPLength)\) and \(P(CPDistance, Depth, Neighbours)\). A full dungeon is therefore characterised by \[P(NumRooms, CPLength) \prod_{i=1}^{R} P(CPDistance_i, Depth_i, Neighbours_i)\] where \(R\) is the total number of rooms defined by the instantiation of \(NumRooms\). To extract the five parameters the artistic and graphically rich textual representation of a dungeon in our dataset need to be transformed. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
 
-%Linearly interpolating the data
+\paragraph{}
+\textbf{TODO: Filling in the data gaps. Linear interpolation and artificial datapoints}
 
 \paragraph{}
 The final dataset is saved in a CSV format and consists of \textbf{[[size]]} organic entries and \textbf{[[synthetic]]} linearly interpolated entries for a total of \textbf{[[dungeon params]]} and \textbf{[[room params]]} with dungeon sizes ranging from [\textbf{[[min]]-[[max]]}] rooms. %ToDo: insert statistical figures about the dataset. Histograms of the different features, mean, variance and lower/upper bounds.
 
 \section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
 \label{sec:model_selection}
-\subsection{Bayesian Network structure}
-\subsubsection{Summerville's Extreme Sparse Model}
+
+\paragraph{What we need to do to use Bayesian Networks?}
+We need to define two key attributes of the BN:
+\begin{outline}[enumerate]
+  \1 The causal network's topology
+  \1 Conditional probability tables \textit{CPTs} for each RV
+\end{outline}
+In this paper we will apply an empirical approach and evaluate different models in search of the model with highest statistical predictive capabilities. We will compare two structures with three CPT learning algorithms for a total of six models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only) and an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes. The CPT learning algorithms will be a simple joint occurrence count, Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}. Implementation of all BN related algorithms is done in the Netica Bayesian Network development software \parencite{netica}.
+
+\subsection{Bayesian Network topology}
+\subsubsection{Summerville's Extreme Sparse Model \textit{SESM}}
+In exploring data-driven PDG for the Legend of Zelda franchise, Summerville found out that when dealing with a small dataset (38 dungeons with 1031 rooms), the SESM is able to capture high level properties of both Mission and Space with the highest accuracy in respect to the learning criteria and the lowest complexity. Following our assertion that digital RPGs differ from PnP RPGs only in mechanisms of interaction, we will base one of our BN topologies on Summerville's work. In order to do so, we flatten down the graph to use only the Space parameters we have extracted from the OPDC data. The flattening is done by reconstructing the SESM in Netica and applying the \texttt{AbsorbNodes\_bn} \parencite[62-63]{neticaCman}. The function removes the unused Mission RVs by effectively treating them as constants and propagating any implied dependencies from the other nodes. In this way we remove the unused RVs and maintain the joint distribution dependencies between our Space parameters. The transformation can be seen in figure \ref{fig:SESM}.
+
+Ignoring Mission parameters does reduce the dimensions of the model and can potentially reduce predictive capabilities.
 % Summerville applied a BNet approach to learning levels of the ARPG game Legend of Zelda. As noted before, digital RPGs differ from PnP RPGs only in mechanics of interaction and therefore we can cautiously analyse his findings. He found out that for limited amounts of data (\textbf{[[insert his dataset size]]}) a sparse model is able to produce the highest factor of learning against a Bayesian Informational Criterion (BIC). His network structure includes both Space and Mission parameters \textbf{[[fig of sparse model]]}. We don't need that because X. We apply vertex absorption, which removes the unnecessary nodes whilst preserving global conditional dependencies. We can do this because in our case we can treat the unused Mission nodes as constantly observed and not giving us any new dimensions to explore. The adapted sparse DAG from Summerville can be seen in \textbf{[[fig of PnP Inference DAG]]}
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.55\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{SESM_full.png}
+    \caption{Sumerville's Extreme Sparse Model}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{SESM_space.png}
+    \caption{Space only Model}
+  \end{subfigure}
+  \caption{Bayesian Network topologies in Netica}
+  \label{fig:SESM}
+\end{figure}
 
 \subsubsection{TAN}
 % We will also just in case compare the simplified DAG to a learned DAG structure. Explain how it works
@@ -192,7 +223,8 @@ The final dataset is saved in a CSV format and consists of \textbf{[[size]]} org
 \subsubsection{Expectation Maximisation EM} %both EM and GD can get stuck on local minima
 \subsubsection{Gradient Descent GD}
 
-\section{Implementation} %from chosen model --> dungeon graph, assumptions about constraints specifics etc
+\section{Implementation}
+\label{sec:implementation} %from chosen model --> dungeon graph, assumptions about constraints specifics etc
 \paragraph{Dungeon Sampling} %What 
 We can define characteristics of the desired dungeon by leveraging the inference nature of BNs. Generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter. The user can choose virtually any permutation of parameters to be fixed or inferred. For consistency purposes we are observing only the size of the dungeon via \texttt{NumRooms}.
 
@@ -216,27 +248,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
 % + can be generalised and optimised :: potentially translate it for general linear solvers
 
 \chapter{Results}
-%compare the different algos and structures
-% \section{Internal Validation} %Choosing the best model
-% \begin{table}[htb]
-%   \caption{ Structure and parameter learning comparison.}
-%   \begin{center}
-%   %\begin{tabular}{|p{0.3\textwidth}|p{0.6\textwidth}|}
-%   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
-%   \hline
-%   & \multicolumn{3}{|c|}{Count} & \multicolumn{3}{|c|}{EM} & \multicolumn{3}{|c|}{GD} \\
-%   \hline
-%   & log loss & quadr loss & sphere pay & log loss & quadr loss & sphere pay &log loss & quadr loss & sphere pay \\
-%   \hline
-%   Summerville's ES & - & - & - & - & - & - & - & - & - \\
-%   \hline
-%   TAN & - & - & - & - & - & - & - & - & -\\
-%   \hline
-%   \end{tabular}
-%   \end{center}
-%   \label{table:BNetCompare}
-%   \end{table}
-
+\label{cha:results}
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
@@ -264,7 +276,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
       \3 Data extraction has been a manual process. Although due diligence is paid, noise introduced from human error is inevitable. 
   \1 Method
     \2 Cannot generalise to unseen cases. We can interpolate for missing data, but we cannot extrapolate. Argue that this is an issue of all ML approaches, not just BNets, because we're trying to capture properties of One-Page dungeon.
-    \2 This paper is considering only Space gen. A more robust approach would be needed to extract consistent and meaningful parameters for Mission. For Legend of Zelda there is a discrete subset of things you can do so that is why Mission extraction is possible. Deery has shown that formalising Mission in PnP RPG's is difficult due to the variant and creative nature of the human made dungeons.
+    \2 This paper is considering only Space gen. A more robust approach would be needed to extract consistent and meaningful parameters for Mission. For Legend of Zelda there is a discrete subset of things you can do so that is why Mission extraction is possible. Deery has shown that formalising Mission in PnP RPG's is difficult due to the variant and creative nature of the human-made dungeons.
   \1 Validation
     \2 We have decided to approach the external evaluation in a quantitative, rather qualitative measuring. That is due to the fact that conducting a study with a high environmental index is difficult due to multiple confound factors that are due to the nature of a tabletop RPG session. Not only does a one-session adventure usually take around 3 hours \textbf{[[cn]]}, but they are extremely variant between groups of players and DMs. An experiment that analyses how players use the generated dungeon rather than just discriminating between different dungeons topologies would give us more insight in the success of the recreation of a human-made dungeon.
   
