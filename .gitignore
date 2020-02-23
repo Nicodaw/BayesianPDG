@@ -344,3 +344,6 @@ healthchecksdb
 # Dissertation Latex
 /Dissertation/build/*
 !/Dissertation/build/*.pdf
+
+# editor settings
+.vscode/settings.json
