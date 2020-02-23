@@ -171,7 +171,7 @@ We will base our feature selection on the work done by Summerville \parencite{Su
   \1 Dungeon (Global): total number of rooms \(R\) and how many rooms are on the critical path \(C_{length}\)
   \1 Room (Local): depth (how far away the room is from the entrance) \(D\), critical path distance (how far away is the room from a critical path room, 0 indicates it is on the CP) \(C_{dist}\), total number of neighbours \(N\)
 \end{outline}
-Each global and local set of parameters is defined by the joint PDs respectively \(P(NumRooms, CPLength)\) and \(P(CPDistance, Depth, Neighbours)\). A full dungeon is therefore characterised by \[P(NumRooms, CPLength) \prod_{i=1}^{R} P(CPDistance_i, Depth_i, Neighbours_i)\] where \(R\) is the total number of rooms defined by the instantiation of \(NumRooms\). To extract the five parameters the artistic and graphically rich textual representation of a dungeon in our dataset need to be transformed. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
+Each global and local set of parameters is defined by the joint PDs respectively \(P(R, C_{length})\) and \(P(C_{dist}, D, N)\). A full dungeon is therefore characterised by \[P(R, C_{length}) \prod_{i=1}^{\mid R \mid} P(C_{dist_i}, D_i, N_i)\] where \(\mid R \mid\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
 
 \paragraph{}
 \textbf{TODO: Filling in the data gaps. Linear interpolation and artificial datapoints}
@@ -223,11 +223,26 @@ Ignoring Mission parameters does reduce the dimensions of the model and can pote
 \paragraph{}
 In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we asserted two assumptions about equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Netica's Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.  
 \paragraph{}
-Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(NumRooms\) \textbf{[[Elaborate why. Correlation with the restriction on the conditioning set]]}. The na\"{i}ve assumption implies that \(P(NumRooms,CPLength, CPDistance, Depth, Neighbours) = P(NumRooms)P(CPLength \mid NumRooms)\)
+Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) \textbf{[[Elaborate why. Correlation with the restriction on the conditioning set]]}. The na\"{i}ve assumption implies that \[P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)\] where \(\boldsymbol X = \{C_{length}, C_{dist}, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has a moderated bias factor for the class and an informed causal structure. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs. We are not concerned with this as our model contains only five RVs.
 
 %The convenient restriction we imposed early in the paper of only conditioning on \(NumRooms\) was so that we have a clear candidate for this class variable. 
-
-
+%TODO: GET ALL THE DATA AND PUT IT HERE
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.55\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{SESM_full.png}
+    \caption{Na\"{i}ve Bayes}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{SESM_space.png}
+    \caption{TAN}
+  \end{subfigure}
+  \caption{Bayesian Network topologies in Netica}
+  \label{fig:TAN}
+\end{figure}
 
 
 \subsection{Parameter Learning}
@@ -263,6 +278,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
 
 \chapter{Results}
 \label{cha:results}
+\section{Internal Validation}
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
