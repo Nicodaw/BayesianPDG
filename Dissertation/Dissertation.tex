@@ -4,7 +4,7 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{subcaption}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
@@ -224,7 +224,7 @@ Ignoring Mission parameters does reduce the dimensions of the model and can pote
 \paragraph{}
 In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we asserted two assumptions about equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Netica's Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.  
 \paragraph{}
-Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) \textbf{[[Elaborate why. Correlation with the restriction on the conditioning set]]}. The na\"{i}ve assumption implies that \[P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)\] where \(\boldsymbol X = \{C_{length}, C_{dist}, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has a moderated bias factor for the class and an informed causal structure. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs. We are not concerned with this as our model contains only five RVs.
+Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. \textbf{[[more formal description of maximising the posterior in respect to P(Network|Data)?]]}. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) \textbf{[[Elaborate why. Correlation with the restriction on the conditioning set]]}. The na\"{i}ve assumption implies that \[P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)\] where \(\boldsymbol X = \{C_{length}, C_{dist}, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has a moderated bias factor for the class and an informed causal structure. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs. We are not concerned with this as our model contains only five RVs.
 
 %The convenient restriction we imposed early in the paper of only conditioning on \(NumRooms\) was so that we have a clear candidate for this class variable. 
 %TODO: GET ALL THE DATA AND PUT IT HERE
@@ -247,6 +247,8 @@ Informally the learning procedure can be defined as finding the most likely BN s
 
 
 \subsection{Parameter Learning}
+Similarly to structure learning from data, when we learn parameters (CPTs for each RV) we are trying to find the most likely PD for each RV that agrees with our data. More formally if \(\mathcal{N}\) is the network and \(\mathcal{D}\) is the data then from Bayes's rule we know that \(P(\mathcal{N} \mid \mathcal{D}) = \frac{P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})}{P(\mathcal{D})}\). We can formulate the parameter learning as an optimisation problem where we maximise the posterior \(P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})\) \parencite[46-48]{neticaCman}. Netica has three algorithms (Count, Expectation Maximisation and Gradient Descent) in its toolkit for achieving this. For completeness, it should be noted that all algorithms in Netica follow \textit{true Bayesian learning} principles 
+ 
 \subsubsection{Count}
 \subsubsection{Expectation Maximisation EM} %both EM and GD can get stuck on local minima
 \subsubsection{Gradient Descent GD}
