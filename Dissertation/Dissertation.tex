@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{amsmath,amssymb}
+\usepackage[ruled,vlined]{algorithm2e}
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
@@ -101,7 +102,7 @@ Constraint Satisfaction Problems (CSPs) define a discrete set of variables with 
 %   \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
 % \end{outline}
 
-\paragraph{} %ToDo: Finish Mission & Space Argument. Why do we have this section? insert a fig of Dormans Mission to Space mapping ??
+\paragraph{} %TODO: Finish Mission & Space Argument. Why do we have this section? insert a fig of Dormans Mission to Space mapping ??
 An attentive reader would have noted that distinguishing between the level layout and contents is a common occurrence in popular PDG algorithms. This discrimination was formalised by Dormans\parencite{DormansMS} in his definitions of \textit{Mission} and \textit{Space} in relation to the ARPG Legend of Zelda game series.
 The \textit{Space} of a dungeon embodies it's topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. It is clear to see that the gameplay experience is defined in the interaction of the two graphs. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns and it is by understanding the necessities of the two separate entities that we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data \parencite{SummervilleLearningOfZelda}.
 
@@ -247,9 +248,11 @@ Informally the learning procedure can be defined as finding the most likely BN s
 
 
 \subsection{Parameter Learning}
-Similarly to structure learning from data, when we learn parameters (CPTs for each RV) we are trying to find the most likely PD for each RV that agrees with our data. More formally if \(\mathcal{N}\) is the network and \(\mathcal{D}\) is the data then from Bayes's rule we know that \(P(\mathcal{N} \mid \mathcal{D}) = \frac{P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})}{P(\mathcal{D})}\). We can formulate the parameter learning as an optimisation problem where we maximise the posterior \(P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})\) \parencite[46-48]{neticaCman}. Netica has three algorithms (Count, Expectation Maximisation and Gradient Descent) in its toolkit for achieving this. For completeness, it should be noted that all algorithms in Netica follow \textit{true Bayesian learning} principles 
+Similarly to structure learning from data, when we learn parameters (CPTs for each RV) we are trying to find the most likely PD for each RV that agrees with our data. More formally if \(\mathcal{N}\) is the network and \(\mathcal{D}\) is the data then from Bayes's rule we know that \(P(\mathcal{N} \mid \mathcal{D}) = \frac{P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})}{P(\mathcal{D})}\). We can formulate the parameter learning as an optimisation problem where we find the best values for the posterior \(P(\mathcal{N} \mid \mathcal{D})\) by maximising the likelihood given our prior \(P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})\) \parencite[46-48]{neticaCman}. This is in fact the usual Bayesian updating in which Netica will consider the prior to have a Dirichlet distribution and the conditional probabilities (likelihood) are independent of each other. To learn the likelihood we will use three algorithms Netica has in its toolkit.
  
-\subsubsection{Count}
+\subsubsection{Count \parencite[48-50]{neticaCman}}
+The counting learning simply states that the probabilities in a single node are defined by how often a particular value has been seen in the data. This notion is defined as the \textit{experience} of that value. The network starts in a state of complete ignorance with uniform probabilities across all RVs. As we iteratively load in the data, the CPT are updated by increasing the probability for a particular value every time it is seen. Specifically, the experience \(e^{\prime} = e + d\) is updated by the previous experience and the degree factor of that data point (how often is it repeated) which is usually 1. The CPT values are computed as a ratio of the previous and newly observed experience \(P^{\prime}(X=x) = \frac{P(X=x) \times e}{e^{\prime}}\). The counting algorithm is recommended due to its speed and simplicity, but it has a substantial drawback in the fact that it needs the data to be fully defined. Theoretically we should be able to use the counting algorithm as we have no latent (undefined) RVs nor missing data.
+
 \subsubsection{Expectation Maximisation EM} %both EM and GD can get stuck on local minima
 \subsubsection{Gradient Descent GD}
 
@@ -339,6 +342,41 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \appendix
 \chapter{Some appendix}
 \textit{Use this section for graphical showing of the models. Nets, result tables (or tables should be inline?)}
+
+%TODO: write the algo
+\begin{algorithm}[H]
+  \SetAlgoLined
+  \KwResult{Write here the result }
+   initialization\;
+   \While{While condition}{
+    instructions\;
+    \eIf{condition}{
+     instructions1\;
+     instructions2\;
+     }{
+     instructions3\;
+    }
+   }
+   \caption{Dungeon and Room sampling algorithm}
+   \label{algo:sampling}
+  \end{algorithm}
+
+  \begin{algorithm}[H]
+    \SetAlgoLined
+    \KwResult{Write here the result }
+     initialization\;
+     \While{While condition}{
+      instructions\;
+      \eIf{condition}{
+       instructions1\;
+       instructions2\;
+       }{
+       instructions3\;
+      }
+     }
+     \caption{Constraint Propagation algorithm}
+     \label{algo:CSP}
+    \end{algorithm}
 
 \chapter{Another appendix}
 \textit{Use this section for questionnaires and external validation support}
