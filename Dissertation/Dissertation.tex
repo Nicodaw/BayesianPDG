@@ -179,7 +179,7 @@ Each global and local set of parameters is defined by the joint PDs respectively
 \textbf{TODO: Filling in the data gaps. Linear interpolation and artificial datapoints}
 
 \paragraph{}
-The final dataset is saved in a CSV format and consists of \textbf{[[size]]} organic entries and \textbf{[[synthetic]]} linearly interpolated entries for a total of \textbf{[[dungeon params]]} and \textbf{[[room params]]} with dungeon sizes ranging from [\textbf{[[min]]-[[max]]}] rooms. %ToDo: insert statistical figures about the dataset. Histograms of the different features, mean, variance and lower/upper bounds.
+The final dataset is saved in a CSV format and consists of 92 organic dungeon + 1193 organic room entries and 10 linearly interpolated dungeon entries. Common statistics of the dataset can be found in appendix A \ref{cha:aA}.
 
 \section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
 \label{sec:model_selection}
@@ -341,8 +341,9 @@ We can define characteristics of the desired dungeon by leveraging the inference
 
 \appendix
 \chapter{Some appendix}
+\label{cha:aA}
 \textit{Use this section for graphical showing of the models. Nets, result tables (or tables should be inline?)}
-
+%TODO: insert statistical figures about the dataset. Histograms of the different features, mean, variance and lower/upper bounds.
 %TODO: write the algo
 \begin{algorithm}[H]
   \SetAlgoLined
@@ -379,6 +380,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
     \end{algorithm}
 
 \chapter{Another appendix}
+\label{cha:aB}
 \textit{Use this section for questionnaires and external validation support}
 
 \printbibliography
