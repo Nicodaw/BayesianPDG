@@ -162,7 +162,13 @@ We will base our feature selection on the work done by Summerville \parencite{Su
   \1 Dungeon (Global): total number of rooms \(R\) and how many rooms are on the critical path \(L\)
   \1 Room (Local): depth \(D\) (how far away the room is from the entrance), critical path distance \(S\) (how far away is the room from a critical path room, 0 indicates it is on the CP) , total number of neighbours \(N\)
 \end{outline}
-Each global and local set of parameters is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\). A full dungeon is therefore characterised by \[P(R,L,S,D,N) = P(R, L) \prod_{i=1}^{\mid R \mid} P(S_i}, D_i, N_i)\] where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
+Each global and local set of parameters is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\). A full dungeon is therefore characterised by 
+
+\begin{equation}
+  \label{eq:full_joint_PD}
+  P(R,L,S,D,N) = P(R, L) \prod_{i=1}^{\mid R \mid} P(S_i}, D_i, N_i)
+\end{equation}
+where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
 
 \paragraph{}
 \textbf{TODO: Filling in the data gaps. Linear interpolation and artificial datapoints}
@@ -179,15 +185,15 @@ We need to define two key attributes of the BN:
   \1 The causal network's topology
   \1 Conditional probability tables \textit{CPTs} for each RV
 \end{outline}
-In this paper we will empirically compare different models in search of the one with highest statistical predictive capabilities. We will evaluate two structures with three CPT learning algorithms for a total of six models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only) and an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes. The CPT learning algorithms will be a simple joint occurrence count, Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}. Implementation of all BN related algorithms is done in the Netica Bayesian Network development software \parencite{netica}.
+In this paper we will empirically compare different models in search of the one with highest statistical predictive capabilities. We will evaluate three structures with three CPT learning algorithms for a total of nine models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only), an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes and a fully connected model. The CPT learning algorithms will be a simple joint occurrence count, Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}. Implementation of all BN related algorithms is done in the Netica Bayesian Network development software \parencite{netica}.
 
 \subsection{Bayesian Network topology}
 \subsubsection{Summerville's Extreme Sparse Model \textit{SESM}}
 In exploring data-driven PDG for the Legend of Zelda franchise, Summerville found out that when dealing with a small dataset (38 dungeons with 1031 rooms), the SESM is able to capture high level properties of both Mission and Space with the highest accuracy in respect to the learning criteria and the lowest complexity. Following our assertion that digital RPGs differ from PnP RPGs only in mechanisms of interaction, we will base one of our BN topologies on Summerville's work. In order to do so, we flatten down the graph to use only the Space parameters. The flattening is done by reconstructing the SESM in Netica and applying the \texttt{AbsorbNodes\_bn} \parencite[62-63]{neticaCman}. The function removes the unused Mission RVs by effectively treating them as constants and propagating any implied dependencies from the other nodes. In this way we remove the unused RVs and maintain the joint distribution dependencies between our Space parameters. The transformation can be seen in figure \ref{fig:SESM}. The resulting model describes the following factorisation over our RVs
-\[P(R,L,S,D,N) = P(R)P(S)P(L \mid R)P(D \mid R, L})P(N \mid D, S)\]
-
-%Ignoring Mission parameters does reduce the dimensions of the model and can potentially reduce predictive capabilities.
-% Summerville applied a BNet approach to learning levels of the ARPG game Legend of Zelda. As noted before, digital RPGs differ from PnP RPGs only in mechanics of interaction and therefore we can cautiously analyse his findings. He found out that for limited amounts of data (\textbf{[[insert his dataset size]]}) a sparse model is able to produce the highest factor of learning against a Bayesian Informational Criterion (BIC). His network structure includes both Space and Mission parameters \textbf{[[fig of sparse model]]}. We don't need that because X. We apply vertex absorption, which removes the unnecessary nodes whilst preserving global conditional dependencies. We can do this because in our case we can treat the unused Mission nodes as constantly observed and not giving us any new dimensions to explore. The adapted sparse DAG from Summerville can be seen in \textbf{[[fig of PnP Inference DAG]]}
+\begin{equation}
+  \label{eq:SESM}
+  P(R,L,S,D,N) = P(R)P(S)P(L \mid R)P(D \mid R, L})P(N \mid D, S)
+\end{equation}
 
 \begin{figure}[htb]
   \centering
@@ -213,10 +219,14 @@ In exploring data-driven PDG for the Legend of Zelda franchise, Summerville foun
 \paragraph{}
 In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we asserted two assumptions: equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.  
 \paragraph{}
-Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. \textbf{[[more formal description of maximising the posterior in respect to P(Network|Data)?]]}. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) due to its contextual importance. The na\"{i}ve assumption implies that \[P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)\] where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
+Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. \textbf{[[more formal description of maximising the posterior in respect to P(Network|Data)?]]}. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) due to its contextual importance. The na\"{i}ve assumption implies that
+\begin{equation}
+  \label{eq:TAN}
+  P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)
+\end{equation}
 
-%The convenient restriction we imposed early in the paper of only conditioning on \(NumRooms\) was so that we have a clear candidate for this class variable. 
-%TODO: GET ALL THE DATA AND PUT IT HERE
+where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
+
 \begin{figure}[htb]
   \centering
   \begin{subfigure}[b]{0.55\textwidth}
@@ -233,6 +243,18 @@ Informally the learning procedure can be defined as finding the most likely BN s
   \caption{Learned Network topologies}
   \label{fig:TAN}
 \end{figure}
+
+
+\subsection{Fully Connected}
+Due to the fact that we have a small number of nodes, we can afford the computational expense of running a model with no independence assumptions. In effect we're solving the original model \ref{eq:full_joint_PD}, but we will include a heuristic assumption about the direction of the causality in order to maintain the BN requirement of having an acyclic graph. Namely we assert that our global parameters cause our local parameters. The model can be seen in figure \ref{fig:FullyConnected}.
+
+\begin{figure}[htb]
+  \centering
+    \includegraphics[width=\textwidth]{FullyConnected.png}
+    \caption{Fully connected graph with heuristic causal flow}
+  \label{fig:FullyConnected}
+\end{figure}
+
 
 
 \subsection{Parameter Learning}
