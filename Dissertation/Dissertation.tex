@@ -287,13 +287,13 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{@{}llllllllll@{}}
-  \toprule
-                        & \multicolumn{3}{c}{Count}                                                        & \multicolumn{3}{c}{EM}                                                           & \multicolumn{3}{c}{GD}                                                           \\ \midrule
-  \multicolumn{1}{l|}{} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} & \multicolumn{1}{c}{log} & \multicolumn{1}{c}{quad} & \multicolumn{1}{c|}{sphere} \\ \midrule
-  Extreme Sparse        &                         &                          &                             &                         &                          &                             &                         &                          &                             \\
-  TAN                   &                         &                          &                             &                         &                          &                             &                         &                          &                             \\ \bottomrule
-  \end{tabular}%
+  \begin{tabular}{@{}lllllll@{}}
+    \toprule
+                          & \multicolumn{2}{l}{Count}         & \multicolumn{2}{l}{EM}                     & \multicolumn{2}{l}{GD} \\ \midrule
+                          & \(loss^2\)  & {\(E\)}     & \(loss^2\)      & {\(E\)}          & \(loss^2\) & \(E\)      \\ \midrule
+          Extreme Sparse  & 0.7819      & 67.09\%     & 0.7522          & 66.67\%          & 1.07       & 75.98\%    \\
+          TAN             & 0.6871      & 54.87\%     & 0.6871          & 54.87\%          & 1.034      & 64.19\%    \\
+          Fully Connected & 0.6012      & 44.53\%     & \textbf{0.4297} & \textbf{39.23\%} & 1.046      & 69.57\%    \\ \bottomrule    \end{tabular}%
   }
   \caption{Structure and parameter learning comparison.}
   \label{table:BNetCompare}
