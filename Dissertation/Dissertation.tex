@@ -43,12 +43,6 @@ The summary must:
 \label{cha:Introduction}
 
 \section{Role-playing games}
-%\begin{outline}
-%  \1 Nature and goal  RP is trying to create a compelling narrative in which players can be involved in.
-%    \2 Contextualise RPs by comparing different genres. Digital vs Tabletop.
-%  \1 Interaction mechanisms. How the game is played and what is the role of the DM
-%  \1 Problems: DM has to create the narrative. Can we devise an algorithm that helps DMs create a compelling narrative?
-%\end{outline}
 
 \paragraph{}
 Role-playing game (RPG) is a broad term encompassing a multitude of different games with often distinct mechanics and platforms of interaction (the media). The common factor between all RPGs is that the player(s) portray a fictional character and is involved in a fictional world (or a subset of one). The interaction of the players with this world is governed by rules, defined by the media. To better understand the structure of RPGs, we can view it in terms of two sets: 
@@ -101,7 +95,7 @@ Constraint Satisfaction Problems (CSPs) define a discrete set of variables with 
 %   \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
 % \end{outline}
 
-\paragraph{} %TODO: Finish Mission & Space Argument. Why do we have this section? insert a fig of Dormans Mission to Space mapping ??
+\paragraph{}
 An attentive reader would have noted that distinguishing between the level layout and contents is a common occurrence in popular PDG algorithms. This discrimination was formalised by Dormans \parencite{DormansMS} in his definitions of \textit{Mission} and \textit{Space} in relation to the ARPG Legend of Zelda game series.
 The \textit{Space} of a dungeon represents its topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. How players interact with the level is governed entirely by the interaction of these two concepts. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns and it is by understanding the necessities of the two separate entities that we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data \parencite{SummervilleLearningOfZelda}.
 
@@ -292,6 +286,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
 % + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
 % + can be generalised and optimised :: potentially translate it for general linear solvers
 
+%TODO: Add a row for a completely random generator. One where it uses all uniform probabilities
 \chapter{Results}
 \label{cha:results}
 \section{Internal Validation}
@@ -312,6 +307,7 @@ We can define characteristics of the desired dungeon by leveraging the inference
 
 \section{External Validation} %user study
 \paragraph{User study design}
+%TODO: Consider the design, ethics and explain Qualtrics ?
 
 \chapter{Discussion}
 
@@ -328,14 +324,6 @@ We can define characteristics of the desired dungeon by leveraging the inference
     \2 We have decided to approach the external evaluation in a quantitative, rather qualitative measuring. That is due to the fact that conducting a study with a high environmental index is difficult due to multiple confound factors that are due to the nature of a tabletop RPG session. Not only does a one-session adventure usually take around 3 hours \textbf{[[cn]]}, but they are extremely variant between groups of players and DMs. An experiment that analyses how players use the generated dungeon rather than just discriminating between different dungeons topologies would give us more insight in the success of the recreation of a human-made dungeon.
   
 \end{outline}
-
-% \begin{figure}[htb]
-% \begin{center}
-% \includegraphics[height=3cm]{"./UOY-Logo-Stacked-shield-Black.png"}
-% \end{center}
-% \caption{A figure containing UoY logo and its caption.}
-% \end{figure}
-
 
 \chapter{Conclusion}
 \label{cha:conclusion}
