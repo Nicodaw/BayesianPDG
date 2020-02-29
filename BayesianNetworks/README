@@ -1,0 +1,10 @@
+Instructions on gathering metrics
+==================================
+
+1. Open the desired network
+2. Select a single node you want to evaluate (this node will not be observed)
+3. from the toolbar select Cases --> Test with Cases and load in data/combined.csv
+
+a window will be populated with different metrics. Our main concern is the error rate of misclassified entries for that parameter and the quadratic loss
+
+to get a full description on all parameters in the network, repeat [2,3] for each one
