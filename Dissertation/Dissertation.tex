@@ -1,7 +1,7 @@
 \documentclass{UoYCSproject}
 \usepackage{outlines}
 \usepackage{tikz}
-\usepackage{booktabs}
+\usepackage{booktabs,multirow}
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{amsmath,amssymb}
@@ -293,13 +293,21 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{@{}lllllll@{}}
+  \begin{tabular}{@{}llllllllllll@{}}
     \toprule
-                          & \multicolumn{2}{l}{Count}         & \multicolumn{2}{l}{EM}                     & \multicolumn{2}{l}{GD} \\ \midrule
-                          & \(loss^2\)  & {\(E\)}     & \(loss^2\)      & {\(E\)}          & \(loss^2\) & \(E\)      \\ \midrule
-          Extreme Sparse  & 0.7819      & 67.09\%     & 0.7522          & 66.67\%          & 1.07       & 75.98\%    \\
-          TAN             & 0.6871      & 54.87\%     & 0.6871          & 54.87\%          & 1.034      & 64.19\%    \\
-          Fully Connected & 0.6012      & 44.53\%     & \textbf{0.4297} & \textbf{39.23\%} & 1.046      & 69.57\%    \\ \bottomrule    \end{tabular}%
+                    & \multicolumn{2}{l}{\texttt{NumRooms}} & \multicolumn{2}{l}{\texttt{CPLength}} & \multicolumn{2}{l}{\texttt{CPDistance}} & \multicolumn{2}{l}{\texttt{Depth}} & \multicolumn{2}{l}{\texttt{Neighbours}}&                        \\ \midrule
+                    & \(loss^2\)   & \(E\)         & \(loss^2\)   & \(E\)         & \(loss^2\)    & \(E\)          & \(loss^2\)  & \(E\)       & \(loss^2\)    & \(E\)          &                        \\
+    Uniform (base)  & 0.9615       & 99.83\%       & 0.9          & 97.52\%       & 0.8333        & 57.86\%        & 0.9286      & 91.97\%     & 0.8889        & 70.51\%        &                        \\ \midrule
+    Extreme Sparse  & 0.7819       & 67.09\%       & 0.5294       & 41.79\%       & 0.6173        & 51.54\%        & 0.7657      & 61.54\%     & 0.7174        & 59.15\%        & \multirow{3}{*}{count} \\
+    TAN             & 0.6871       & 54.87\%       & 0.5294       & 41.79\%       & 0.5812        & 41.62\%        & 0.6581      & 50.51\%     & 0.7054        & 49.74\%        &                        \\
+    Fully Connected & 0.6012       & 44.53\%       & 0.3391       & 22.14\%       & 0.4205        & 17.44\%        & 0.5814      & 35.98\%     & 0.7029        & 25.64\%        &                        \\ \midrule
+    Extreme Sparse  & 0.7522       & 66.67\%       & 0.4974       & 41.2\%        & 0.6237        & 54.19\%        & 0.7354      & 63.25\%     & 0.693         & 59.15\%        & \multirow{3}{*}{EM}    \\
+    TAN             & 0.6081       & 50.77\%       & 0.4974       & 41.2\%        & 0.4968        & 41.62\%        & 0.562       & 45.73\%     & 0.6024        & 49.74\%        &                        \\
+    Fully Connected &\textbf{0.4297}&\textbf{39.23\%}&\textbf{0.2097}& \textbf{18.72\%}& \textbf{0.1909}& \textbf{16.92\%}       & \textbf{0.3683}&\textbf{33.76\%}& \textbf{0.284}& \textbf{25.64\%}        &                        \\ \midrule
+    Extreme Sparse  & 1.07         & 75.98\%       & 0.7947       & 50.34\%       & 0.6644        & 57.26\%        & 0.7951      & 66.75\%     & 0.7368        & 62.65\%        & \multirow{3}{*}{GD}    \\
+    TAN             & 1.036        & 64.19\%       & 0.8043       & 52.31\%       & 0.5632        & 45.38\%        & 0.7532      & 54.19\%     & 0.735         & 55.73\%        &                        \\
+    Fully Connected & 1.046        & 69.57\%       & 0.701        & 44.7\%        & 0.4416        & 38.8\%         & 0.6256      & 53.25\%     & 0.5295        & 45.38\%        &                        \\ \midrule
+    \end{tabular}%
   }
   \caption{Structure and parameter learning comparison.}
   \label{table:BNetCompare}
@@ -308,7 +316,6 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \section{External Validation} %user study
 \paragraph{User study design}
 %TODO: Consider the design, ethics and explain Qualtrics ?
-
 \chapter{Discussion}
 
 \section{Critique}
