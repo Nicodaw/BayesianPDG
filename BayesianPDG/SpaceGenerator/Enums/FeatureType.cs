@@ -14,7 +14,6 @@ namespace BayesianPDG.SpaceGenerator
     {
         NumRooms,
         CriticalPathLength,
-        NumDoors,
         Depth,
         CriticalPathDistance,
         NumNeighbours

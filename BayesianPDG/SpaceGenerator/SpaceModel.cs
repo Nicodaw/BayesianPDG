@@ -12,13 +12,11 @@ namespace BayesianPDG.SpaceGenerator
         private const int UndefinedState = -3; //netica default undefined state value
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
         private BNet net { get; }
-        private Caseset data { get; } // ToDo: remove? Do we need the data files if we're loading a pre-trained net?
 
         public SpaceModel(DAGLoader loader)
         {
 
             net = loader.Net;
-            data = loader.Data;
 
         }
 
@@ -43,10 +41,9 @@ namespace BayesianPDG.SpaceGenerator
                 if(retry != 0)
                 {
                     Debug.WriteLine($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}. Retrying...");
-                    var priorObservations = (rooms: (int) Value(FeatureType.NumRooms), doors: (int) Value(FeatureType.NumDoors), cpLength: (int) Value(FeatureType.CriticalPathLength));
+                    var priorObservations = (rooms: (int) Value(FeatureType.NumRooms), cpLength: (int) Value(FeatureType.CriticalPathLength));
                     ClearObservations();
                     Observe(FeatureType.NumRooms, priorObservations.rooms);
-                    Observe(FeatureType.NumDoors, priorObservations.doors);
                     Observe(FeatureType.CriticalPathLength, priorObservations.cpLength);
                     return Sample(retry--);
                 }
@@ -164,14 +161,12 @@ namespace BayesianPDG.SpaceGenerator
         private bool ValidateDungeonSample()
         {
             bool isCPTValid = Value(FeatureType.NumRooms) >= Value(FeatureType.CriticalPathLength); //critical path cannot be longer than the number of rooms
-            bool areDoorsValid = Value(FeatureType.NumDoors) >= Value(FeatureType.NumNeighbours);   //a room cannot have more neighbours than there are total number of connections in the map
             bool isDepthValid = Value(FeatureType.NumRooms) >= Value(FeatureType.Depth);            //a room cannot be at depth greater than the total number of rooms
 
-            var isValid = (isCPTValid, areDoorsValid, isDepthValid) switch
+            var isValid = (isCPTValid, isDepthValid) switch
             {
-                (false, true, true) => (false, "CPT is invalid"),
-                (true, false, true) => (false, "Doors are invalid"),
-                (true, true, false) => (false, "Depth is invalid"),
+                (false, true) => (false, "CPT is invalid"),
+                (true, false) => (false, "Depth is invalid"),
                 _ => (true, "Dungeon is valid")
             };
             Debug.WriteLine($"Dungeon validator reports:: {isValid.Item2}");

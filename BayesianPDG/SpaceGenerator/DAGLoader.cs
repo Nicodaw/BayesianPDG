@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Netica;
 
 namespace BayesianPDG.SpaceGenerator
@@ -11,18 +7,15 @@ namespace BayesianPDG.SpaceGenerator
     class DAGLoader
     {
         #region Constants
-        private const string defaultNetPath = "Resources\\BNetworks\\DungeonNet.neta";
-        private const string defaultDataPath = "Resources\\BNData\\dungeon_data.csv";
+        private const string defaultNetPath = "Resources\\BNetworks\\LiCountNet.neta";
         #endregion
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
 
         public BNet Net { get; set; }
-        public Caseset Data { get; set; }
 
-        public DAGLoader(string netPath = defaultNetPath, string dataPath = defaultDataPath)
+        public DAGLoader(string netPath = defaultNetPath)
         {
             Net = LoadBNet(netPath);
-            Data = LoadData(dataPath);
         }
 
         /// <summary>
@@ -57,7 +50,6 @@ namespace BayesianPDG.SpaceGenerator
 
         public void close()
         {
-            Data.Delete();
             Net.Delete();
             if (!_app.UserControl) _app.Quit();
             Debug.WriteLine("Press <enter> to quit.");

@@ -32,12 +32,11 @@ namespace BayesianPDG.SpaceGenerator
         #region Dungeon Parameters
         private int Rooms;
         private int CPLength;
-        private int Doors;
         #endregion
 
         public SpaceGraph RunInference(int? seed = null)
         {
-            DAGLoader dungeonBNLoader = new DAGLoader("Resources\\BNetworks\\EMNet.neta");
+            DAGLoader dungeonBNLoader = new DAGLoader();
             DungeonModel = new SpaceModel(dungeonBNLoader);
             RNG = (seed == null) ? new Random() : new Random(seed.Value);
             try
@@ -45,7 +44,7 @@ namespace BayesianPDG.SpaceGenerator
                 //Configure observations, i.e. how many rooms in the dungeon
                 DungeonGraph = new SpaceGraph();
 
-                int observedRooms = 9; // ToDo: Let user decide
+                int observedRooms = 12; // ToDo: Let user decide
 
                 DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
@@ -141,7 +140,9 @@ namespace BayesianPDG.SpaceGenerator
             {
                 MapOne();
             }
+
             DungeonGraph.InstantiateGraph();
+
         }
 
         private void MapOne()
@@ -155,7 +156,7 @@ namespace BayesianPDG.SpaceGenerator
             }
             else
             {
-                List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whos values are not reduced to a singleton
+                List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whList<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours < node.Edges.Count);
                 Node selected = (possible.Count == 1) ? possible[0] : possible[RNG.Next(0, possible.Count - 1)];
                 while (selected.Values.Count != 1)
                 {
@@ -176,7 +177,8 @@ namespace BayesianPDG.SpaceGenerator
                         {
                             Node savedNode = undoStack.Peek().Pop();
                             savedNode.Values.Remove(value); //remove what didn't work
-                            selected = savedNode;
+
+                            // selected = savedNode;
                             DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
                             if (undoStack.Peek().Count == 0) undoStack.Pop();
                         }
@@ -212,15 +214,14 @@ namespace BayesianPDG.SpaceGenerator
         {
             foreach (Node child in neighbours)
             {
-                //if (child.Id != modA.Id && !modA.IsConnected(child) && child.Values.Count != 1)
-                //{
                 List<List<Node>> allowedValues = new List<List<Node>>();
 
                 // select the sets of values of the constrained var that ::
 
                 // in the child node that is to be connected, find only the possible values that include the parent (modA)
                 allowedValues = child.Values.FindAll(set => set.Contains(modA)); //Comparison is done only based on id
-                                                                                 // do not invalidate the CPLength
+                                                              
+                // do not invalidate the CPLength
                 foreach (var set in allowedValues.ToList())
                 {
                     foreach (var node in set)
@@ -245,9 +246,21 @@ namespace BayesianPDG.SpaceGenerator
 
                     }
                 }
+
+                // do not invalidate planarity
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
+                        if (!DungeonGraph.ValidPlanarGraph(node,child))
+                        {
+                            allowedValues.Remove(set);
+                        }
+                    }
+                }
+
                 Reduce(child, allowedValues, undoStack);
             }
-            //}
             Debug.WriteLine("Propagate finished");
         }
         #endregion
@@ -265,9 +278,8 @@ namespace BayesianPDG.SpaceGenerator
             //Get the global (Dungeon) parameters
             Rooms = (int)DungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
             CPLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-            Doors = (int)DungeonModel.Value(FeatureType.NumDoors);               //Soft constraint
 
-            Debug.WriteLine($"Dungeon Sampled: [{Rooms},{CPLength},{Doors}]");
+            Debug.WriteLine($"Dungeon Sampled: [{Rooms},{CPLength}]");
         }
         /// <summary>
         /// Sample room parameters from our SpaceModel and assign them to a node
@@ -280,7 +292,6 @@ namespace BayesianPDG.SpaceGenerator
             //temp save of global dungeon params
             int tempRooms = Rooms;
             int tempCPLength = CPLength;
-            int tempDoors = Doors;
 
             //1 set global observations and maintain them :: clear -> sample -> reset
             //2 set any known room observations (i.e. depth and cpDistance for Entrance node and cpDistance for rooms on the critical path) 
@@ -288,8 +299,7 @@ namespace BayesianPDG.SpaceGenerator
 
             DungeonModel.SetObservations(true,
                 (FeatureType.NumRooms, tempRooms),
-                (FeatureType.CriticalPathLength, tempCPLength),
-                (FeatureType.NumDoors, tempDoors));
+                (FeatureType.CriticalPathLength, tempCPLength));
 
 
             if (room.CPDistance == 0 && room.Depth != null)  //room on critical path
