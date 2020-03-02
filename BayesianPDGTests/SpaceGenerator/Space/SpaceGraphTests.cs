@@ -249,5 +249,28 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             ///////////////////////////////////  [0][                 1                ][    2       ][     3       ][       4     ][5]
             CollectionAssert.AreEqual(new int[] { 1, 0, 2, 3, 5, 0, 2, 4, 5, 0, 3, 4, 5, 0, 1, 3, 4, 5, 0, 1, 2, 4, 5, 0, 1, 2, 3, 5, 1 }.ToList(), actual);
         }
+
+        [TestMethod()]
+        public void PlanarityTest()
+        {
+            int edges = testGraph.AllEdges.Count;
+            int nodes = testGraph.AllNodes.Count;
+            Trace.WriteLine($"e:{edges} v:{nodes}");
+            Trace.WriteLine(testGraph.ToString());
+            Assert.IsTrue(testGraph.isPlanar);
+
+            testGraph.Connect(0, 4);
+            testGraph.Connect(0,2);
+            testGraph.Connect(0, 3);
+            testGraph.Connect(1, 4);
+            testGraph.Connect(1, 3);
+            testGraph.Connect(4, 2);
+
+            edges = testGraph.AllEdges.Count;
+            nodes = testGraph.AllNodes.Count;
+            Trace.WriteLine($"e:{edges} v:{nodes}");
+            Trace.WriteLine(testGraph.ToString());
+            Assert.IsFalse(testGraph.isPlanar);
+        }
     }
 }

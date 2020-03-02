@@ -14,11 +14,12 @@ namespace BayesianPDG.SpaceGenerator.Space
     {
         #region Public Fields
         public List<Node> AllNodes = new List<Node>();
+        public List<Edge> AllEdges => AllNodes.SelectMany(node => node.Edges).ToList();
         public Node Entrance => Node(0);
         public Node Goal => Node(AllNodes.Count - 1);
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateNodeConnected() && ValidateReachability();
-        public bool isPlanar => AllNodes.GroupBy(node => node.Edges).Count() >= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6;
+        public bool isPlanar => AllEdges.Count/2 <= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6; note /2 to get undirected edges count
         public bool areNodesInstantiated => AllNodes.FindAll(x => x.Values.Count == 1).Count == AllNodes.Count; //All room nodes have only 1 value
         #endregion
 
@@ -35,7 +36,6 @@ namespace BayesianPDG.SpaceGenerator.Space
 
         #region Public Properties
         public Node Node(int id) => AllNodes.First(node => node.Id == id);
-        //public Node Node(int id) => Task.Factory.StartNew(() => AllNodes.First(node => node.Id == id)).Result;
 
         public Node CreateNode(int id)
         {
@@ -164,6 +164,21 @@ namespace BayesianPDG.SpaceGenerator.Space
             bool isCPValid = CriticalPath.Count == originalCPLength;
             Disconnect(A, B);
             return isCPValid;
+        }
+
+        /// <summary>
+        /// Validate if adding node A to node B will break the invariant
+        /// i.e. if it will make the graph non-planar
+        /// </summary>
+        /// <param name="A">parent node</param>
+        /// <param name="B">child node</param>
+        /// <returns>If adding A:B is a valid operation</returns>
+        public bool ValidPlanarGraph(Node A, Node B)
+        {
+            Connect(A, B);
+            bool p = isPlanar;
+            Disconnect(A, B);
+            return p;
         }
 
         /// <summary>

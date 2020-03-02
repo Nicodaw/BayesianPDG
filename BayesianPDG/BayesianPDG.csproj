@@ -97,64 +97,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Resources\BNData\dungeon_data.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include="Resources\BNetworks\LICountNet.neta">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\BNetworks\DungeonNet.neta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\BNetworks\EMNet.neta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\Maps\17vertices.yml" />
-    <None Include="Resources\Maps\41vertices.yml" />
-    <None Include="Resources\Maps\9vertices.yml" />
-    <None Include="Resources\Maps\dragonAge.yml" />
-    <None Include="Resources\Maps\Thesis\backtracking.yml" />
-    <None Include="Resources\Maps\Thesis\backtracking_advanced.yml" />
-    <None Include="Resources\Maps\Thesis\backtracking_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\corridors.yml" />
-    <None Include="Resources\Maps\Thesis\different_probabilities_1.yml" />
-    <None Include="Resources\Maps\Thesis\different_probabilities_1_new.yml" />
-    <None Include="Resources\Maps\Thesis\different_probabilities_2.yml" />
-    <None Include="Resources\Maps\Thesis\different_probabilities_2_new.yml" />
-    <None Include="Resources\Maps\Thesis\doors.yml" />
-    <None Include="Resources\Maps\Thesis\example1_advanced.yml" />
-    <None Include="Resources\Maps\Thesis\example1_basic.yml" />
-    <None Include="Resources\Maps\Thesis\example1_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\example1_mixed.yml" />
-    <None Include="Resources\Maps\Thesis\example2_advanced.yml" />
-    <None Include="Resources\Maps\Thesis\example2_basic.yml" />
-    <None Include="Resources\Maps\Thesis\example2_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\example2_mixed.yml" />
-    <None Include="Resources\Maps\Thesis\example3_advanced.yml" />
-    <None Include="Resources\Maps\Thesis\example3_basic.yml" />
-    <None Include="Resources\Maps\Thesis\example3_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\example3_mixed.yml" />
-    <None Include="Resources\Maps\Thesis\game1_basic.yml" />
-    <None Include="Resources\Maps\Thesis\game1_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\game2_basic.yml" />
-    <None Include="Resources\Maps\Thesis\game2_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\generating_one_layout.yml" />
-    <None Include="Resources\Maps\Thesis\generating_one_layout_advanced.yml" />
-    <None Include="Resources\Maps\Thesis\generating_one_layout_corridors.yml" />
-    <None Include="Resources\Maps\Thesis\incremental_layout.yml" />
-    <None Include="Resources\Maps\tutorial_basic.yml" />
-    <None Include="Resources\Maps\tutorial_corridors.yml" />
-    <None Include="Resources\Maps\tutorial_differentProbabilities.yml" />
-    <None Include="Resources\Maps\tutorial_differentShapes.yml" />
-    <None Include="Resources\Rooms\basicRooms.yml" />
-    <None Include="Resources\Rooms\bossRooms.yml" />
-    <None Include="Resources\Rooms\corridors.yml" />
-    <None Include="Resources\Rooms\otherShapes.yml" />
-    <None Include="Resources\Rooms\rectangles.yml" />
-    <None Include="Resources\Rooms\thesis_advanced.yml" />
-    <None Include="Resources\Rooms\thesis_basic.yml" />
-    <None Include="Resources\Rooms\thesis_corridors.yml" />
-    <None Include="Resources\Rooms\thesis_corridors_offset_4.yml" />
-    <None Include="Resources\Rooms\tutorial_basicRooms.yml" />
-    <None Include="Resources\Rooms\tutorial_corridors.yml" />
-    <None Include="Resources\Rooms\tutorial_differentProbabilities.yml" />
     <Compile Include="SpaceGenerator\Enums\FeatureType.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -165,10 +110,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SpaceGenerator\BayesianSpaceGenerator.cs" />
-    <Compile Include="MissionGenerator\Edge.cs" />
-    <Compile Include="MissionGenerator\Mission.cs" />
-    <Compile Include="MissionGenerator\RoomType.cs" />
-    <Compile Include="MissionGenerator\Vertex.cs" />
     <Compile Include="SpaceGenerator\DAGLoader.cs" />
     <Compile Include="SpaceGenerator\SpaceModel.cs" />
     <Compile Include="SpaceGenerator\Space\Edge.cs" />
