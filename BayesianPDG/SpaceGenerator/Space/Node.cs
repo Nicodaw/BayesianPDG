@@ -65,7 +65,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>this</returns>
         public Node AddEdge(Node child)
         {
-            if (!this.Edges.Exists(e => e.Parent == this && e.Child == child))
+            if (!this.Edges.Exists(e => e.Parent.Id == Id && e.Child.Id == child.Id))
             {
                 Edges.Add(new Edge
                 {
@@ -73,7 +73,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                     Child = child
                 });
 
-                if (!child.Edges.Exists(e => e.Parent == child && e.Child == this))
+                if (!child.Edges.Exists(e => e.Parent.Id == child.Id && e.Child.Id == Id))
                 {
                     child.AddEdge(this);
                 }

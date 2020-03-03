@@ -160,9 +160,9 @@ namespace BayesianPDG.SpaceGenerator.Space
         public bool ValidCPLength(Node A, Node B)
         {
             int originalCPLength = CriticalPath.Count;
-            Connect(A, B);
+            Connect(A.Id, B.Id);
             bool isCPValid = CriticalPath.Count == originalCPLength;
-            Disconnect(A, B);
+            Disconnect(A.Id, B.Id);
             return isCPValid;
         }
 
@@ -175,9 +175,9 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>If adding A:B is a valid operation</returns>
         public bool ValidPlanarGraph(Node A, Node B)
         {
-            Connect(A, B);
+            Connect(A.Id, B.Id);
             bool p = isPlanar;
-            Disconnect(A, B);
+            Disconnect(A.Id, B.Id);
             return p;
         }
 

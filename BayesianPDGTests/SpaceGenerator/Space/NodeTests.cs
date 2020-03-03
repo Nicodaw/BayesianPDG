@@ -62,6 +62,35 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             Assert.IsTrue(B.Edges.Contains(expectedB));
         }
 
+        [TestMethod()]
+        public void AddDuplicateEdgeTest()
+        {
+            CollectionAssert.AreEqual(A.Edges, new List<Edge>());
+            CollectionAssert.AreEqual(B.Edges, new List<Edge>());
+
+            Edge expectedA = new Edge();
+            expectedA.Parent = A;
+            expectedA.Child = B;
+
+            Edge expectedB = new Edge();
+            expectedB.Parent = B;
+            expectedB.Child = A;
+
+            A.AddEdge(B);
+
+            Node A1 = new Node(0);
+            Node B2 = new Node(1);
+
+            A.AddEdge(B2);
+            B.AddEdge(A1);
+
+            Assert.IsTrue(A.Edges.Count == 1);
+            Assert.IsTrue(B.Edges.Count == 1);
+
+            Assert.IsTrue(A.Edges.Contains(expectedA));
+            Assert.IsTrue(B.Edges.Contains(expectedB));
+        }
+
 
         [TestMethod()]
         public void RemoveEdgeTest()

@@ -77,6 +77,28 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             Assert.IsTrue(basic.Node(0).IsConnected(basic.Node(1)));
             Assert.IsTrue(basic.Node(1).IsConnected(basic.Node(0)));
             Assert.IsFalse(basic.Node(0).IsConnected(basic.Node(2)));
+
+            Assert.AreEqual(basic.Node(0).Edges.Count, 1);
+            Assert.AreEqual(basic.Node(1).Edges.Count, 1);
+        }
+
+        [TestMethod()]
+        public void DuplicateConnectTest()
+        {
+            SpaceGraph basic = new SpaceGraph();
+            basic.CreateNode(0);
+            basic.CreateNode(1);
+            basic.CreateNode(2);
+
+            basic.Connect(0, 1);
+            basic.Connect(1, 0);
+
+            Assert.IsTrue(basic.Node(0).IsConnected(basic.Node(1)));
+            Assert.IsTrue(basic.Node(1).IsConnected(basic.Node(0)));
+            Assert.IsFalse(basic.Node(0).IsConnected(basic.Node(2)));
+
+            Assert.AreEqual(basic.Node(0).Edges.Count, 1);
+            Assert.AreEqual(basic.Node(1).Edges.Count, 1);
         }
 
         [TestMethod()]
@@ -190,7 +212,7 @@ namespace BayesianPDG.SpaceGenerator.Space.Tests
             CollectionAssert.AreEqual(originalGoal.Edges, testGraph.Goal.Edges);
 
 
-            testGraph.Connect(testGraph.Entrance, testGraph.Goal);
+            testGraph.Connect(testGraph.Entrance.Id, testGraph.Goal.Id);
 
             CollectionAssert.AreNotEqual(testGraph.CriticalPath, originalCP);
         }

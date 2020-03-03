@@ -7,7 +7,7 @@ namespace BayesianPDG.SpaceGenerator
     class DAGLoader
     {
         #region Constants
-        private const string defaultNetPath = "Resources\\BNetworks\\LiCountNet.neta";
+        private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         #endregion
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
 

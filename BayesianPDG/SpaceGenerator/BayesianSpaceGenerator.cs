@@ -44,7 +44,7 @@ namespace BayesianPDG.SpaceGenerator
                 //Configure observations, i.e. how many rooms in the dungeon
                 DungeonGraph = new SpaceGraph();
 
-                int observedRooms = 12; // ToDo: Let user decide
+                int observedRooms = 10; // ToDo: Let user decide
 
                 DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
@@ -84,7 +84,16 @@ namespace BayesianPDG.SpaceGenerator
                 // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
                 //DungeonGraph = NeighbourMapper(DungeonGraph);
 
-                Map();
+                try
+                {
+                    Map();
+                }
+                catch (ArgumentException e)
+                {
+                    Debug.WriteLine($"{e.Message} Retrying...");
+                    RunInference();
+                }
+
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
@@ -134,14 +143,17 @@ namespace BayesianPDG.SpaceGenerator
             return graph;
         }
 
-        public void Map() //TODO: handle unsatisfiable cases
+        public void Map()
         {
             while (!DungeonGraph.areNodesInstantiated)
             {
                 MapOne();
             }
-
-            DungeonGraph.InstantiateGraph();
+          //  DungeonGraph.InstantiateGraph();
+            if (DungeonGraph.AllNodes.Any(node => node.Edges.Count != node.MaxNeighbours))
+            {
+                throw new ArgumentException("No dungeon that satisfy these samples can be produced.");
+            }
 
         }
 
@@ -177,8 +189,6 @@ namespace BayesianPDG.SpaceGenerator
                         {
                             Node savedNode = undoStack.Peek().Pop();
                             savedNode.Values.Remove(value); //remove what didn't work
-
-                            // selected = savedNode;
                             DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
                             if (undoStack.Peek().Count == 0) undoStack.Pop();
                         }
@@ -192,7 +202,6 @@ namespace BayesianPDG.SpaceGenerator
         /// </summary>
         /// <param name = "A" > Node to be reduced</param>
         /// <param name = "set" >Potential values for A</param>
-        /// <returns>Valid reduction? A : null</returns>
         private void Reduce(Node A, List<List<Node>> set, Stack<Stack<Node>> undoStack)
         {
             if (set.Count == 0)
@@ -220,7 +229,7 @@ namespace BayesianPDG.SpaceGenerator
 
                 // in the child node that is to be connected, find only the possible values that include the parent (modA)
                 allowedValues = child.Values.FindAll(set => set.Contains(modA)); //Comparison is done only based on id
-                                                              
+
                 // do not invalidate the CPLength
                 foreach (var set in allowedValues.ToList())
                 {
@@ -239,6 +248,7 @@ namespace BayesianPDG.SpaceGenerator
                 {
                     foreach (var node in set)
                     {
+
                         if (!node.IsConnected(child) && (!DungeonGraph.ValidNeighboursPostInc(node) || !DungeonGraph.ValidNeighboursPostInc(child)))
                         {
                             allowedValues.Remove(set);
@@ -252,7 +262,7 @@ namespace BayesianPDG.SpaceGenerator
                 {
                     foreach (var node in set)
                     {
-                        if (!DungeonGraph.ValidPlanarGraph(node,child))
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidPlanarGraph(node, child))
                         {
                             allowedValues.Remove(set);
                         }
@@ -308,9 +318,14 @@ namespace BayesianPDG.SpaceGenerator
                 DungeonModel.Observe(FeatureType.Depth, room.Depth.Value);
 
                 _ = DungeonModel.Sample();
+                int maxNeigh = (int)DungeonModel.Value(FeatureType.NumNeighbours); //Hard constraint
 
-                room.MaxNeighbours = (int)DungeonModel.Value(FeatureType.NumNeighbours);    //Hard constraint
-                room.Values = new List<List<Node>>(room.MaxNeighbours.Value);
+                if (maxNeigh <= tempRooms)
+                {
+                    room.MaxNeighbours = maxNeigh;
+                    room.Values = new List<List<Node>>(room.MaxNeighbours.Value);
+                }
+                else return RoomSampler(room);
             }
             else // room not on critical path
             {
@@ -320,7 +335,7 @@ namespace BayesianPDG.SpaceGenerator
                 int maxNeigh = (int)DungeonModel.Value(FeatureType.NumNeighbours);          //Hard constraint
                 int cpDistance = (int)DungeonModel.Value(FeatureType.CriticalPathDistance); //Hard constraint
 
-                if (depth != 0 && cpDistance != 0)
+                if (depth != 0 && cpDistance != 0 && maxNeigh <= tempRooms)
                 {
                     room.Depth = depth;
                     room.MaxNeighbours = maxNeigh;
@@ -329,8 +344,6 @@ namespace BayesianPDG.SpaceGenerator
                 }
                 else return RoomSampler(room);
             }
-
-
             return room;
         }
         #endregion

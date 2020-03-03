@@ -96,10 +96,7 @@ namespace BayesianPDG.SpaceGenerator.Tests
             // 0 --- 1 --- 3  No valid configs
             //
             //
-            gen.Map();
-            Trace.WriteLine("After");
-            gen.DungeonGraph.AllNodes.ForEach(room => Trace.WriteLine(room.PrintConnections()));
-            Assert.IsFalse(gen.DungeonGraph.areNodesInstantiated);
+            Assert.ThrowsException<ArgumentException>(gen.Map);
         }
     }
 }
