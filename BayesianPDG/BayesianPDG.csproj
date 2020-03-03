@@ -97,10 +97,10 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Resources\BNetworks\LICountNet.neta">
+    <Compile Include="SpaceGenerator\Enums\FeatureType.cs" />
+    <None Include="Resources\BNetworks\LIEMNet.neta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="SpaceGenerator\Enums\FeatureType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
