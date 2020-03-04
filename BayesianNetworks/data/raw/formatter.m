@@ -24,4 +24,4 @@ p3 = combined(r3,:);
 writematrix(p1, "DR_1.csv");
 writematrix(p2, "DR_2.csv");
 writematrix(p3, "DR_3.csv");
-% writematrix(combined,"DR_data.csv");
+writematrix(combined,"DR_data.csv");
