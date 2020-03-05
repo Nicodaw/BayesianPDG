@@ -17,12 +17,24 @@ namespace BayesianPDG
 {
     class Program
     {
+        private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
+        static private double netGenerationTime = 0;
+        static private double dunGenerationTime = 0;
+
         public static void Main()
         {
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
-            SpaceGraph graph = spaceGen.RunInference(1000);
+
+            Stopwatch netWatch = new Stopwatch();
+
+            netWatch.Start();
+            SpaceGraph graph = spaceGen.RunInference(defaultNetPath, 1000);
+            netWatch.Stop();
+            netGenerationTime = netWatch.Elapsed.TotalSeconds;
+
             GenerateMap(graph);
+
         }
 
         static void GenerateMap(SpaceGraph graph, int seed = 0)
@@ -45,16 +57,14 @@ namespace BayesianPDG
             }
             // Add default room shapes
             var doorMode = new OverlapMode(1, 1);
-            var squareRoom = new RoomDescription(
-              GridPolygon.GetSquare(8),
-              doorMode
-            );
-            var rectangleRoom = new RoomDescription(
-              GridPolygon.GetRectangle(6, 10),
-              doorMode
-            );
-            mapDescription.AddRoomShapes(squareRoom);
-            mapDescription.AddRoomShapes(rectangleRoom);
+
+            for (int i = 5; i < 15; i++)
+            {
+                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetSquare(i), doorMode));
+                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetRectangle(i, i + 2), doorMode));
+                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetRectangle(i, i + 4), doorMode));
+            }
+
 
             // Generate bitmap
             SaveBitmap(mapDescription, seed);
@@ -64,10 +74,14 @@ namespace BayesianPDG
         {
             try
             {
+                Stopwatch dunWatch = new Stopwatch();
+                dunWatch.Start();
                 var layoutGenerator = LayoutGeneratorFactory.GetDefaultChainBasedGenerator<int>();
                 layoutGenerator.InjectRandomGenerator(new Random(seed));
                 Debug.WriteLine(mapDescription.GetGraph().ToString());
                 List<IMapLayout<int>> generatedLayouts = (List<IMapLayout<int>>)layoutGenerator.GetLayouts(mapDescription, 3); //Magic number 3 is how many different layouts we want
+                dunWatch.Stop();
+                dunGenerationTime = dunWatch.Elapsed.TotalSeconds;
                 exportAllJpgButton_Click(generatedLayouts);
             }
             catch (ArgumentException e)
@@ -86,16 +100,28 @@ namespace BayesianPDG
             int width = 600;
             int height = 600;
 
-            Directory.CreateDirectory(folder);
-
-            for (var i = 0; i < generatedLayouts.Count; i++)
+            try
             {
-                Bitmap bitmap = wfLayoutDrawer.DrawLayout(generatedLayouts[i], width, height, true, null);
+                Directory.CreateDirectory(folder);
 
-                bitmap.Save($"{folder}/{i}.jpg");
+                for (var i = 0; i < generatedLayouts.Count; i++)
+                {
+                    Bitmap bitmap = wfLayoutDrawer.DrawLayout(generatedLayouts[i], width, height, true, null);
+
+                    bitmap.Save($"{folder}/{i}.jpg");
+                }
+                File.WriteAllText(folder + "/benchmark.txt", $"Inference process took {netGenerationTime}s \n" +
+                $"Generation process took {dunGenerationTime}s \n" +
+                $"Total elapsed time :: {netGenerationTime + dunGenerationTime}s");
+
+                MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{e.Message} with: {e.Data} {e.StackTrace}");
             }
 
-            MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+
         }
     }
 

@@ -34,66 +34,56 @@ namespace BayesianPDG.SpaceGenerator
         private int CPLength;
         #endregion
 
-        public SpaceGraph RunInference(int? seed = null)
+        public SpaceGraph RunInference(string path, int? seed = null)
         {
-            DAGLoader dungeonBNLoader = new DAGLoader();
+            DAGLoader dungeonBNLoader = new DAGLoader(path);
             DungeonModel = new SpaceModel(dungeonBNLoader);
             RNG = (seed == null) ? new Random() : new Random(seed.Value);
+            //Configure observations, i.e. how many rooms in the dungeon
+            DungeonGraph = new SpaceGraph();
+
+            int observedRooms = 10; // ToDo: Let user decide
+
+            DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
+
+            ///
+            /// ~ Building the Space graph for the map generator ~
+            /// 
+            for (int i = 0; i < observedRooms; i++)
+            {
+                DungeonGraph.CreateNode(i);
+            }
+
+            // Create the critical path and set the distance for all nodes on it to 0
+            DungeonGraph = CriticalPathMapper(DungeonGraph, (int)DungeonModel.Value(FeatureType.CriticalPathLength));
+
+            // Sample room params and set the node constraints: Depth, MaxNeighbours, CPDistance
+            foreach (Node parent in DungeonGraph.AllNodes)
+            {
+                RoomSampler(parent);
+            }
+
+            Debug.WriteLine("=== Final set of rooms sampled ===");
+            Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
+            DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
+
+            // Initialise the potential connections for formulating the CSP
+            // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
+            DungeonGraph.ReducePotentialValues();
+
+
+            Debug.WriteLine("Potential room connections before CP mapping");
+            DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
+
+            // Transform the basis dungeon in a per-room fashion
+            // Compose a list of all nodes that still don't have their full neighbours reached
+            // randomly assign neighbours and remove any fully connected node from the list
+            // repeat untill all have been assigned
+            // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
+
             try
             {
-                //Configure observations, i.e. how many rooms in the dungeon
-                DungeonGraph = new SpaceGraph();
-
-                int observedRooms = 10; // ToDo: Let user decide
-
-                DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
-
-                ///
-                /// ~ Building the Space graph for the map generator ~
-                /// 
-                for (int i = 0; i < observedRooms; i++)
-                {
-                    DungeonGraph.CreateNode(i);
-                }
-
-                // Create the critical path and set the distance for all nodes on it to 0
-                DungeonGraph = CriticalPathMapper(DungeonGraph, (int)DungeonModel.Value(FeatureType.CriticalPathLength));
-
-                // Sample room params and set the node constraints: Depth, MaxNeighbours, CPDistance
-                foreach (Node parent in DungeonGraph.AllNodes)
-                {
-                    RoomSampler(parent);
-                }
-
-                Debug.WriteLine("=== Final set of rooms sampled ===");
-                Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
-                DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
-
-                // Initialise the potential connections for formulating the CSP
-                // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
-                DungeonGraph.ReducePotentialValues();
-
-
-                Debug.WriteLine("Potential room connections before CP mapping");
-                DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
-
-                // Transform the basis dungeon in a per-room fashion
-                // Compose a list of all nodes that still don't have their full neighbours reached
-                // randomly assign neighbours and remove any fully connected node from the list
-                // repeat untill all have been assigned
-                // the data handles some constraints implicitly (e.g. data guarantees that there will be no room with MaxNeighbours == 0)
-                //DungeonGraph = NeighbourMapper(DungeonGraph);
-
-                try
-                {
-                    Map();
-                }
-                catch (ArgumentException e)
-                {
-                    Debug.WriteLine($"{e.Message} Retrying...");
-                    RunInference();
-                }
-
+                Map();
 
                 // Validate if graph is complete.
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
@@ -105,12 +95,13 @@ namespace BayesianPDG.SpaceGenerator
                 Debug.WriteLine($"List of Unconected nodes {unc}");
                 Debug.WriteLine($"List of Connected nodes {con}");
                 Debug.Write(DungeonGraph.ToString());
+                dungeonBNLoader.close();
                 return DungeonGraph;
             }
-            finally
+            catch (ArgumentException e)
             {
-                //clean-up
-                dungeonBNLoader.close();
+                Debug.WriteLine($"{e.Message} Retrying...");
+                return RunInference(path);
             }
         }
         #region Graph transforms
@@ -149,7 +140,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 MapOne();
             }
-          //  DungeonGraph.InstantiateGraph();
+            DungeonGraph.InstantiateGraph();
             if (DungeonGraph.AllNodes.Any(node => node.Edges.Count != node.MaxNeighbours))
             {
                 throw new ArgumentException("No dungeon that satisfy these samples can be produced.");
@@ -170,28 +161,25 @@ namespace BayesianPDG.SpaceGenerator
             {
                 List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Values.Count > 1); //find all nodes whList<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours < node.Edges.Count);
                 Node selected = (possible.Count == 1) ? possible[0] : possible[RNG.Next(0, possible.Count - 1)];
-                while (selected.Values.Count != 1)
+                List<Node> value = selected.Values[0];
+                int frame = undoStack.Count;
+                undoStack.Push(new Stack<Node>());
+                try
                 {
-                    List<Node> value = selected.Values[0];
-                    int frame = undoStack.Count;
-                    undoStack.Push(new Stack<Node>());
-                    try
-                    {
-                        Reduce(selected, new List<List<Node>>() { value }, undoStack);
-                        //if reduce didn't throw an exception, assign and repeat
-                        DungeonGraph.Node(selected.Id).Values[0].ForEach(child => DungeonGraph.Connect(selected.Id, child.Id));
-                        MapOne();
+                    Reduce(selected, new List<List<Node>>() { value }, undoStack);
+                    //if reduce didn't throw an exception, assign and repeat
+                    DungeonGraph.Node(selected.Id).Values[0].ForEach(child => DungeonGraph.Connect(selected.Id, child.Id));
+                    MapOne();
 
-                    }
-                    catch (Exception e)
+                }
+                catch (Exception e)
+                {
+                    while (undoStack.Count != frame)
                     {
-                        while (undoStack.Count != frame)
-                        {
-                            Node savedNode = undoStack.Peek().Pop();
-                            savedNode.Values.Remove(value); //remove what didn't work
-                            DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
-                            if (undoStack.Peek().Count == 0) undoStack.Pop();
-                        }
+                        Node savedNode = undoStack.Peek().Pop();
+                        savedNode.Values.Remove(value); //remove what didn't work
+                        DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
+                        if (undoStack.Peek().Count == 0) undoStack.Pop();
                     }
                 }
             }

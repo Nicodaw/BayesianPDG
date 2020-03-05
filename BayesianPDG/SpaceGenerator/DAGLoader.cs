@@ -7,13 +7,12 @@ namespace BayesianPDG.SpaceGenerator
     class DAGLoader
     {
         #region Constants
-        private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         #endregion
         private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
 
         public BNet Net { get; set; }
 
-        public DAGLoader(string netPath = defaultNetPath)
+        public DAGLoader(string netPath)
         {
             Net = LoadBNet(netPath);
         }
@@ -50,10 +49,18 @@ namespace BayesianPDG.SpaceGenerator
 
         public void close()
         {
-            Net.Delete();
-            if (!_app.UserControl) _app.Quit();
-            Debug.WriteLine("Press <enter> to quit.");
-            Console.ReadLine();
+            try
+            {
+                Net.Delete();
+                if (!_app.UserControl) _app.Quit();
+                //Debug.WriteLine("Press <enter> to quit.");
+                //Console.ReadLine();
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                Debug.WriteLine("Net Already closed");
+            }
+            
         }
     }
 }

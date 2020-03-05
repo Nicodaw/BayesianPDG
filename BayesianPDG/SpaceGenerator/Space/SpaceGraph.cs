@@ -75,7 +75,7 @@ namespace BayesianPDG.SpaceGenerator.Space
                 {
                     Node n2 = Node(j);
 
-                    var arc = n1.Edges.FirstOrDefault(a => a.Child == n2);
+                    var arc = n1.Edges.FirstOrDefault(a => a.Child.Id == n2.Id);
 
                     if (arc != null)
                     {
@@ -220,7 +220,16 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             else
             {
-                AllNodes.ForEach(parent => parent.Values[0].ForEach(child => Connect(parent.Id, child.Id)));
+                foreach(Node parent in AllNodes)
+                {
+                    foreach(Node child in parent.Values.First())
+                    {
+                        if (ValidNeighboursPostInc(parent) && ValidNeighboursPostInc(child))
+                        {
+                            Connect(parent.Id, child.Id);
+                        }
+                    }
+                }
             }
         }
         #endregion
