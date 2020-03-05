@@ -1,43 +1,14 @@
-Netica 6.07 Win (CoGFMs64), (C) 1992-2019 Norsys Software Corp.
+--------------------------------------------------------------------------------
+Sensitivity of 'NumRooms' to a finding at another node:
 
-Netica is operating without a password; there are some limitations.
-The file location of the executable running this program is:  D:\Uni\Year 3\Dissertation\Netica\Netica 607\Netica.exe
+Node                     Variance    Percent   Mutual      Percent   Variance of 
+----                     Reduction             Info                  Beliefs     
+NumRooms                 40.59       100       4.43720     100       0.9009668   
+CriticalPathLength       11.07       27.3      1.60710     36.2      0.0342030   
+CriticalPathDistance     4.486       11.1      0.20271     4.57      0.0016643   
+Depth                    2.745       6.76      0.32704     7.37      0.0032602   
+NumNeighbours            1.042       2.57      0.24332     5.48      0.0028706   
 
-Command Line:  /open "D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\FullyConnected\LIEMNet.neta"
-Doing command line 'open'.
-Compiled to 1 cliques, with total table size (including sepsets) of 196560.
-The tables of 5 nodes were removed.
-Case file to learn CPTs from:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_1.csv
-Enter degree (normal is 1):  1
-
-Doing EM Learning, hold down <ctrl> + <mouse button> to stop ...
-  Iteration  -Log Likelihood   Change %
-          0   12.1852       
-          1   5.85121          51.9811
-          2   5.85121          0.0000
-Case file to learn CPTs from:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_2.csv
-Remove existing node CPT and experience tables first? (yes/no)   --> NO
-Enter degree (normal is 1):  1
-
-Doing EM Learning, hold down <ctrl> + <mouse button> to stop ...
-  Iteration  -Log Likelihood   Change %
-          0   22.5959       
-          1   6.50625          71.2061
-          2   6.50625          0.0000
-Probability of findings = 0.21737 %.
-Undoing make random case.
-Case file to learn CPTs from:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_3.csv
-Remove existing node CPT and experience tables first? (yes/NO)   --> NO
-Enter degree (normal is 1):  1
-
-Doing EM Learning, hold down <ctrl> + <mouse button> to stop ...
-  Iteration  -Log Likelihood   Change %
-          0   20.9047       
-          1   5.37158          74.3045
-          2   5.37158          0.0000
-Probability of findings = 5.20984 %.
-Case file for testing:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_data.csv
-Read 1382 cases, and used 1382 of them to test net.
 
 For NumNeighbours:
 -----------------

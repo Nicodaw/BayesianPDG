@@ -1,6 +1,13 @@
- ...
-Case file for testing:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_data.csv
-Read 1382 cases, and used 1382 of them to test net.
+Sensitivity of 'NumRooms' to a finding at another node:
+
+Node                     Variance    Percent   Mutual      Percent   Variance of 
+----                     Reduction             Info                  Beliefs     
+NumRooms                 29.86       100       3.69356     100       0.8288308   
+CriticalPathLength       13.86       46.4      2.51051     68        0.3213609   
+Depth                    2.138       7.16      0.72053     19.5      0.0422248   
+NumNeighbours            0.04753     0.159     0.05590     1.51      0.0009385   
+CriticalPathDistance     0           0         0.00000     0         0.0000000   
+
 
 For CriticalPathLength:
 ----------------------

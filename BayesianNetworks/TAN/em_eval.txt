@@ -1,3 +1,13 @@
+Sensitivity of 'NumRooms' to a finding at another node:
+
+Node                     Variance    Percent   Mutual      Percent   Variance of 
+----                     Reduction             Info                  Beliefs     
+NumRooms                 40.59       100       4.43720     100       0.9009668   
+CriticalPathLength       11.07       27.3      1.60710     36.2      0.0342030   
+CriticalPathDistance     4.286       10.6      0.19666     4.43      0.0017379   
+Depth                    2.745       6.76      0.32704     7.37      0.0032602   
+NumNeighbours            0.9229      2.27      0.23792     5.36      0.0030759   
+
 For Depth:
 ---------
 

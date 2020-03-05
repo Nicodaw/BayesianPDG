@@ -1,7 +1,14 @@
+--------------------------------------------------------------------------------
+Sensitivity of 'NumRooms' to a finding at another node:
 
-**2334** No nodes selected (or in 'target' node-set) to run the tests for.
-Case file for testing:  D:\Uni\Year 3\Dissertation\Dungeon Generator\Thesis\BayesianPDG\BayesianNetworks\data\DR_data.csv
-Read 1382 cases, and used 1382 of them to test net.
+Node                     Variance    Percent   Mutual      Percent   Variance of 
+----                     Reduction             Info                  Beliefs     
+NumRooms                 29.67       100       3.68065     100       0.8277708   
+CriticalPathLength       13.9        46.8      2.52352     68.6      0.3361895   
+CriticalPathDistance     3.689       12.4      0.61026     16.6      0.0398293   
+Depth                    2.853       9.61      1.02386     27.8      0.1114232   
+NumNeighbours            1.84        6.2       0.63256     17.2      0.0555048   
+
 
 For NumNeighbours:
 -----------------
