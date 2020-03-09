@@ -9,7 +9,7 @@
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
-\date{2020-February-28}
+\date{\today}
 \supervisor{Dr. Rob Alexander}
 \BEng
 
@@ -160,7 +160,7 @@ Each global and local set of parameters is defined by the joint PDs respectively
 
 \begin{equation}
   \label{eq:full_joint_PD}
-  P(R,L,S,D,N) = P(R, L) \prod_{i=1}^{\mid R \mid} P(S_i}, D_i, N_i)
+  P(R,L,S,D,N) = P(R, L) \prod_{r}^{\mid R \mid} P(S_r, D_r, N_r)
 \end{equation}
 where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
 
@@ -186,7 +186,7 @@ In this paper we will empirically compare different models in search of the one 
 In exploring data-driven PDG for the Legend of Zelda franchise, Summerville found out that when dealing with a small dataset (38 dungeons with 1031 rooms), the SESM is able to capture high level properties of both Mission and Space with the highest accuracy in respect to the learning criteria and the lowest complexity. Following our assertion that digital RPGs differ from PnP RPGs only in mechanisms of interaction, we will base one of our BN topologies on Summerville's work. In order to do so, we flatten down the graph to use only the Space parameters. The flattening is done by reconstructing the SESM in Netica and applying the \texttt{AbsorbNodes\_bn} \parencite[62-63]{neticaCman}. The function removes the unused Mission RVs by effectively treating them as constants and propagating any implied dependencies from the other nodes. In this way we remove the unused RVs and maintain the joint distribution dependencies between our Space parameters. The transformation can be seen in figure \ref{fig:SESM}. The resulting model describes the following factorisation over our RVs
 \begin{equation}
   \label{eq:SESM}
-  P(R,L,S,D,N) = P(R)P(S)P(L \mid R)P(D \mid R, L})P(N \mid D, S)
+  P(R,L,S,D,N) = P(R)P(S)P(L \mid R)P(D \mid R, L)P(N \mid D, S)
 \end{equation}
 
 \begin{figure}[htb]
@@ -370,18 +370,23 @@ Get the topologies for three sets of dungeons. Real OPDC dungeons, our inferred 
 \end{figure}
 
 %TODO: write the algo
-\begin{algorithm}[H]
+\begin{algorithm}
   \SetAlgoLined
-  \KwResult{Write here the result }
-   initialization\;
-   \While{While condition}{
-    instructions\;
-    \eIf{condition}{
-     instructions1\;
-     instructions2\;
-     }{
-     instructions3\;
-    }
+  \DontPrintSemicolon
+  \SetKwFunction{Observe}{Observe}\SetKwFunction{Sample}{Sample}\SetKwFunction{ClearObservations}{ClearObservations}
+  \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+  \Input{BNetModel, int \(observed\_R\)}
+  \Output{int estimates for the dungeon and each room parameter \((R, L, \{S_r, D_r, N_r\})\)}
+  \BlankLine
+  \(R \leftarrow \) BNetModel.\Observe{\(observed\_R\)}\;
+  \(L \leftarrow \) BNetModel.\Sample{}\;
+  \For{\(r \in R\) \KwDo}{
+    \(temp\_R = R\)\;
+    \(temp\_L = L\)\;
+    \((S_r, D_r, N_r) \leftarrow \) BNetModel.\Sample{}\;
+    BNetModel.\ClearObservations{}\;
+    \(R \leftarrow \) BNetModel.\Observe{\(temp\_R\)}\;
+    \(L \leftarrow \) BNetModel.\Observe{\(temp\_L\)}\;
    }
    \caption{Dungeon and Room sampling algorithm}
    \label{algo:sampling}
@@ -389,17 +394,76 @@ Get the topologies for three sets of dungeons. Real OPDC dungeons, our inferred 
 
   \begin{algorithm}[H]
     \SetAlgoLined
-    \KwResult{Write here the result }
-     initialization\;
-     \While{While condition}{
-      instructions\;
-      \eIf{condition}{
-       instructions1\;
-       instructions2\;
-       }{
-       instructions3\;
+    \DontPrintSemicolon
+    \SetKwFunction{FMap}{Map}\SetKwFunction{FMapOne}{MapOne}\SetKwFunction{FPropagate}{Propagate}
+    \SetKwFunction{FReduce}{Reduce}\SetKwFunction{FIsSingletonSet}{IsSingletonSet}\SetKwFunction{FUndo}{Undo}
+    \SetKwFunction{FChooseRand}{ChooseRand}
+    \SetKwProg{Fn}{Function}{:}{}
+    \SetKwProg{try}{try}{}{}
+    \SetKwProg{catch}{catch}{}{}
+    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+    \Input{set of rooms to be connected \(\mathcal{R}\), set of constraints for the dungeon and rooms \(\mathcal{C} = (R, L, \{S_r, D_r, N_r\})\)}
+    \Output{A connected dungeon graph}
+    
+    \BlankLine
+    \FMap{}\;
+
+    \BlankLine
+     \Fn{\FMap{}}{
+      \For{\(r \in \mathcal{R}\)}{
+        \(r_v \leftarrow\) all possible values for r\;
       }
+      \FMapOne{}\;
+      % \KwRet\;
      }
+
+     \BlankLine
+     %\tcc{Select a room \(r\) which still has more than one possible values in its set \(r_v\) and pick value for it}
+     \Fn{\FMapOne{}}{
+      \If{\(\forall r \mid\) \FIsSingletonSet{r_v}}{ %\If{} for normal ifs
+        \KwRet\;
+      }{
+        \(r^\prime \leftarrow\) \FChooseRand{\(r \mid \)\FIsSingletonSet{\(r_v\)}}\;
+        \For{\(v \in r^{\prime}_v\)}{
+          \try{}
+          {
+            \FReduce{\(r^{\prime}_v, \{v\}\)}\;
+            \FMapOne{}\;
+          }
+          \catch{\(Failure\)}{
+            \FUndo{}\;
+          }
+        }
+      }
+      \;
+     }
+
+     \BlankLine
+     \Fn{\FReduce{\(r_v, set\)}}{
+      \If{\(set = \emptyset\)}{
+        throw Failure\;
+      }
+      \If{\(r_v \ne set\)}{
+        \(r_v \leftarrow set\)\;
+        \For{\(c \in \mathcal{C}\)}{
+          \FPropagate{\(c, r_v\)}\;
+        }
+      }
+      % \KwRet\;
+      \;
+     }
+
+     \BlankLine
+     \Fn{\FPropagate{\(c, r^{\prime}_v\)}}{
+      \For{\(r_v \in c_r\)}{
+        \If{\(r_v \ne r^{\prime}_v\)}{
+          \FReduce{\(r_v\),\FRemainingPossibilities{\(c, r_v\)}}\;
+        }
+      }
+      % \KwRet\;
+      \;
+     }
+
      \caption{Constraint Propagation algorithm}
      \label{algo:CSP}
     \end{algorithm}
