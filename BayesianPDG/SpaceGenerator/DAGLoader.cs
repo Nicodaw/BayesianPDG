@@ -8,12 +8,13 @@ namespace BayesianPDG.SpaceGenerator
     {
         #region Constants
         #endregion
-        private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
+        private readonly Application _app;
 
         public BNet Net { get; set; }
 
-        public DAGLoader(string netPath)
+        public DAGLoader(string netPath, Application context)
         {
+            _app = context;
             Net = LoadBNet(netPath);
         }
 

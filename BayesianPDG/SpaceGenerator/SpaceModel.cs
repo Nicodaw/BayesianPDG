@@ -10,12 +10,10 @@ namespace BayesianPDG.SpaceGenerator
     class SpaceModel
     {
         private const int UndefinedState = -3; //netica default undefined state value
-        private readonly Application _app = BayesianSpaceGenerator.NeticaApp;
         private BNet net { get; }
 
         public SpaceModel(DAGLoader loader)
         {
-
             net = loader.Net;
 
         }

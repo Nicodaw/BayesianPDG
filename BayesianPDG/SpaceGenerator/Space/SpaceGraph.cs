@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using BayesianPDG.Utils;
 using Priority_Queue;
 
@@ -216,7 +214,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         {
             if (!areNodesInstantiated)
             {
-                throw new InvalidOperationException("Cannot create a graph from non-singleton values.");
+                throw new ArgumentException("Cannot create a graph from non-singleton values.");
             }
             else
             {
@@ -230,6 +228,10 @@ namespace BayesianPDG.SpaceGenerator.Space
                         }
                     }
                 }
+            }
+            if (AllNodes.Any(node => node.Edges.Count != node.MaxNeighbours))
+            {
+                throw new ArgumentException("No dungeon that satisfy these samples can be produced.");
             }
         }
         #endregion

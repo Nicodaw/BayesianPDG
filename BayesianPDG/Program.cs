@@ -1,10 +1,10 @@
 ﻿using BayesianPDG.SpaceGenerator;
 using BayesianPDG.SpaceGenerator.Space;
 using GeneralAlgorithms.DataStructures.Polygons;
-using MapGeneration.Core.Doors.DoorModes;
 using MapGeneration.Core.MapDescriptions;
 using MapGeneration.Interfaces.Core.MapLayouts;
 using MapGeneration.Utils;
+using MapGeneration.Utils.ConfigParsing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,29 +18,42 @@ namespace BayesianPDG
     class Program
     {
         private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
+        static private ConfigLoader cfloader = new ConfigLoader();
         static private double netGenerationTime = 0;
         static private double dunGenerationTime = 0;
 
         public static void Main()
         {
+
             Debug.WriteLine("Starting Bayesian Space Generator...");
-            BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
 
-            Stopwatch netWatch = new Stopwatch();
-
-            netWatch.Start();
-            SpaceGraph graph = spaceGen.RunInference(defaultNetPath, 1000);
-            netWatch.Stop();
-            netGenerationTime = netWatch.Elapsed.TotalSeconds;
-
-            GenerateMap(graph);
-
+            //for (int i = 12; i < 26; i++)
+            //{
+                for (int j = 0; j < 10; j++)
+                {
+                    BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
+                    Stopwatch netWatch = new Stopwatch();
+                    netWatch.Start();
+                    SpaceGraph graph = spaceGen.RunInference(8, defaultNetPath);
+                    netWatch.Stop();
+                    netGenerationTime = netWatch.Elapsed.TotalSeconds;
+                    if (graph != null)
+                    {
+                        GenerateMap(graph);
+                    }
+              //  }
+            }
         }
+
+        static void GenerateStaticMap(string mapName)
+        {
+            var mapDescription = cfloader.LoadMapDescriptionFromResources(mapName);
+            SaveBitmap(mapDescription, 0);
+        }
+
 
         static void GenerateMap(SpaceGraph graph, int seed = 0)
         {
-            //TODO: Finish when graph population is done
-
             var mapDescription = new MapDescription<int>();
 
             //Add rooms
@@ -55,16 +68,17 @@ namespace BayesianPDG
                     mapDescription.AddPassage(node, connections[node][link]);
                 }
             }
-            // Add default room shapes
-            var doorMode = new OverlapMode(1, 1);
-
-            for (int i = 5; i < 15; i++)
+            //Add room descriptions
+            using (var reader = new StreamReader(@"Resources\Rooms\SMB.yml"))
             {
-                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetSquare(i), doorMode));
-                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetRectangle(i, i + 2), doorMode));
-                mapDescription.AddRoomShapes(new RoomDescription(GridPolygon.GetRectangle(i, i + 4), doorMode));
+                var roomLoader = cfloader.LoadRoomDescriptionsSetModel(reader);
+                foreach (var roomDescription in roomLoader.RoomDescriptions)
+                {
+                    GridPolygon shape = new GridPolygon(roomDescription.Value.Shape);
+                    RoomDescription roomShape = new RoomDescription(shape, (roomDescription.Value.DoorMode == null) ? roomLoader.Default.DoorMode : roomDescription.Value.DoorMode);
+                    mapDescription.AddRoomShapes(roomShape);
+                }
             }
-
 
             // Generate bitmap
             SaveBitmap(mapDescription, seed);
@@ -79,7 +93,7 @@ namespace BayesianPDG
                 var layoutGenerator = LayoutGeneratorFactory.GetDefaultChainBasedGenerator<int>();
                 layoutGenerator.InjectRandomGenerator(new Random(seed));
                 Debug.WriteLine(mapDescription.GetGraph().ToString());
-                List<IMapLayout<int>> generatedLayouts = (List<IMapLayout<int>>)layoutGenerator.GetLayouts(mapDescription, 3); //Magic number 3 is how many different layouts we want
+                List<IMapLayout<int>> generatedLayouts = (List<IMapLayout<int>>)layoutGenerator.GetLayouts(mapDescription, 10); //Magic number 3 is how many different layouts we want
                 dunWatch.Stop();
                 dunGenerationTime = dunWatch.Elapsed.TotalSeconds;
                 exportAllJpgButton_Click(generatedLayouts);
@@ -95,7 +109,7 @@ namespace BayesianPDG
             WFLayoutDrawer<int> wfLayoutDrawer = new WFLayoutDrawer<int>();
 
             var time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            var folder = $"Output/{time}";
+            var folder = $"Output/{time}_{generatedLayouts[0].Rooms.Count()}";
 
             int width = 600;
             int height = 600;
@@ -114,7 +128,7 @@ namespace BayesianPDG
                 $"Generation process took {dunGenerationTime}s \n" +
                 $"Total elapsed time :: {netGenerationTime + dunGenerationTime}s");
 
-                MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+               // MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
             }
             catch (Exception e)
             {

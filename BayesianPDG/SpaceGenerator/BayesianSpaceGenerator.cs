@@ -3,6 +3,7 @@ using Netica;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace BayesianPDG.SpaceGenerator
@@ -12,7 +13,7 @@ namespace BayesianPDG.SpaceGenerator
         /// <summary>
         /// Global reference to the Netica COM
         /// </summary>
-        public static Application NeticaApp = new Application();
+        public Application NeticaApp = new Application();
 
         /// <summary>
         /// Maintain the same RNG throuought for consistency
@@ -29,20 +30,22 @@ namespace BayesianPDG.SpaceGenerator
         /// </summary>
         public SpaceGraph DungeonGraph;
 
+        public static (int cap, int cur) attempts = (5000, 0); //we allow for 500 attempts at making a dungeon
+        public (int cap, int cur) retries = (10000, 10000);       //we allow for 5000 backpropagations
+
         #region Dungeon Parameters
         private int Rooms;
         private int CPLength;
         #endregion
 
-        public SpaceGraph RunInference(string path, int? seed = null)
+        public SpaceGraph RunInference(int observedRooms, string path, int? seed = null)
         {
-            DAGLoader dungeonBNLoader = new DAGLoader(path);
+            attempts.cur++;
+            DAGLoader dungeonBNLoader = new DAGLoader(path, NeticaApp);
             DungeonModel = new SpaceModel(dungeonBNLoader);
             RNG = (seed == null) ? new Random() : new Random(seed.Value);
             //Configure observations, i.e. how many rooms in the dungeon
             DungeonGraph = new SpaceGraph();
-
-            int observedRooms = 10; // ToDo: Let user decide
 
             DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
@@ -85,7 +88,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 Map();
 
-                // Validate if graph is complete.
+                // Validate if graph is complete and print/write all metrics before returning the complete graph
                 Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
                 Debug.WriteLine($"Is DungeonGraph planar? {DungeonGraph.isPlanar}");
                 List<Node> unconnected = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
@@ -96,30 +99,84 @@ namespace BayesianPDG.SpaceGenerator
                 Debug.WriteLine($"List of Connected nodes {con}");
                 Debug.Write(DungeonGraph.ToString());
                 dungeonBNLoader.close();
+                string metricsPath = $"Resources\\BNetworks\\attempts_log_{observedRooms}.csv";
+                if (!File.Exists(metricsPath))
+                {
+                    // Create a file to write to.
+                    using (StreamWriter sw = File.CreateText(metricsPath))
+                    {
+                        sw.WriteLine("Attempts");
+                    }
+                }
+                using (StreamWriter sw = File.AppendText(metricsPath))
+                {
+                    sw.WriteLine(attempts.cur);
+                }
+
+
                 return DungeonGraph;
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ioe)
             {
-                Debug.WriteLine($"{e.Message} Retrying...");
-                return RunInference(path);
+                if (attempts.cur < attempts.cap)
+                {
+                    Debug.WriteLine($"{ioe.Message}. Retrying...");
+                    return RunInference(observedRooms, path);
+                }
+                else return null;
             }
+        }
+
+        public SpaceGraph RunRandomGraphInitialiser(int observedRooms, int? seed = null)
+        {
+            RNG = (seed == null) ? new Random() : new Random(seed.Value);
+            DungeonGraph = new SpaceGraph();
+
+            for (int i = 0; i < observedRooms; i++)
+            {
+                DungeonGraph.CreateNode(i);
+            }
+
+            RandomMapper();
+
+            return DungeonGraph;
         }
         #region Graph transforms
         /// <summary>
         /// Randomly select nodes and connect them until no dangling nodes remain
         /// Dummy logic, does not maintain invariants
         /// </summary>
-        private static SpaceGraph RandomMapper(SpaceGraph graph)
+        private SpaceGraph RandomMapper()
         {
-            int rooms = graph.AllNodes.Count;
-            while (!graph.isComplete)
+            int rooms = DungeonGraph.AllNodes.Count;
+
+            while (!DungeonGraph.isComplete)
             {
-                Random random = new Random();
-                int randParent = random.Next(1, rooms - 1);
-                int randChild = random.Next(1, rooms - 1);
-                graph.Connect(randParent, randChild);
+                List<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.Edges.Count == 0); //find all nodes whList<Node> possible = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours < node.Edges.Count);
+                Node randParent = (possible.Count <= 1) ? null : possible[RNG.Next(0, possible.Count - 1)];
+                Node randChild;
+                if (randParent != null)
+                {
+                    randChild = possible.Where(node => node.Id != randParent.Id).ToList()[RNG.Next(0, possible.Count - 1)];
+                }
+                else
+                {
+                    List<Node> disconnected = DungeonGraph.AllNodes.FindAll(node => node.Id != 0 && DungeonGraph.PathTo(0, node.Id).Count == 0);
+                    List<Node> connected = DungeonGraph.AllNodes.FindAll(node => node.Id == 0 || DungeonGraph.PathTo(0, node.Id).Count != 0);
+                    randParent = (disconnected.Count == 1) ? disconnected[0] : disconnected[RNG.Next(0, disconnected.Count - 1)];
+                    randChild = (connected.Count == 1)? connected[0] : connected[RNG.Next(0, connected.Count - 1)];
+                }
+                DungeonGraph.Connect(randParent, randChild);
             }
-            return graph;
+
+            //while (!DungeonGraph.isComplete)
+            //{
+            //    Random random = new Random();
+            //    int randParent = random.Next(1, rooms - 1);
+            //    int randChild = random.Next(1, rooms - 1);
+            //    DungeonGraph.Connect(randParent, randChild);
+            //}
+            return DungeonGraph;
         }
 
         public SpaceGraph CriticalPathMapper(SpaceGraph graph, int CPLength)
@@ -136,20 +193,23 @@ namespace BayesianPDG.SpaceGenerator
 
         public void Map()
         {
-            while (!DungeonGraph.areNodesInstantiated)
+            while (!DungeonGraph.areNodesInstantiated && retries.cur > 0)
             {
                 MapOne();
             }
-            DungeonGraph.InstantiateGraph();
-            if (DungeonGraph.AllNodes.Any(node => node.Edges.Count != node.MaxNeighbours))
+            try
             {
-                throw new ArgumentException("No dungeon that satisfy these samples can be produced.");
+                DungeonGraph.InstantiateGraph();
             }
-
+            catch (ArgumentException ioe)
+            {
+                throw ioe;
+            }
         }
 
         private void MapOne()
         {
+
             Stack<Stack<Node>> undoStack = new Stack<Stack<Node>>();
             //if all nodes are reduced to a single possible value, finish
             if (DungeonGraph.areNodesInstantiated)
@@ -169,6 +229,7 @@ namespace BayesianPDG.SpaceGenerator
                     Reduce(selected, new List<List<Node>>() { value }, undoStack);
                     //if reduce didn't throw an exception, assign and repeat
                     DungeonGraph.Node(selected.Id).Values[0].ForEach(child => DungeonGraph.Connect(selected.Id, child.Id));
+                    retries.cur = retries.cap;
                     MapOne();
 
                 }
@@ -181,6 +242,10 @@ namespace BayesianPDG.SpaceGenerator
                         DungeonGraph.AllNodes[DungeonGraph.AllNodes.IndexOf(DungeonGraph.Node(savedNode.Id))] = savedNode;
                         if (undoStack.Peek().Count == 0) undoStack.Pop();
                     }
+                }
+                finally
+                {
+                    retries.cur--;
                 }
             }
         }
@@ -308,7 +373,11 @@ namespace BayesianPDG.SpaceGenerator
                 _ = DungeonModel.Sample();
                 int maxNeigh = (int)DungeonModel.Value(FeatureType.NumNeighbours); //Hard constraint
 
-                if (maxNeigh <= tempRooms)
+                if (room.Id != DungeonGraph.Entrance.Id && room.Id != DungeonGraph.Goal.Id && maxNeigh < 2)
+                {
+                    return RoomSampler(room);
+                }
+                else if (maxNeigh <= tempRooms)
                 {
                     room.MaxNeighbours = maxNeigh;
                     room.Values = new List<List<Node>>(room.MaxNeighbours.Value);
