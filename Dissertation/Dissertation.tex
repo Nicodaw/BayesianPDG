@@ -290,6 +290,8 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \chapter{Results}
 \label{cha:results}
 \section{Internal Validation}
+As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". 
+
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
@@ -315,7 +317,8 @@ We can define characteristics of the desired dungeon by leveraging the inference
 
 \section{External Validation} %user study
 \paragraph{User study design}
-%TODO: Consider the design, ethics and explain Qualtrics ?
+Get the topologies for three sets of dungeons. Real OPDC dungeons, our inferred dungeons and a control group containing the random donjon dungeons. All formatted in the same style. Preference study by providing randomly selected pairs from these three sets. 10, 13 and 8 room dungeons were used as 10 and 8 are the most common sizes and 13 is the mean dungeon size. 
+
 \chapter{Discussion}
 
 \section{Critique}
@@ -348,8 +351,24 @@ We can define characteristics of the desired dungeon by leveraging the inference
 \appendix
 \chapter{appendix}
 \label{cha:aA}
-%\textit{Use this section for graphical showing of the models. Nets, result tables (or tables should be inline?)}
-%TODO: insert statistical figures about the dataset. Histograms of the different features, mean, variance and lower/upper bounds.
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/data_plots/dungeon_bp.eps}
+    \caption{Global (dungeon)}
+  \end{subfigure}
+  ~
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/data_plots/room_bp.eps}
+    \caption{Local (Dungeon)}
+  \end{subfigure}
+  \caption{Parameter statistics}
+  \label{fig:dataStats}
+\end{figure}
+
 %TODO: write the algo
 \begin{algorithm}[H]
   \SetAlgoLined

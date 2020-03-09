@@ -336,11 +336,6 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
-# BeatPulse healthcheck temp database
-healthchecksdb
-/BayesianPDG/Resources/Maps
-/BayesianPDG/Resources/Rooms
-
 # Dissertation Latex
 /Dissertation/build/*
 !/Dissertation/build/*.pdf
