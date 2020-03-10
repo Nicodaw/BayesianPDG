@@ -25,7 +25,7 @@ namespace BayesianPDG.SpaceGenerator
         public BNet LoadBNet(string path)
         {
             Debug.WriteLine($"Loading Bayesian Network from {path}...");
-            _app.Visible = true; //Does it need to be visible?
+            _app.Visible = false;
             string net_file_name = AppDomain.CurrentDomain.BaseDirectory + path;
             Streamer file = _app.NewStream(net_file_name, null);
             BNet net = _app.ReadBNet(file);

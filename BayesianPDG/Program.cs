@@ -11,12 +11,14 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows;
+using BayesianPDG.UI;
+using System.Windows.Forms;
 
 namespace BayesianPDG
 {
     class Program
     {
+        private const bool enableUserInput = true;
         private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         static private ConfigLoader cfloader = new ConfigLoader();
         static private double netGenerationTime = 0;
@@ -26,23 +28,41 @@ namespace BayesianPDG
         {
 
             Debug.WriteLine("Starting Bayesian Space Generator...");
+            BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
 
-            //for (int i = 12; i < 26; i++)
-            //{
+            if (enableUserInput)
+            {
+                string value = "10";
+                if (Dialog.InputBox("Bayesian PDG", "Dungeon size between 2-27", ref value) == DialogResult.OK)
+                {
+                    SpaceGraph graph = spaceGen.RunInference(Int32.Parse(value), defaultNetPath);
+                    if (graph != null)
+                    {
+                        GenerateMap(graph);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Constraints imposed by the sample could not be satisfied. Try again.","Error: Bad Sample", 0);
+                    }
+                }
+            }
+            else
+            {
                 for (int j = 0; j < 10; j++)
                 {
-                    BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
                     Stopwatch netWatch = new Stopwatch();
                     netWatch.Start();
-                    SpaceGraph graph = spaceGen.RunInference(8, defaultNetPath);
+                    SpaceGraph graph = spaceGen.RunInference(13, defaultNetPath);
                     netWatch.Stop();
                     netGenerationTime = netWatch.Elapsed.TotalSeconds;
                     if (graph != null)
                     {
                         GenerateMap(graph);
                     }
-              //  }
+                }
             }
+
+
         }
 
         static void GenerateStaticMap(string mapName)
@@ -128,7 +148,10 @@ namespace BayesianPDG
                 $"Generation process took {dunGenerationTime}s \n" +
                 $"Total elapsed time :: {netGenerationTime + dunGenerationTime}s");
 
-               // MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+                if (enableUserInput)
+                {
+                    MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+                }
             }
             catch (Exception e)
             {

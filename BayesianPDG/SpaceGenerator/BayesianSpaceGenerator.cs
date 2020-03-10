@@ -30,8 +30,8 @@ namespace BayesianPDG.SpaceGenerator
         /// </summary>
         public SpaceGraph DungeonGraph;
 
-        public static (int cap, int cur) attempts = (5000, 0); //we allow for 500 attempts at making a dungeon
-        public (int cap, int cur) retries = (10000, 10000);       //we allow for 5000 backpropagations
+        public static (int cap, int cur) attempts = (5000, 0); //we allow for 5000 attempts at making a dungeon
+        public (int cap, int cur) retries = (10000, 10000);       //we allow for 10K backpropagations
 
         #region Dungeon Parameters
         private int Rooms;
@@ -49,6 +49,8 @@ namespace BayesianPDG.SpaceGenerator
 
             DungeonSampler((FeatureType.NumRooms, observedRooms)); // For this experiment we are observing only the total number of rooms according to user specification.
 
+
+            Console.WriteLine($"Dungeon Sampled: [{Rooms},{CPLength}]");
             ///
             /// ~ Building the Space graph for the map generator ~
             /// 
@@ -66,9 +68,9 @@ namespace BayesianPDG.SpaceGenerator
                 RoomSampler(parent);
             }
 
-            Debug.WriteLine("=== Final set of rooms sampled ===");
-            Debug.WriteLine("=== [cpDistance, depth, maxNe] ===");
-            DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
+            Console.WriteLine("=== Final set of rooms sampled ===");
+            Console.WriteLine("=== [cpDistance, depth, maxNe] ===");
+            DungeonGraph.AllNodes.ForEach(node => Console.WriteLine($"[{node.CPDistance},{node.Depth},{node.MaxNeighbours}]"));
 
             // Initialise the potential connections for formulating the CSP
             // We're externally enforcing the cardinality constraint by instantiating the Values as a K combinatorial set of the N rooms ( K = MaxNeighbours for each node.Values)
@@ -89,15 +91,15 @@ namespace BayesianPDG.SpaceGenerator
                 Map();
 
                 // Validate if graph is complete and print/write all metrics before returning the complete graph
-                Debug.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
-                Debug.WriteLine($"Is DungeonGraph planar? {DungeonGraph.isPlanar}");
+                Console.WriteLine($"Is DungeonGraph complete? {DungeonGraph.isComplete}");
+                Console.WriteLine($"Is DungeonGraph planar? {DungeonGraph.isPlanar}");
                 List<Node> unconnected = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count > 0);
                 List<Node> connected = DungeonGraph.AllNodes.FindAll(node => node.MaxNeighbours - node.Edges.Count == 0);
                 string unc = string.Join(", ", unconnected.Select(x => x.Id).ToArray());
                 string con = string.Join(", ", connected.Select(x => x.Id).ToArray());
-                Debug.WriteLine($"List of Unconected nodes {unc}");
-                Debug.WriteLine($"List of Connected nodes {con}");
-                Debug.Write(DungeonGraph.ToString());
+                Console.WriteLine($"List of Unconected nodes {unc}");
+                Console.WriteLine($"List of Connected nodes {con}");
+                Console.Write(DungeonGraph.ToString());
                 dungeonBNLoader.close();
                 string metricsPath = $"Resources\\BNetworks\\attempts_log_{observedRooms}.csv";
                 if (!File.Exists(metricsPath))
@@ -120,7 +122,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 if (attempts.cur < attempts.cap)
                 {
-                    Debug.WriteLine($"{ioe.Message}. Retrying...");
+                    Console.WriteLine($"{ioe.Message}. Retrying...");
                     return RunInference(observedRooms, path);
                 }
                 else return null;
@@ -341,8 +343,6 @@ namespace BayesianPDG.SpaceGenerator
             //Get the global (Dungeon) parameters
             Rooms = (int)DungeonModel.Value(FeatureType.NumRooms);               //Hard constraint
             CPLength = (int)DungeonModel.Value(FeatureType.CriticalPathLength);  //Hard constraint
-
-            Debug.WriteLine($"Dungeon Sampled: [{Rooms},{CPLength}]");
         }
         /// <summary>
         /// Sample room parameters from our SpaceModel and assign them to a node
