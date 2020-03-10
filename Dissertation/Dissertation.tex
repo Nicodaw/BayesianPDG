@@ -84,10 +84,11 @@ Cellular automata (CA) utilises a procedural generation mechanism in which a $N 
 Constraint Satisfaction Problems (CSPs) define a discrete set of variables with corresponding constraints that restrict the possible variable instantiations \textbf{[[cn  of CSPs]]}. Dungeon generation has been described as a CSP on occasions where the variables and constraints define the layout \textbf{[[cn]]}, contents \parencite{HorswillCSPMission} or both layout and content \parencite{GreenCSPboth} of a dungeon. Constraint Propagation (CP) is a particular method proven useful for solving CSP in the context of dungeon level generation. The algorithm selects a set of possible values for a particular variable and \textit{propagates} the result to the rest of the variables, adjusting their possible values accordingly. If the selected value narrows another variable's possible values to the empty set, we infer that this instantiation is suboptimal and we backpropagate to the last viable solution and retry. Furthermore it can be generalised that if an instantiation for all variables that does not narrow any variable to the empty set exists, the level is solvable. Utilising this formalisation of the \textit{solvability} of a level we can populate a level with varying degrees of complexity from ensuring that keys are always spawned before the door that they unlock to adjusting difficulty by measuring survivability metrics between rooms \textbf{[[cn]]}. Even thought CPs have solved some problems of the completely random generators, formulating a numerical constraint for a narrative element can be difficult. The complication is both in the translation of a story element to a numerical representation and in the computational expense that comes with computing large amounts of permutations.
 
 \subsubsection{Binary Partitioning}
-
+%TODO: bin partitioning, do we really need this? 
 \subsubsection{Formal Languages}
-
+%TODO: formal languages
 \subsubsection{Data-driven approaches}
+%TODO: Datadriven
 
 \section{Mission and Space}
 % \begin{outline}
@@ -127,6 +128,7 @@ To contextualise the inference process for PnP RPGs, we can look into Summervill
 % they are fast once trained. Updating belief is a simple arithmetic operation on the different CPT
 % gives us precise control over the parameters. Deery had an approximation of how big a dungeon should be because he would just repeat the rules X number of times. We can precisely fix every parameter that we have and even do permutations. This gives new degrees of freedom for the user to select the desired properties of his dungeon without compromising on automation.
 The reasoning behind choosing BNs is that the probabilistic causal structures have been shown to perform well in capturing structural properties of dungeons from data for PDG tasks in ARPGs \parencite{SummervilleLearningOfZelda,SummervilleSamplingHyrule}. Furthermore they give us a natural description about the dependencies in our model, which can be used as a supplemental analysis tool for investigating human-made dungeons. As a PDG tool itself, the \textit{observe-then-infer} pattern gives the user precise control over the desired properties of his dungeon without loss of automation. If a user observes a dungeon with 5 rooms and critical path of length of 3, they will be guaranteed in the final product. This solves the problem previous graph grammar data-driven approaches encountered, whereby the dungeon size input was used as an approximation for the actual number of rooms in the dungeon \parencite{Deery}.
+%TODO: Add benefit: unknown data can be handled implicitly by treating it as an unknown parameter and estimating it as well. Details on how parameters are estimated? EM.
 
 The downside of BNs is that their generalisation capabilities are highly dependent on the availability of data. If conditioning on an undefined set (e.g. there was never a data entry that showed a 5 room dungeon with CP of 3), the inference will fail. A proposed way to solve this issue is by creating artificial data entries for the undefined cases. We will use linear interpolation due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. This can potentially solve the problems of undefined dungeons within the range of sizes of our dataset, but it cannot extrapolate to infer arbitrarily large dungeons. We would like to argue that this generalisation restriction is not a limitation of our algorithm, but of the data. Different dungeons exhibit different properties and it is not feasible to consider learning all possible existing dungeon configurations from a single dataset. This limitation is reflected in the dataset selection criteria in the next section.
 
@@ -165,7 +167,10 @@ Each global and local set of parameters is defined by the joint PDs respectively
 where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
 
 \paragraph{}
-\textbf{TODO: Filling in the data gaps. Linear interpolation and artificial datapoints}
+The dungeon sizes in our dataset range from two to 27, but due to our restrictions combined with chance, dungeons of some sizes were never recorded. Namely dungeons with sizes \(\{4,23\}\). From a statistical point of view we can conclude that lack of dungeons from those sizes makes them highly improbable to the point where we should not be concerned with their existence. This is what we do with dungeons that are outside of the range of sizes for one-page adventures. But in terms of utility of our tool we would like to be able generate any dungeon within that range. Therefore we will linearly interpolate \textit{LI} dungeons that are \textit{neighbouring} the missing ones in order for us to get estimates for the global parameters. We have chosen LI due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. %TODO: describe better why we don't like linear interpolation here
+Room parameters could potentially also be linearly interpolated by using all the rooms from the neighbouring dungeons but this poses several questions about what does it mean to interpolate 5 rooms and 6 rooms. A better and more intuitive way to handle them is by leveraging the properties of the BNets. We have interpolated the global parameters which means that we assert that dungeons with those sizes and critical paths exist within the universe of possible dungeons and we can further infer the related room parameters by treating them as unknown values. In that way, when we're learning the parameters we would also get estimates for our unknown rooms.
+%TODO:Linear interpolation
+%TODO:Consider missing rooms as unobserved parameters that we are also estimating
 
 \paragraph{}
 The final dataset is saved in a CSV format and consists of 92 organic dungeon + 1193 organic room entries and 10 linearly interpolated dungeon entries. Common statistics of the dataset can be found in appendix \ref{cha:aA}.
@@ -268,6 +273,7 @@ The platform of choice for this project is .NET with the language of implementat
 We can define characteristics of the desired dungeon by leveraging the inference nature of BNs. Generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter. The user can choose virtually any permutation of parameters to be fixed or inferred. For consistency of this experiment, we are observing only the size of the dungeon via \texttt{NumRooms}.
 
 \paragraph{Room Sampling}
+The sequence of operations can be seen in appendix A \ref{algo:sampling}.
 % fix dungeon, sample the rest
 % Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
 
@@ -286,11 +292,12 @@ We can define characteristics of the desired dungeon by leveraging the inference
 % + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
 % + can be generalised and optimised :: potentially translate it for general linear solvers
 
-%TODO: Add a row for a completely random generator. One where it uses all uniform probabilities
+%TODO: Change the result table to reflect the newest models
 \chapter{Results}
 \label{cha:results}
+%TODO: More info about the score rule?
 \section{Internal Validation}
-As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". 
+As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}.
 
 \begin{table}[htb]
   \centering
@@ -317,7 +324,15 @@ As we are modelling uncertainty, we can pose the question of "How well do we red
 
 \section{External Validation} %user study
 \paragraph{User study design}
-Get the topologies for three sets of dungeons. Real OPDC dungeons, our inferred dungeons and a control group containing the random donjon dungeons. All formatted in the same style. Preference study by providing randomly selected pairs from these three sets. 10, 13 and 8 room dungeons were used as 10 and 8 are the most common sizes and 13 is the mean dungeon size. 
+Previous work the aesthetics of composition has shown that people can discriminate between computer generated and original artwork \parencite{McManusMondrian} \parencite{FurnhamMondrian}. To validate if our model is able to generate dungeons that are undistinguishable from human-made dungeons we will conduct a preference study. Dungeons from the OPDC, our inferred set and a random control group are selected and formatted in the same visual style. Three sets of pairs are randomly permuted and contain an even distribution of the possible combinations \textit{(OPDC,ours),(OPDC,random),(ours,random)}.
+
+10, 13 and 8 room dungeons were used as they are the most common and additionally 13 is the mean dungeon size.
+The experiment was done as an online survey.
+
+\paragraph{Demographics}
+The participants were selected to be people with any level of experience in PnP RPGs. 
+%TODO: Who did the study?
+
 
 \chapter{Discussion}
 
