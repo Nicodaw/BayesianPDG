@@ -1,84 +1,79 @@
 ﻿roomsRange:
-  from: 1
-  to: 10
+  from: 0
+  to: 9
 
 rooms:
-  [10]:
+  [9]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-square
+        roomDescriptionName: large-rectangle
+        scale: [1,1]
+  [0]:
+    roomShapes:
+      -
+        setName: SMB
+        roomDescriptionName: medium-rectangle
         scale: [1,1]
   [1]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-rectangle
+        roomDescriptionName: medium-rectangle
         scale: [1,1]
   [2]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: big-rectangle
+        roomDescriptionName: medium-square
         scale: [1,1]
   [3]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: long-big-rectangle
+        roomDescriptionName: long-medium-rectangle
         scale: [1,1]
   [4]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-square
+        roomDescriptionName: long-medium-rectangle
         scale: [1,1]
   [5]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: long-medium-rectangle
-        scale: [2,1]
+        roomDescriptionName: medium-rectangle
+        scale: [1,1]
   [6]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-rectangle
+        roomDescriptionName: medium-square
         scale: [1,1]
   [7]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-rectangle
+        roomDescriptionName: long-medium-rectangle
         scale: [1,1]
   [8]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-rectangle
-        scale: [1,1]
-  [9]:
-    roomShapes:
-      -
-        setName: SMB
-        roomDescriptionName: small-square
+        roomDescriptionName: medium-square
         scale: [1,1]
 passages:
-  - [1,4]
+  - [0,1]
   - [1,2]
   - [2,3]
+  - [2,4]
   - [2,5]
-  - [2,6]
-  - [2,7]
-  - [3,7]
-  - [3,10]
-  - [4,2]
   - [5,6]
-  - [7,6]
-  - [7,9]
-  - [7,10]
+  - [6,7]
+  - [6,8]
   - [8,9]
-  - [9,10]
+
 defaultRoomShapes:
   -
     setName: SMB

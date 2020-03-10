@@ -1,37 +1,43 @@
 ﻿roomsRange:
-  from: 1
-  to: 10
+  from: 0
+  to: 9
 
 rooms:
-  [10]:
-    roomShapes:
-      -
-        setName: SMB
-        roomDescriptionName: big-rectangle
-        scale: [1,1]
-  [1]:
-    roomShapes:
-      -
-        setName: SMB
-        roomDescriptionName: medium-rectangle
-        scale: [1,1]
-  [2]:
-    roomShapes:
-      -
-        setName: SMB
-        roomDescriptionName: small-rectangle
-        scale: [1,1]
-  [3]:
+  [9]:
     roomShapes:
       -
         setName: SMB
         roomDescriptionName: small-square
         scale: [1,1]
-  [4]:
+  [0]:
+    roomShapes:
+      -
+        setName: SMB
+        roomDescriptionName: big-square
+        scale: [1,1]
+  [1]:
+    roomShapes:
+      -
+        setName: SMB
+        roomDescriptionName: medium-square
+        scale: [1,1]
+  [2]:
     roomShapes:
       -
         setName: SMB
         roomDescriptionName: medium-rectangle
+        scale: [1,1]
+  [3]:
+    roomShapes:
+      -
+        setName: SMB
+        roomDescriptionName: large-rectangle
+        scale: [1,1]
+  [4]:
+    roomShapes:
+      -
+        setName: SMB
+        roomDescriptionName: long-medium-rectangle
         scale: [1,1]
   [5]:
     roomShapes:
@@ -49,30 +55,24 @@ rooms:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: medium-square
+        roomDescriptionName: small-square
         scale: [1,1]
   [8]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: small-square
-        scale: [1,1]
-  [9]:
-    roomShapes:
-      -
-        setName: SMB
-        roomDescriptionName: big-rectangle
+        roomDescriptionName: small-rectangle
         scale: [1,1]
 passages:
-  - [0,4]
-  - [4,5]
-  - [5,1]
-  - [5,6]
-  - [6,7]
-  - [6,8]
+  - [0,1]
   - [1,2]
-  - [1,3]
-  - [1,9]
+  - [2,3]
+  - [2,8]
+  - [3,4]
+  - [3,5]
+  - [3,7]
+  - [5,6]
+  - [7,9]
 
 defaultRoomShapes:
   -
