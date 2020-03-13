@@ -31,7 +31,7 @@ rooms:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: large-rectangle
+        roomDescriptionName: big-rectangle
         scale: [1,1]
   [4]:
     roomShapes:

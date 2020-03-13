@@ -18,7 +18,7 @@ namespace BayesianPDG
 {
     class Program
     {
-        private const bool enableUserInput = true;
+        private const bool enableUserInput = false;
         private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         static private ConfigLoader cfloader = new ConfigLoader();
         static private double netGenerationTime = 0;
@@ -48,18 +48,23 @@ namespace BayesianPDG
             }
             else
             {
-                for (int j = 0; j < 10; j++)
+                FileInfo[] files = new DirectoryInfo("Resources\\Maps").GetFiles("*.yaml");
+                foreach (var map in files)
                 {
-                    Stopwatch netWatch = new Stopwatch();
-                    netWatch.Start();
-                    SpaceGraph graph = spaceGen.RunInference(13, defaultNetPath);
-                    netWatch.Stop();
-                    netGenerationTime = netWatch.Elapsed.TotalSeconds;
-                    if (graph != null)
-                    {
-                        GenerateMap(graph);
-                    }
+                    GenerateStaticMap(map.Name);
                 }
+                //for (int j = 0; j < 10; j++)
+                //{
+                //    Stopwatch netWatch = new Stopwatch();
+                //    netWatch.Start();
+                //    SpaceGraph graph = spaceGen.RunInference(13, defaultNetPath);
+                //    netWatch.Stop();
+                //    netGenerationTime = netWatch.Elapsed.TotalSeconds;
+                //    if (graph != null)
+                //    {
+                //        GenerateMap(graph);
+                //    }
+                //}
             }
 
 
@@ -67,8 +72,9 @@ namespace BayesianPDG
 
         static void GenerateStaticMap(string mapName)
         {
+            Debug.WriteLine($"Now saving {mapName}");
             var mapDescription = cfloader.LoadMapDescriptionFromResources(mapName);
-            SaveBitmap(mapDescription, 0);
+            SaveBitmap(mapDescription, 0, mapName);
         }
 
 
@@ -104,7 +110,7 @@ namespace BayesianPDG
             SaveBitmap(mapDescription, seed);
         }
 
-        private static void SaveBitmap(MapDescription<int> mapDescription, int seed)
+        private static void SaveBitmap(MapDescription<int> mapDescription, int seed, string name = null)
         {
             try
             {
@@ -116,7 +122,7 @@ namespace BayesianPDG
                 List<IMapLayout<int>> generatedLayouts = (List<IMapLayout<int>>)layoutGenerator.GetLayouts(mapDescription, 10); //Magic number 3 is how many different layouts we want
                 dunWatch.Stop();
                 dunGenerationTime = dunWatch.Elapsed.TotalSeconds;
-                exportAllJpgButton_Click(generatedLayouts);
+                exportAllJpgButton_Click(generatedLayouts, name);
             }
             catch (ArgumentException e)
             {
@@ -124,12 +130,16 @@ namespace BayesianPDG
             }
         }
 
-        private static void exportAllJpgButton_Click(List<IMapLayout<int>> generatedLayouts)
+        private static void exportAllJpgButton_Click(List<IMapLayout<int>> generatedLayouts, string name = null)
         {
             WFLayoutDrawer<int> wfLayoutDrawer = new WFLayoutDrawer<int>();
 
             var time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            var folder = $"Output/{time}_{generatedLayouts[0].Rooms.Count()}";
+            if (generatedLayouts.Count == 0)
+            {
+                throw new ArgumentNullException("No generator layouts were produced");
+            }
+            var folder = $"Output/{time}_{name ?? generatedLayouts.First().Rooms.Count().ToString()}";
 
             int width = 600;
             int height = 600;
@@ -142,7 +152,7 @@ namespace BayesianPDG
                 {
                     Bitmap bitmap = wfLayoutDrawer.DrawLayout(generatedLayouts[i], width, height, true, null);
 
-                    bitmap.Save($"{folder}/{i}.jpg");
+                    bitmap.Save($"{folder}/{name+"_"?? ""}{i}.jpg");
                 }
                 File.WriteAllText(folder + "/benchmark.txt", $"Inference process took {netGenerationTime}s \n" +
                 $"Generation process took {dunGenerationTime}s \n" +
