@@ -235,7 +235,7 @@ namespace BayesianPDG.SpaceGenerator
                     MapOne();
 
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     while (undoStack.Count != frame)
                     {

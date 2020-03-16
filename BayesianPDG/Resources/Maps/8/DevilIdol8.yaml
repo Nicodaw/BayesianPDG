@@ -19,13 +19,13 @@ rooms:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: large-square
+        roomDescriptionName: big-square
         scale: [1,1]
   [3]:
     roomShapes:
       -
         setName: SMB
-        roomDescriptionName: large-rectangle
+        roomDescriptionName: big-rectangle
         scale: [1,1]
   [4]:
     roomShapes:

@@ -1,0 +1,6 @@
+Netica's .NET API 
+
+1. Download the Netica 6.07 https://www.norsys.com/downloads/
+2. Run as administrator (it creates the necessary path links to the C/.NET api)
+
+more info https://www.norsys.com/WebHelp/NETICA/X_COM_Interface.htm

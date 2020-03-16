@@ -74,7 +74,7 @@ namespace BayesianPDG
         {
             Debug.WriteLine($"Now saving {mapName}");
             var mapDescription = cfloader.LoadMapDescriptionFromResources(mapName);
-            SaveBitmap(mapDescription, 0, mapName);
+            SaveBitmap(mapDescription, 784864, mapName);
         }
 
 
