@@ -292,31 +292,26 @@ The sequence of operations can be seen in appendix A \ref{algo:sampling}.
 % + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
 % + can be generalised and optimised :: potentially translate it for general linear solvers
 
-%TODO: Change the result table to reflect the newest models
 \chapter{Results}
 \label{cha:results}
-%TODO: More info about the score rule?
+%TODO: More info about the score rule? Explain the table, each column is one probability \(P(\theta \mid R)\)
 \section{Internal Validation}
 As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}.
 
 \begin{table}[htb]
   \centering
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{@{}llllllllllll@{}}
-    \toprule
-                    & \multicolumn{2}{l}{\texttt{NumRooms}} & \multicolumn{2}{l}{\texttt{CPLength}} & \multicolumn{2}{l}{\texttt{CPDistance}} & \multicolumn{2}{l}{\texttt{Depth}} & \multicolumn{2}{l}{\texttt{Neighbours}}&                        \\ \midrule
-                    & \(loss^2\)   & \(E\)         & \(loss^2\)   & \(E\)         & \(loss^2\)    & \(E\)          & \(loss^2\)  & \(E\)       & \(loss^2\)    & \(E\)          &                        \\
-    Uniform (base)  & 0.9615       & 99.83\%       & 0.9          & 97.52\%       & 0.8333        & 57.86\%        & 0.9286      & 91.97\%     & 0.8889        & 70.51\%        &                        \\ \midrule
-    Extreme Sparse  & 0.7819       & 67.09\%       & 0.5294       & 41.79\%       & 0.6173        & 51.54\%        & 0.7657      & 61.54\%     & 0.7174        & 59.15\%        & \multirow{3}{*}{count} \\
-    TAN             & 0.6871       & 54.87\%       & 0.5294       & 41.79\%       & 0.5812        & 41.62\%        & 0.6581      & 50.51\%     & 0.7054        & 49.74\%        &                        \\
-    Fully Connected & 0.6012       & 44.53\%       & 0.3391       & 22.14\%       & 0.4205        & 17.44\%        & 0.5814      & 35.98\%     & 0.7029        & 25.64\%        &                        \\ \midrule
-    Extreme Sparse  & 0.7522       & 66.67\%       & 0.4974       & 41.2\%        & 0.6237        & 54.19\%        & 0.7354      & 63.25\%     & 0.693         & 59.15\%        & \multirow{3}{*}{EM}    \\
-    TAN             & 0.6081       & 50.77\%       & 0.4974       & 41.2\%        & 0.4968        & 41.62\%        & 0.562       & 45.73\%     & 0.6024        & 49.74\%        &                        \\
-    Fully Connected &\textbf{0.4297}&\textbf{39.23\%}&\textbf{0.2097}& \textbf{18.72\%}& \textbf{0.1909}& \textbf{16.92\%}       & \textbf{0.3683}&\textbf{33.76\%}& \textbf{0.284}& \textbf{25.64\%}        &                        \\ \midrule
-    Extreme Sparse  & 1.07         & 75.98\%       & 0.7947       & 50.34\%       & 0.6644        & 57.26\%        & 0.7951      & 66.75\%     & 0.7368        & 62.65\%        & \multirow{3}{*}{GD}    \\
-    TAN             & 1.036        & 64.19\%       & 0.8043       & 52.31\%       & 0.5632        & 45.38\%        & 0.7532      & 54.19\%     & 0.735         & 55.73\%        &                        \\
-    Fully Connected & 1.046        & 69.57\%       & 0.701        & 44.7\%        & 0.4416        & 38.8\%         & 0.6256      & 53.25\%     & 0.5295        & 45.38\%        &                        \\ \midrule
-    \end{tabular}%
+    \begin{tabular}{@{}llllllllll@{}}
+      & \multicolumn{2}{l}{CPLength}       & \multicolumn{2}{l}{CPDistance}     & \multicolumn{2}{l}{Depth}          & \multicolumn{2}{l}{Neighbours}    &                      \\ \midrule
+      & loss            & E                & loss            & E                & loss            & E                & loss            & E               &                      \\ \midrule
+      Uniform (base)           & 0.9             & 96.74\%          & 0.8333          & 58.17\%          & 0.9286          & 92.04\%          & 0.8889          & 70.08\%         &                      \\ \midrule
+      Extreme Sparse           & 0.5524          & 48.63\%          & 0.6744          & 58.17\%          & 0.8184          & 74.43\%          & 0.7486          & 67.64\%         &                      \\
+      \textbf{TAN}             & \textbf{0.5524} & \textbf{48.63\%} & \textbf{0.6462} & \textbf{54.82\%} & \textbf{0.8184} & \textbf{74.43\%} & \textbf{0.7124} & \textbf{60.6\%} & EM                   \\
+      \textbf{Fully Connected} & \textbf{0.5524} & \textbf{48.63\%} & \textbf{0.6464} & \textbf{54.82\%} & \textbf{0.8184} & \textbf{74.43\%} & \textbf{0.7131} & \textbf{60.6\%} &                      \\ \midrule
+      Extreme Sparse           & 0.8132          & 52.1\%           & 0.7004          & 64.63\%          & 0.8689          & 78.46\%          & 0.7563          & 67.48\%         & \multicolumn{1}{c}{} \\
+      TAN                      & 0.816           & 53.11\%          & 0.6751          & 57.84\%          & 0.8815          & 78.46\%          & 0.7686          & 65.88\%         & GD                   \\
+      Fully Connected          & 0.8177          & 50.58\%          & 0.6855          & 57.84\%          & 0.877           & 79.3\%           & 0.7597          & 66.39\%         &                      \\ \bottomrule
+    \end{tabular}
   }
   \caption{Structure and parameter learning comparison.}
   \label{table:BNetCompare}
