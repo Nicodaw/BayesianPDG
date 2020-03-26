@@ -133,6 +133,8 @@ The reasoning behind choosing BNs is that the probabilistic causal structures ha
 The downside of BNs is that their generalisation capabilities are highly dependent on the availability of data. If conditioning on an undefined set (e.g. there was never a data entry that showed a 5 room dungeon with CP of 3), the inference will fail. A proposed way to solve this issue is by creating artificial data entries for the undefined cases. We will use linear interpolation due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. This can potentially solve the problems of undefined dungeons within the range of sizes of our dataset, but it cannot extrapolate to infer arbitrarily large dungeons. We would like to argue that this generalisation restriction is not a limitation of our algorithm, but of the data. Different dungeons exhibit different properties and it is not feasible to consider learning all possible existing dungeon configurations from a single dataset. This limitation is reflected in the dataset selection criteria in the next section.
 
 \chapter{Methods and Implementation}
+%TODO: Define notation
+
 \section{Data acquisition}
 \subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
 % What problems can we encounter? Sparsity of data. Very different dungeons, some are unusable (say unusable criteria)
@@ -147,11 +149,12 @@ The \textit{OPDC} supplies a dataset that satisfies our requirements. All dungeo
   \1 no map (no Space)
   \1 exclusively linear topologies
   \1 non-standard Space traversal (the map topology is ignored due to a functional mechanism e.g. time-travel, game of political control, king of the hill, etc.)
-  \1 inconsistent map (our Space parameters are allowed to change e.g. intrigue campaigns where the objective constantly changes locations)
+  \1 inconsistent map (our Space parameters change as the game progresses e.g. intrigue campaigns where the objective constantly changes locations)
   \1 no goal defined by the designer (introduces the same problem as 4.)
 \end{outline}
 
 \subsection{Extracting Features}
+\label{subsec:feature_extraction}
 \paragraph{}
 We will base our feature selection on the work done by Summerville \parencite{SummervilleSamplingHyrule} by selecting Space related parameters from his Extreme Sparse model due to its simplicity and effectiveness. We extract five parameters in two categories: 
 \begin{outline}[enumerate]
@@ -266,9 +269,10 @@ The counting learning states that the probabilities in a single node are defined
 \subsubsection{Gradient Descent GD}
 
 \section{Implementation}
+\label{sec:implementation}
 \paragraph{}
 The platform of choice for this project is .NET with the language of implementation being C\#. We chose this as Netica has native support for C\# via its COM API and because of the availability of useful third-party utilities. Namely we will be using Nepo\v{z}itek's PDG tool \parencite{levelGenerator} which allows us to input an abstract graph for the desired topology and produces a rendered image that is ready for player usage. The reason behind using a third-party solution for the dungeon rendering is due to time constraints and the fact that the visualiser is not a centre piece of this experiment. Our sole requirements are that the rendering is consistent and robust enough to handle our produced topologies. Nepo\v{z}itek's PDG satisfies these requirements \parencite{Nepozitek2018FASTCT}.
-\label{sec:implementation} %from chosen model --> dungeon graph, assumptions about constraints specifics etc
+ %from chosen model --> dungeon graph, assumptions about constraints specifics etc
 \paragraph{Dungeon Sampling} %What 
 We can define characteristics of the desired dungeon by leveraging the inference nature of BNs. Generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter. The user can choose virtually any permutation of parameters to be fixed or inferred. For consistency of this experiment, we are observing only the size of the dungeon via \texttt{NumRooms}.
 
@@ -291,12 +295,13 @@ The sequence of operations can be seen in appendix A \ref{algo:sampling}.
 % + Extensible: if expanding to Mission, we just add new constraints to be satisfied.
 % + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
 % + can be generalised and optimised :: potentially translate it for general linear solvers
+% todo: explain what the constraints are more than why we want this
 
 \chapter{Results}
 \label{cha:results}
 %TODO: More info about the score rule? Explain the table, each column is one probability \(P(\theta \mid R)\)
 \section{Internal Validation}
-As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}.
+As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities therefore we will choose TAN to continue forward as it is the simpler structure. Our constraint propagation algorithm furhter reports that on average (sample size of 15) it takes 451 retries and 25 minutes to sample a single 10 room dungeon that satisfies our physical consistency requirements described in \ref{sec:implementation}.
 
 \begin{table}[htb]
   \centering
@@ -325,11 +330,16 @@ Previous work the aesthetics of composition has shown that people can discrimina
 The experiment was done as an online survey.
 
 \paragraph{Demographics}
-The participants were selected to be people with any level of experience in PnP RPGs. 
-%TODO: Who did the study?
+The participants were selected to be adults with at least some experience in PnP RPGs. 
+%TODO: Who did the study? Finish when the do the study
 
 
 \chapter{Discussion}
+%TODO: finish, talk about satisfiability
+As expected, all models surpass the uniform distribution control. However the above 50\% error rate reveals that with the assumptions for making the problem description more concrete (section \ref{subsec:feature_selection}), we have removed crucial explanatory variables. The low predictive capabilities for the Space model is an indicator that the Mission parameters or some other unmodelled hidden set of parameters (perhaps a variable for creativity) are crucial when trying to approximate human-made dungeons. 
+
+
+The EM algorithm consistently outperforms GD, albeit not by a large margin. 
 
 \section{Critique}
 \begin{outline}[enumerate]
