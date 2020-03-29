@@ -73,6 +73,7 @@ The ability for a player to influence the narrative is one of the defining featu
 The designers of the classic PnP modules acknowledge the issue of Dungeon creation and often incorporate \textit{Loot} or \textit{Encounter} tables in the rule-books. The tables are a reference over a set of treasures or monsters respectively, which can be chosen by rolling the specified die \textbf{need figure of loot/encounter table}. As noted before, a PnP RPG can evolve rapidly outside the planned narrative structure prepared by the DM and a simple way to quickly define new adaptive story elements via a loot table can be useful. Some early modules even provided a step-by-step guide for creating a full campaign from the plot, villains' obsessions and story setting to the various encounters and and treasures \parencite{ADnD} entirely based on randomised content tables. An issue arises when using loot tables when a randomly selected element from one table is contradicted by an item selected from another. \textbf{show an example from the ADND module}. It is up to the DM to resolve such disparities. Although this process provides some degree of creative assistance, it does little to facilitate the laborious nature of creating an end-to-end compelling narrative. Furthermore, as these methods are occupied with providing inspiration for global narrative elements, they pay no attention to providing guidance of what would mean a "good" Dungeon.
 
 \subsection{Digital Generators}
+\label{subsec:DigGen}
 \paragraph{}
 It is important to note that PnP RPGs and the various genres of computer RPGs share the same narrative goal despite differing in mechanisms of interaction \parencite{Tychsen2006}. Therefore we will not limit ourselves to looking only at existing tabletop solutions.
 Unlike the original non-digital generators, computerised ones rarely allow for human input during the generation process. A generative algorithm would provide a DM with an interface that takes a set of parameters and produce a template of a game. The degree of complexity of this template is naturally dependent on the complexity of the algorithm itself. Because they aim to exclude the human designer from the process, the digital generators tend to focus on creating elaborate Dungeon spaces and either provide basic semantic content or ommit it entirely.
@@ -137,7 +138,7 @@ A proposed way to solve this issue is by creating artificial data entries for th
 \chapter{Methods and Implementation}
 %TODO: Define notation
 Features or RVs are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\)
-Parameters refer to the network parameters, i.e. the conditional probaiblity tables CPTs defined by \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\)
+Parameters refer to the network parameters, i.e. the conditional probability tables CPTs defined by \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\)
 Joint probability distributions \(P(X_1, \ldots , X_n)\)
 Calligraphic \(\mathcal{N}\) denotes the CPTs for a given network
 Calligraphic \(\mathcal{D}\) is a wrapper for all our data
@@ -156,31 +157,31 @@ The \textit{OPDC} supplies a dataset that satisfies our requirements. All dungeo
   \1 no map (no Space)
   \1 exclusively linear topologies
   \1 non-standard Space traversal (the map topology is ignored due to a functional mechanism e.g. time-travel, game of political control, king of the hill, etc.)
-  \1 inconsistent map (our Space parameters change as the game progresses e.g. intrigue campaigns where the objective constantly changes locations)
+  \1 inconsistent map (our Space features change as the game progresses e.g. intrigue campaigns where the objective constantly changes locations)
   \1 no goal defined by the designer (introduces the same problem as 4.)
 \end{outline}
 
 \subsection{Extracting Features}
 \label{subsec:feature_extraction}
 \paragraph{}
-We will base our feature selection on the work done by Summerville \parencite{SummervilleSamplingHyrule} by selecting Space related parameters from his Extreme Sparse model due to its simplicity and effectiveness. We extract five parameters in two categories: 
+We will base our feature selection on the work done by Summerville \parencite{SummervilleSamplingHyrule} by selecting Space related variables from his Extreme Sparse model due to its simplicity and effectiveness. We extract five features in two categories: 
 \begin{outline}[enumerate]
   \1 Dungeon (Global): total number of rooms \(R\) and how many rooms are on the critical path \(L\)
   \1 Room (Local): depth \(D\) (how far away the room is from the entrance), critical path distance \(S\) (how far away is the room from a critical path room, 0 indicates it is on the CP) , total number of neighbours \(N\)
 \end{outline}
-Each global and local set of parameters is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\). A full dungeon is therefore characterised by 
+Each global and local set of features is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\). A full dungeon is therefore characterised by 
 
 \begin{equation}
   \label{eq:full_joint_PD}
   P(R,L,S,D,N) = P(R, L) \prod_{r}^{\mid R \mid} P(S_r, D_r, N_r)
 \end{equation}
-where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five parameters, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different parameters as shown in \textbf{[[insert figure of 2015 Sepulchre of the Abyss transcriptions]]}.
+where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five features, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different features (see Appendix A for example \ref{fig:SOTA}).
 
 \paragraph{}
-The dungeon sizes in our dataset range from two to 27, but due to our restrictions combined with chance, dungeons of some sizes were never recorded. Namely dungeons with sizes \(\{4,23\}\). We could conclude that lack of dungeons from those sizes means they are highly improbable to the point where we should not be concerned with their existence. This is what we do with dungeons that are outside of the range of sizes for one-page adventures. But in terms of utility of our tool we would like to be able generate any dungeon within that range. This issue of undefined data is the main drawback of inference network as outlined in chapter \ref{ch:BNETS}. Our proposed solution is to linearly interpolate \textit{LI} dungeons that are close to the missing ones in order for us to get estimates for the global parameters. We have chosen LI due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. Room (local) parameters could potentially also be linearly interpolated by using all the rooms from the neighbouring dungeons but this poses several questions about what does it mean to interpolate 5 rooms and 6 rooms. A better and more intuitive way to handle them is by leveraging the properties of the BNets. We can introduce the room parameters for the interpolated dungeons as unknown values to be inferred from the known data. We are treating the data itself as a parameter to be estimated from our other observations. This is a convenient way that inference networks treat missing values or sometimes even missing variables \textbf{[[ce on latent rvs]]}. However this representation of the unknown will impose a restriction on what CPT learning algorithms we can use. We discuss them in section \ref{subsec:param_learning}.
+The dungeon sizes in our dataset range from two to 27, but due to our restrictions combined with chance, dungeons of some sizes were never recorded. Namely dungeons with sizes \(\{4,23\}\). We could conclude that lack of dungeons from those sizes means they are highly improbable to the point where we should not be concerned with their existence. This is what we do with dungeons that are outside of the range of sizes for one-page adventures. But in terms of utility of our tool we would like to be able generate any dungeon within that range. This issue of undefined data is the main drawback of inference network as outlined in chapter \ref{ch:BNETS}. Our proposed solution is to linearly interpolate \textit{LI} dungeons that are close to the missing ones in order for us to get estimates for the global RVs. We have chosen LI due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. Room (local) RVs could potentially also be linearly interpolated by using all the rooms from the neighbouring dungeons but this poses several questions about what does it mean to interpolate 5 rooms and 6 rooms. A better and more intuitive way to handle them is by leveraging the properties of the BNets. We can represent the rooms for the interpolated dungeons as unknown values to be inferred from the known data. We are treating the data itself as a parameter to be estimated from our other observations. This is a convenient way that inference networks treat missing values or sometimes even missing variables \textbf{[[ce on latent rvs]]}. However this representation of the unknown will impose a restriction on what CPT learning algorithms we can use. We discuss them in section \ref{subsec:param_learning}.
 
 \paragraph{}
-The final dataset is saved in a CSV format \texttt{DR_data.csv} and consists of 92 dungeon + 1193 room entries and 10 linearly interpolated dungeon entries with 189 unknown rooms. Common statistics of the dataset can be found in appendix \ref{cha:aA}.
+The final dataset is saved in a CSV format \texttt{DR\_data.csv} and consists of 92 dungeon + 1193 room entries and 10 linearly interpolated dungeon entries with 189 unknown rooms. Common statistics of the dataset can be found in appendix \ref{cha:aA}.
 
 \section{Model selection} % we have to choose a model structure denoting assumptions about dependencies then compute the CPTs
 \label{sec:model_selection}
@@ -195,7 +196,7 @@ In this paper we will empirically compare different models in search of the one 
 
 \subsection{Bayesian Network topology}
 \subsubsection{Summerville's Extreme Sparse Model \textit{SESM}}
-In exploring data-driven PDG for the Legend of Zelda franchise, Summerville found out that when dealing with a small dataset (38 dungeons with 1031 rooms), the SESM is able to capture high level properties of both Mission and Space with the highest accuracy in respect to the learning criteria and the lowest complexity. Following our assertion that digital RPGs differ from PnP RPGs only in mechanisms of interaction, we will base one of our BN topologies on Summerville's work. In order to do so, we flatten down the graph to use only the Space parameters. The flattening is done by reconstructing the SESM in Netica and applying the \texttt{AbsorbNodes\_bn} \parencite[62-63]{neticaCman}. The function removes the unused Mission RVs by effectively treating them as constants and propagating any implied dependencies from the other nodes. In this way we remove the unused RVs and maintain the joint distribution dependencies between our Space parameters. The transformation can be seen in figure \ref{fig:SESM}. The resulting model describes the following factorisation over our RVs
+In exploring data-driven PDG for the Legend of Zelda franchise, Summerville found out that when dealing with a small dataset (38 dungeons with 1031 rooms), the SESM is able to capture high level properties of both Mission and Space with the highest accuracy in respect to the learning criteria and the lowest complexity. Following our assertion that digital RPGs differ from PnP RPGs only in mechanisms of interaction, we will base one of our BN topologies on Summerville's work. In order to do so, we flatten down the graph to use only the Space features. The flattening is done by reconstructing the SESM in Netica and applying the \texttt{AbsorbNodes\_bn} \parencite[62-63]{neticaCman}. The function removes the unused Mission RVs by effectively treating them as constants and propagating any implied dependencies from the other nodes. In this way we remove the unused RVs and maintain the joint distribution dependencies between our Space features. The transformation can be seen in figure \ref{fig:SESM}. The resulting model describes the following factorisation over our RVs
 \begin{equation}
   \label{eq:SESM}
   P(R,L,S,D,N) = P(R)P(S)P(L \mid R)P(D \mid R, L)P(N \mid D, S)
@@ -232,7 +233,7 @@ Informally the learning procedure can be defined as finding the most likely BN s
   P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)
 \end{equation}
 
-where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we, in practice, have a BN structure that we can use. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
+where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we have a usable BN structure. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
 
 \begin{figure}[htb]
   \centering
@@ -271,7 +272,8 @@ When we learn parameters (CPTs for each RV) we are trying to find the most likel
 % The counting learning states that the probabilities in a single node are defined by how often a particular value has been seen in the data. This notion is defined as the \textit{experience} of that value. The network starts in a state of complete ignorance with uniform probabilities across all RVs. As we iteratively load in the data, the CPT are updated by increasing the probability for a particular value every time it is seen. Specifically, the experience is updated by the previous experience and the degree factor of that data point (i.e how often is it repeated, usually 1) \(e^{\prime} = e + d\). The CPT values are computed as a ratio of the previous and newly observed experience \(P^{\prime}(X=x) = \frac{P(X=x) \times e}{e^{\prime}}\). The counting algorithm is recommended due to its speed and simplicity, but it has a substantial drawback in the fact that it needs the data to be fully defined. Theoretically we should be able to use the counting algorithm as we have no latent (undefined) RVs nor missing data.
 
 \subsubsection{Expectation Maximisation EM} %both EM and GD can get stuck on local minima
-EM \parencite{EMAlgorithm} is a nummerical algorithm that can handle missing data. It assingns random probabilities to our missing values and iteratively alternates between maximising the parameters of the model given the data (Maximisation step) and finding better estimations of the missing data (Expectation step). It converges after a sertain set of predefined iterations or when no new updates are happening. 
+%todo: revisit EM
+EM \parencite{EMAlgorithm} is a nummerical algorithm that can handle missing data. It assigns random probabilities to our missing values and iteratively alternates between maximising the parameters of the model given the data (Maximisation step) and finding better estimations of the missing data (Expectation step). It converges after a sertain set of predefined iterations or when no new updates are happening. 
 
 \subsubsection{Gradient Descent GD}
 %todo: finish GD
@@ -281,17 +283,27 @@ Both EM and GD risk getting stuck in local optima.
 \section{Implementation}
 \label{sec:implementation}
 \paragraph{}
-The platform of choice for this project is .NET with the language of implementation being C\#. We chose this as Netica has native support for C\# via its COM API and because of the availability of useful third-party utilities. Namely we will be using Nepo\v{z}itek's PDG tool \parencite{levelGenerator} which allows us to input an abstract graph for the desired topology and produces a rendered image that is ready for player usage. The reason behind using a third-party solution for the dungeon rendering is due to time constraints and the fact that the visualiser is not a centre piece of this experiment. Our sole requirements are that the rendering is consistent and robust enough to handle our produced topologies. Nepo\v{z}itek's PDG satisfies these requirements \parencite{Nepozitek2018FASTCT}.
+As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. In practice, obtaining a dungeon from our model is done in three steps:
+
+1. Infer the dungeon RVs and validate them
+2. Infer the room RVs and validate them
+3. Convert our fixed RVs to a graphical dungeon
+
  %from chosen model --> dungeon graph, assumptions about constraints specifics etc
 \paragraph{Dungeon Sampling} %What 
-We can define characteristics of the desired dungeon by leveraging the inference nature of BNs. Generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter. The user can choose virtually any permutation of parameters to be fixed or inferred. For consistency of this experiment, we are observing only the size of the dungeon via \texttt{NumRooms}.
+ Since we have size and CP length as dungeon variables and the size is already fixed, we need to only sample and validate the CP length. The validation is a simple sanity check to see if the value for the CP length is not greater than the size. If the validation is successful we continue the inference process. Otherwise we redraw the sample.
 
 \paragraph{Room Sampling}
-The sequence of operations can be seen in appendix A \ref{algo:sampling}.
+%TODO: finish
+Once the size and critical path length of the dungeon have been observed.
+
+The sequence of operations can be seen in Appendix A algorithm \ref{algo:sampling}.
 % fix dungeon, sample the rest
 % Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
 
 \paragraph{Converting from samples to Space}
+Reflecting back on the discussion of procedural dungeon generation methodologies in section \ref{subsec:DigGen}, we have chosen to use Constraint Satisfaction Propagators CSPs. The samples we have drawn provide an intuitive description of the constraints and furthermore they give us an intuition of how easy it is to find a dungeon that corresponds to the samples. CSPs also are preferred because they can be extended to include more RVs by just expanding the constraint set. Although not considered in this paper, practical optimisations like converting them for use with general linear solvers can be done.
+%TODO: Finish how and what constraints we use
 %considerations.
 %Propositions:
 %1. Ad-hoc implementation : not pretty, cannot guarantee its valid without assuming soft constraints
@@ -305,13 +317,15 @@ The sequence of operations can be seen in appendix A \ref{algo:sampling}.
 % + Extensible: if expanding to Mission, we just add new constraints to be satisfied.
 % + gives us an intuition about solvability, which is a bonus internal metric for our BNet. I.e. did we sample something that makes sense? 
 % + can be generalised and optimised :: potentially translate it for general linear solvers
-% todo: explain what the constraints are more than why we want this
+
+\paragraph{}
+The platform of choice for this project is .NET with the language of implementation being C\#. We chose this as Netica has native support for C\# via its COM API and because of the availability of useful third-party utilities. Namely we will be using Nepo\v{z}itek's PDG tool \parencite{levelGenerator} which allows us to input an abstract graph for the desired topology and produces a rendered image that is ready for player usage. The reason behind using a third-party solution for the dungeon rendering is due to time constraints and the fact that the visualiser is not a centre piece of this experiment. Our sole requirements are that the rendering is consistent and robust enough to handle our produced topologies. Nepo\v{z}itek's PDG satisfies these requirements \parencite{Nepozitek2018FASTCT}.
 
 \chapter{Results}
 \label{cha:results}
 %TODO: More info about the score rule? Explain the table, each column is one probability \(P(\theta \mid R)\)
 \section{Internal Validation}
-As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities therefore we will choose TAN to continue forward as it is the simpler structure. Our constraint propagation algorithm furhter reports that on average (sample size of 15) it takes 451 retries and 25 minutes to sample a single 10 room dungeon that satisfies our physical consistency requirements described in \ref{sec:implementation}.
+As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities therefore we will choose TAN to continue forward as it is the simpler structure. Our constraint propagation algorithm further reports that on average (sample size of 15) it takes 451 retries and 25 minutes to sample a single 10 room dungeon that satisfies our physical consistency requirements described in \ref{sec:implementation}.
 
 \begin{table}[htb]
   \centering
@@ -336,7 +350,7 @@ As we are modelling uncertainty, we can pose the question of "How well do we red
 \paragraph{User study design}
 Previous work the aesthetics of composition has shown that people can discriminate between computer generated and original artwork \parencite{McManusMondrian} \parencite{FurnhamMondrian}. To validate if our model is able to generate dungeons that are undistinguishable from human-made dungeons we will conduct a preference study. Dungeons from the OPDC, our inferred set and a random control group are selected and formatted in the same visual style. Three sets of pairs are randomly permuted and contain an even distribution of the possible combinations \textit{(OPDC,ours),(OPDC,random),(ours,random)}.
 
-10, 13 and 8 room dungeons were used as they are the most common and additionally 13 is the mean dungeon size.
+10, 13 and 8 room dungeons (examples in Appendix B fig \ref{fig:gen_dungeons}) were used as they are the most common and additionally 13 is the mean dungeon size.
 The experiment was done as an online survey.
 
 \paragraph{Demographics}
@@ -346,7 +360,7 @@ The participants were selected to be adults with at least some experience in PnP
 
 \chapter{Discussion}
 %TODO: finish, talk about satisfiability
-As expected, all models surpass the uniform distribution control. However the above 50\% error rate reveals that with the assumptions for making the problem description more concrete (section \ref{subsec:feature_selection}), we have removed crucial explanatory variables. The low predictive capabilities for the Space model is an indicator that the Mission parameters or some other unmodelled hidden set of parameters (perhaps a variable for creativity) are crucial when trying to approximate human-made dungeons. 
+As expected, all models surpass the uniform distribution control. However the above 50\% error rate reveals that with the assumptions we made in section \ref{subsec:feature_extraction} for making the problem description more concrete, we have removed crucial explanatory variables. The low predictive capabilities for the Space model is an indicator that the Mission parameters or some other unmodelled hidden set of parameters (perhaps a variable for creativity) are crucial when trying to approximate human-made dungeons. Furthermore the constraint satisfier struggles to generate the sampled dungeons.
 
 
 The EM algorithm consistently outperforms GD, albeit not by a large margin. 
@@ -501,6 +515,52 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
 \chapter{appendix}
 \label{cha:aB}
 \textit{Use this section for questionnaires and external validation support}
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.33\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/step1.png}
+    \caption{select a dungeon map}
+  \end{subfigure}
+  ~
+  \begin{subfigure}[b]{0.33\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/step2.png}
+    \caption{annotate (or reannotate) rooms for convenience}
+  \end{subfigure}
+  ~
+  \begin{subfigure}[b]{0.33\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/step3.png}
+    \caption{connect rooms}
+  \end{subfigure}
+  \caption{Steps for transcribing Sepulchre of the Abyss 2015 (dark red is CP)}
+  \label{fig:SOTA}
+\end{figure}
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/generated/BPDG_10_5.jpg}
+    \caption{10 room Bayesian PDG}
+  \end{subfigure}
+  ~
+  \begin{subfigure}[b]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/generated/TheVerminHollow.yaml_7.jpg}
+    \caption{The Vermin Hollow OPDC 2011}
+  \end{subfigure}
+  ~
+  \begin{subfigure}[b]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/generated/RAND_10_6.jpg}
+    \caption{10 room Random PDG}
+  \end{subfigure}
+  \caption{Generated dungeons}
+  \label{fig:gen_dungeons}
+\end{figure}
 
 \printbibliography
 

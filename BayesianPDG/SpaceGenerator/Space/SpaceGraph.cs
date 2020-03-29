@@ -17,7 +17,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public Node Goal => Node(AllNodes.Count - 1);
         public List<int> CriticalPath => PathTo(Entrance.Id, Goal.Id);
         public bool isComplete => ValidateNodeConnected() && ValidateReachability();
-        public bool isPlanar => AllEdges.Count/2 <= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6; note /2 to get undirected edges count
+        public bool isPlanar => AllEdges.Count / 2 <= 3 * AllNodes.Count - 6; //Euler's rule for planar graphs: edges <= 3 * vertices - 6; note /2 to get undirected edges count
         public bool areNodesInstantiated => AllNodes.FindAll(x => x.Values.Count == 1).Count == AllNodes.Count; //All room nodes have only 1 value
         #endregion
 
@@ -188,6 +188,7 @@ namespace BayesianPDG.SpaceGenerator.Space
         public bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
 
         #endregion
+
         #region Potential Value instantiations CSP
         public void ReducePotentialValues()
         {
@@ -218,9 +219,9 @@ namespace BayesianPDG.SpaceGenerator.Space
             }
             else
             {
-                foreach(Node parent in AllNodes)
+                foreach (Node parent in AllNodes)
                 {
-                    foreach(Node child in parent.Values.First())
+                    foreach (Node child in parent.Values.First())
                     {
                         if (ValidNeighboursPostInc(parent) && ValidNeighboursPostInc(child))
                         {
