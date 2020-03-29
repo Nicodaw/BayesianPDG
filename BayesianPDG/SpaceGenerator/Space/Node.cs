@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
-    public class Node: IEquatable<Node>
+    public class Node : IEquatable<Node>
     {
         #region Public Fields
         public int Id;

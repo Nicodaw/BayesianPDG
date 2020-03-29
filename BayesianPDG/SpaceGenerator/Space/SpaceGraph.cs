@@ -198,10 +198,11 @@ namespace BayesianPDG.SpaceGenerator.Space
         {
             Connect(A.Id, B.Id);
 
-            List<(int, int)> distanceToA = new List<(int, int)>() ;
+            List<(int, int)> distanceToA = new List<(int, int)>();
             List<(int, int)> distanceToB = new List<(int, int)>();
 
-            CriticalPath.ForEach(node => {
+            CriticalPath.ForEach(node =>
+            {
                 distanceToA.Add((node, PathTo(node, A.Id).Count));
                 distanceToB.Add((node, PathTo(node, B.Id).Count));
             });

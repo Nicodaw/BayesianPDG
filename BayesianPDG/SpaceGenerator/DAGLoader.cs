@@ -61,7 +61,7 @@ namespace BayesianPDG.SpaceGenerator
             {
                 Debug.WriteLine("Net Already closed");
             }
-            
+
         }
     }
 }

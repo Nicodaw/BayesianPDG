@@ -2,7 +2,7 @@
 
 namespace BayesianPDG.SpaceGenerator.Space
 {
-    public class Edge: IEquatable<Edge>
+    public class Edge : IEquatable<Edge>
     {
         public Node Parent;
         public Node Child;

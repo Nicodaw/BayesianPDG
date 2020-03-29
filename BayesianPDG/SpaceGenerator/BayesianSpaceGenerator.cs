@@ -166,7 +166,7 @@ namespace BayesianPDG.SpaceGenerator
                     List<Node> disconnected = DungeonGraph.AllNodes.FindAll(node => node.Id != 0 && DungeonGraph.PathTo(0, node.Id).Count == 0);
                     List<Node> connected = DungeonGraph.AllNodes.FindAll(node => node.Id == 0 || DungeonGraph.PathTo(0, node.Id).Count != 0);
                     randParent = (disconnected.Count == 1) ? disconnected[0] : disconnected[RNG.Next(0, disconnected.Count - 1)];
-                    randChild = (connected.Count == 1)? connected[0] : connected[RNG.Next(0, connected.Count - 1)];
+                    randChild = (connected.Count == 1) ? connected[0] : connected[RNG.Next(0, connected.Count - 1)];
                 }
                 DungeonGraph.Connect(randParent, randChild);
             }
@@ -331,7 +331,6 @@ namespace BayesianPDG.SpaceGenerator
                 {
                     foreach (var node in set)
                     {
-
                         if (!node.IsConnected(child) && !DungeonGraph.ValidCPDistance(node, child))
                         {
                             allowedValues.Remove(set);

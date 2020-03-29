@@ -34,10 +34,10 @@ namespace BayesianPDG.SpaceGenerator
             if (exit == 0 && isValid) return net;
             else
             {
-                if(retry != 0)
+                if (retry != 0)
                 {
                     Debug.WriteLine($"There was a problem Sampling the network. Exit code {exit}. Is sample valid? {isValid}. Retrying...");
-                    var priorObservations = (rooms: (int) Value(FeatureType.NumRooms), cpLength: (int) Value(FeatureType.CriticalPathLength));
+                    var priorObservations = (rooms: (int)Value(FeatureType.NumRooms), cpLength: (int)Value(FeatureType.CriticalPathLength));
                     ClearObservations();
                     Observe(FeatureType.NumRooms, priorObservations.rooms);
                     Observe(FeatureType.CriticalPathLength, priorObservations.cpLength);
@@ -48,7 +48,7 @@ namespace BayesianPDG.SpaceGenerator
                     ClearObservations();
                     throw new InvalidOperationException($"There was a problem Sampling the network and it failed after retring 10 times. Exit code {exit}. Is sample valid? {isValid}.");
                 }
-                
+
             }
 
         }
@@ -130,7 +130,7 @@ namespace BayesianPDG.SpaceGenerator
         public void SetObservations(bool clear, params (FeatureType, int)[] observations)
         {
             if (clear) ClearObservations();
-            foreach((FeatureType,int) observation in observations)
+            foreach ((FeatureType, int) observation in observations)
             {
                 Observe(observation.Item1, observation.Item2);
             }

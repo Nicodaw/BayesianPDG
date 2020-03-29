@@ -26,7 +26,6 @@ namespace BayesianPDG
 
         public static void Main()
         {
-
             Debug.WriteLine("Starting Bayesian Space Generator...");
             BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
 
@@ -42,7 +41,7 @@ namespace BayesianPDG
                     }
                     else
                     {
-                        MessageBox.Show("Constraints imposed by the sample could not be satisfied. Try again.","Error: Bad Sample", 0);
+                        MessageBox.Show("Constraints imposed by the sample could not be satisfied. Try again.", "Error: Bad Sample", 0);
                     }
                 }
             }
@@ -53,21 +52,7 @@ namespace BayesianPDG
                 {
                     GenerateStaticMap(map.Name);
                 }
-                //for (int j = 0; j < 10; j++)
-                //{
-                //    Stopwatch netWatch = new Stopwatch();
-                //    netWatch.Start();
-                //    SpaceGraph graph = spaceGen.RunInference(13, defaultNetPath);
-                //    netWatch.Stop();
-                //    netGenerationTime = netWatch.Elapsed.TotalSeconds;
-                //    if (graph != null)
-                //    {
-                //        GenerateMap(graph);
-                //    }
-                //}
             }
-
-
         }
 
         static void GenerateStaticMap(string mapName)
@@ -140,10 +125,8 @@ namespace BayesianPDG
                 throw new ArgumentNullException("No generator layouts were produced");
             }
             var folder = $"Output/{time}_{name ?? generatedLayouts.First().Rooms.Count().ToString()}";
-
             int width = 600;
             int height = 600;
-
             try
             {
                 Directory.CreateDirectory(folder);
@@ -152,7 +135,7 @@ namespace BayesianPDG
                 {
                     Bitmap bitmap = wfLayoutDrawer.DrawLayout(generatedLayouts[i], width, height, true, null);
 
-                    bitmap.Save($"{folder}/{name+"_"?? ""}{i}.jpg");
+                    bitmap.Save($"{folder}/{name + "_" ?? ""}{i}.jpg");
                 }
                 File.WriteAllText(folder + "/benchmark.txt", $"Inference process took {netGenerationTime}s \n" +
                 $"Generation process took {dunGenerationTime}s \n" +
