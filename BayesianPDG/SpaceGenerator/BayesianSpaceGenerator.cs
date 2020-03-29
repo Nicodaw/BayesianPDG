@@ -312,6 +312,34 @@ namespace BayesianPDG.SpaceGenerator
                     }
                 }
 
+                // do not invalidate Depth
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
+
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidDepth(node, child))
+                        {
+                            allowedValues.Remove(set);
+                        }
+
+                    }
+                }
+
+                // do not invalidate CP distance
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
+
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidCPDistance(node, child))
+                        {
+                            allowedValues.Remove(set);
+                        }
+
+                    }
+                }
+
                 // do not invalidate planarity
                 foreach (var set in allowedValues.ToList())
                 {

@@ -18,7 +18,7 @@ namespace BayesianPDG
 {
     class Program
     {
-        private const bool enableUserInput = false;
+        private const bool enableUserInput = true;
         private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         static private ConfigLoader cfloader = new ConfigLoader();
         static private double netGenerationTime = 0;

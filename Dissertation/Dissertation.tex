@@ -140,16 +140,24 @@ The downside of BNs is that their generalisation capabilities are highly depende
 A proposed way to solve this issue is by creating artificial data entries for the undefined cases. We will use linear interpolation due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. This can potentially solve the problems of undefined dungeons within the range of sizes of our dataset, but it cannot extrapolate to infer arbitrarily large dungeons. We would like to argue that this generalisation restriction is not a limitation of our algorithm, but of the data. Different dungeons exhibit different properties and it is not feasible to consider learning all possible existing dungeon configurations from a single dataset. This limitation is reflected in the dataset selection criteria in the next section.
 
 \chapter{Methods and Implementation}
-%TODO: Define notation
-Features or RVs are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\)
-Parameters refer to the network parameters, i.e. the conditional probability tables CPTs defined by \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\)
-Joint probability distributions \(P(X_1, \ldots , X_n)\)
-Calligraphic \(\mathcal{N}\) denotes the CPTs for a given network
-Calligraphic \(\mathcal{D}\) is a wrapper for all our data
+
+%ToDo: Finish summarising key assumptions, and models
+\paragraph{}
+In this section we explore various issues with formalising graphical representations of human-made dungeons for use with our Bayesian networks. We make key assumptions about how to isolate Space features and 
+We discuss Bayesian network architectures in three different levels of complexity.
 
 \section{Data acquisition}
+
+\paragraph{Note on notation}
+Features or RVs are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\).
+Parameters refer to the Bayesian network parameters, i.e. the conditional probability tables CPTs defined by the different RV dependencies \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\).
+Joint probability distributions \(P(X_1, \ldots , X_n)\).
+Calligraphic \(\mathcal{N}\) is a shorthand for the parameters (CPTs) for a given network.
+Calligraphic \(\mathcal{D}\) is a wrapper for all the RVs (i.e. our data).
+
 \subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
 % What problems can we encounter? Sparsity of data. Very different dungeons, some are unusable (say unusable criteria)
+
 \paragraph{}
 Unsurprisingly the first priority of a data-driven method is the acquisition of a suitable dataset. The criteria we have chosen for our data is the following:
 \begin{outline}[enumerate]
@@ -173,7 +181,7 @@ We will base our feature selection on the work done by Summerville \parencite{Su
   \1 Dungeon (Global): total number of rooms \(R\) and how many rooms are on the critical path \(L\)
   \1 Room (Local): depth \(D\) (how far away the room is from the entrance), critical path distance \(S\) (how far away is the room from a critical path room, 0 indicates it is on the CP) , total number of neighbours \(N\)
 \end{outline}
-Each global and local set of features is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\). A full dungeon is therefore characterised by 
+Each global and local set of features is defined by the joint PDs respectively \(P(R, L)\) and \(P(S, D, N)\), where each variable is discrete. A full dungeon is therefore characterised by 
 
 \begin{equation}
   \label{eq:full_joint_PD}
@@ -275,23 +283,23 @@ When we learn parameters (CPTs for each RV) we are trying to find the most likel
 % \subsubsection{Count \parencite[48-50]{neticaCman}}
 % The counting learning states that the probabilities in a single node are defined by how often a particular value has been seen in the data. This notion is defined as the \textit{experience} of that value. The network starts in a state of complete ignorance with uniform probabilities across all RVs. As we iteratively load in the data, the CPT are updated by increasing the probability for a particular value every time it is seen. Specifically, the experience is updated by the previous experience and the degree factor of that data point (i.e how often is it repeated, usually 1) \(e^{\prime} = e + d\). The CPT values are computed as a ratio of the previous and newly observed experience \(P^{\prime}(X=x) = \frac{P(X=x) \times e}{e^{\prime}}\). The counting algorithm is recommended due to its speed and simplicity, but it has a substantial drawback in the fact that it needs the data to be fully defined. Theoretically we should be able to use the counting algorithm as we have no latent (undefined) RVs nor missing data.
 
-\subsubsection{Expectation Maximisation EM} %both EM and GD can get stuck on local minima
-%todo: revisit EM
-EM \parencite{EMAlgorithm} is a nummerical algorithm that can handle missing data. It assigns random probabilities to our missing values and iteratively alternates between maximising the parameters of the model given the data (Maximisation step) and finding better estimations of the missing data (Expectation step). It converges after a sertain set of predefined iterations or when no new updates are happening. 
+\subsubsection{Expectation Maximisation EM}
+EM \parencite{EMAlgorithm} is a numerical algorithm that can handle missing data. It assigns random probabilities to our missing values and iteratively alternates between maximising the parameters of the model given the data (Maximisation step) and finding better estimations of the missing data (Expectation step). It converges after a certain set of predefined iterations or when no new updates are happening. 
 
 \subsubsection{Gradient Descent GD}
-%todo: finish GD
-GD Netica specifically uses conjugate gradient descent \textbf{[[cn]]} whereby it maximises \(\)
-Both EM and GD risk getting stuck in local optima.
+GD is another algorithm that is able to find parameters for missing data. Netica specifically uses conjugate gradient descent \textbf{[[cn]]} whereby it maximises \(P(\mathcal{N} \mid \mathcal{D})\) by computing the steepest gradient, taking in account the previous one \parencite[p47]{neticaCman}. Both EM and GD risk getting stuck in local optima.
 
 \section{Implementation}
 \label{sec:implementation}
 \paragraph{}
 As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. In practice, obtaining a dungeon from our model is done in three steps:
 
-1. Infer the dungeon RVs and validate them
-2. Infer the room RVs and validate them
-3. Convert our fixed RVs to a graphical dungeon
+\begin{outline}[enumerate]
+  \1 Infer the dungeon RVs and validate them
+  \1 Infer the room RVs and validate them
+  \1 Convert our fixed RVs to a graphical dungeon
+\end{outline}
+
 
  %from chosen model --> dungeon graph, assumptions about constraints specifics etc
 \paragraph{Dungeon Sampling} %What 
@@ -299,14 +307,24 @@ As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms 
 
 \paragraph{Room Sampling}
 %TODO: finish
-Once the size and critical path length of the dungeon have been observed.
-
-The sequence of operations can be seen in Appendix A algorithm \ref{algo:sampling}.
+Once the size and critical path length of the dungeon have been observed we can infer the specific room parameters in the same way as before. The validation for room samples is that the depth and number of neighbours cannot exceed the size of the dungeon. If a sample is invalid, we again retry. This is repeated until we have drawn a valid sample for each room in that dungeon. The sequence of operations for dungeon and room sampling can be seen in Appendix A algorithm \ref{algo:sampling}.
 % fix dungeon, sample the rest
 % Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
 
 \paragraph{Converting from samples to Space}
-Reflecting back on the discussion of procedural dungeon generation methodologies in section \ref{subsec:DigGen}, we have chosen to use Constraint Satisfaction Propagators CSPs. The samples we have drawn provide an intuitive description of the constraints and furthermore they give us an intuition of how easy it is to find a dungeon that corresponds to the samples. CSPs also are preferred because they can be extended to include more RVs by just expanding the constraint set. Although not considered in this paper, practical optimisations like converting them for use with general linear solvers can be done.
+%TODO: Say the CP is hardcoded as an optimisation
+The sampling procedure produces a set of instantiated parameters that define our dungeon, but an algorithm that can convert from the samples to a usable dungeon is still required. We considered the different PDG methods as discussed in section \ref{subsec:DigGen} for this task and chose Constraint Propagators CPs. The samples we have drawn provide an intuitive description of the constraints. More importantly, unlike other PDG methods, CPs can be used as an analytics tool as they give us an intuition of how easy it is to \textit{find} a dungeon that satisfies the samples. Although not considered in this paper, practical optimisations like using general linear solvers can be done. We have coded two practical optimisations: we operate on connection tuples that are of predetermined length and we predefine the critical path. The current constraints are as follows:
+\begin{outline}[enumerate]
+  \1 The dungeon is exactly of size \(R\)
+  \1 The ith room must be exactly \(D_i\) rooms away from the entrance
+  \1 The ith room must have exactly \(N_i\) connections 
+  \1 The ith room must be exactly \(S_i\) rooms away from the critical path
+  \1 CP must not be altered
+  \1 Dungeon must be planar
+  \1 Every room must be reachable (there is a path from the start to the room)
+\end{outline}
+
+The algorithm is an adapted version of Horswil's CP for the 2013 GDC conference \parencite{HorswillCPInAWeekend} and can be seen in detail in Appendix A, algorithm \ref{algo:CSP}.
 %TODO: Finish how and what constraints we use
 %considerations.
 %Propositions:

@@ -187,6 +187,50 @@ namespace BayesianPDG.SpaceGenerator.Space
         /// <returns>If A has not exceeded its neighbour capacity</returns>
         public bool ValidNeighboursPostInc(Node A) => A.Edges.Count < A.MaxNeighbours;
 
+        /// <summary>
+        /// Assume we've added an edge to A.
+        /// Validate if A and B are still within their designated distance from the CP distance.
+        /// </summary>
+        /// <param name="A">node</param>
+        /// <param name="B">node</param>
+        /// <returns>If A and B have not invalidated their CP distance</returns>
+        public bool ValidCPDistance(Node A, Node B)
+        {
+            Connect(A.Id, B.Id);
+
+            List<(int, int)> distanceToA = new List<(int, int)>() ;
+            List<(int, int)> distanceToB = new List<(int, int)>();
+
+            CriticalPath.ForEach(node => {
+                distanceToA.Add((node, PathTo(node, A.Id).Count));
+                distanceToB.Add((node, PathTo(node, B.Id).Count));
+            });
+
+            int closestAId = distanceToA.Where((id, dist) => dist == distanceToA.Min(d => d.Item2)).First().Item1;
+            int closestBId = distanceToB.Where((id, dist) => dist == distanceToB.Min(d => d.Item2)).First().Item1;
+
+            bool isAValid = A.CPDistance == PathTo(A.Id, closestAId).Count();
+            bool isBValid = B.CPDistance == PathTo(B.Id, closestBId).Count();
+            Disconnect(A.Id, B.Id);
+            return isAValid && isBValid;
+        }
+
+        /// <summary>
+        /// Assume we've added an edge to A.
+        /// Validate if A and B are still within their designated distance from the start.
+        /// </summary>
+        /// <param name="A">node</param>
+        /// <param name="B">node</param>
+        /// <returns>If A and B have not invalidated their depth</returns>
+        public bool ValidDepth(Node A, Node B)
+        {
+            Connect(A.Id, B.Id);
+            bool isAValid = A.Depth == PathTo(A.Id, Entrance.Id).Count();
+            bool isBValid = B.Depth == PathTo(A.Id, Entrance.Id).Count();
+            Disconnect(A.Id, B.Id);
+            return isAValid && isBValid;
+        }
+
         #endregion
 
         #region Potential Value instantiations CSP
