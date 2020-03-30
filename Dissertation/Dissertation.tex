@@ -270,7 +270,7 @@ Due to the fact that we have a small number of nodes, we can afford the computat
 
 \begin{figure}[htb]
   \centering
-    \includegraphics[width=\textwidth]{FullyConnected.png}
+    \includegraphics[width=0.7\textwidth]{FullyConnected.png}
     \caption{Fully connected graph with heuristic causal flow}
   \label{fig:FullyConnected}
 \end{figure}
@@ -292,7 +292,7 @@ GD is another algorithm that is able to find parameters for missing data. Netica
 \section{Implementation}
 \label{sec:implementation}
 \paragraph{}
-As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. In practice, obtaining a dungeon from our model is done in three steps:
+As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. In practice, obtaining a dungeon configuration from our model is done in three steps:
 
 \begin{outline}[enumerate]
   \1 Infer the dungeon RVs and validate them
@@ -415,7 +415,7 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
 
 
 \appendix
-\chapter{appendix}
+\chapter{Appendix}
 \label{cha:aA}
 
 \begin{figure}[htb]
@@ -435,7 +435,6 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
   \label{fig:dataStats}
 \end{figure}
 
-%TODO: write the algo
 \begin{algorithm}
   \SetAlgoLined
   \DontPrintSemicolon
@@ -444,15 +443,25 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
   \Input{BNetModel, int \(observed\_R\)}
   \Output{int estimates for the dungeon and each room parameter \((R, L, \{S_r, D_r, N_r\})\)}
   \BlankLine
-  \(R \leftarrow \) BNetModel.\Observe{\(observed\_R\)}\;
-  \(L \leftarrow \) BNetModel.\Sample{}\;
-  \For{\(r \in R\) \KwDo}{
-    \(temp\_R = R\)\;
-    \(temp\_L = L\)\;
-    \((S_r, D_r, N_r) \leftarrow \) BNetModel.\Sample{}\;
-    BNetModel.\ClearObservations{}\;
-    \(R \leftarrow \) BNetModel.\Observe{\(temp\_R\)}\;
-    \(L \leftarrow \) BNetModel.\Observe{\(temp\_L\)}\;
+  \(isDungeonValid \leftarrow false\)\;
+  \While{\(\neg isDungeonValid\)}{
+    \(R \leftarrow \) BNetModel.\Observe{\(observed\_R\)}\;
+    \(L \leftarrow \) BNetModel.\Sample{}\;
+    \(isDungeonValid \leftarrow ValidateDungeon(R,L)\)\;
+    \If{\(isDungeonValid\)}{
+      \For{\(r \in R\) \KwDo}{
+      \(temp\_R \leftarrow R\)\;
+      \(temp\_L \leftarrow L\)\;
+      \(isRoomValid \leftarrow false\)\;
+      \While{\(\neg isRoomValid\)}{
+        \((S_r, D_r, N_r) \leftarrow \) BNetModel.\Sample{}\;
+        BNetModel.\ClearObservations{}\;
+        \(R \leftarrow \) BNetModel.\Observe{\(temp\_R\)}\;
+        \(L \leftarrow \) BNetModel.\Observe{\(temp\_L\)}\;
+        \(isRoomValid \leftarrow ValidateRoom(S_r, D_r, N_r)\)\;
+      }
+    }
+    }
    }
    \caption{Dungeon and Room sampling algorithm}
    \label{algo:sampling}
@@ -534,30 +543,30 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
      \label{algo:CSP}
     \end{algorithm}
 
-\chapter{appendix}
+\chapter{Appendix}
 \label{cha:aB}
 \begin{figure}[htb]
   \centering
-    \includegraphics[width=\textwidth]{figures/gemstone_table.png}
+    \includegraphics[width=0.5\textwidth]{figures/gemstone_table.png}
     \caption{Loot table for gemstones taken from Dungeon Master Guide 5e}
     \label{fig:loot_table}
 \end{figure}
 
 \begin{figure}[htb]
   \centering
-  \begin{subfigure}[b]{0.33\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/step1.png}
     \caption{select a dungeon map}
   \end{subfigure}
   ~
-  \begin{subfigure}[b]{0.33\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/step2.png}
     \caption{annotate (or reannotate) rooms for convenience}
   \end{subfigure}
   ~
-  \begin{subfigure}[b]{0.33\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/step3.png}
     \caption{connect rooms}
@@ -568,19 +577,19 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
 
 \begin{figure}[htb]
   \centering
-  \begin{subfigure}[b]{0.35\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/generated/BPDG_10_5.jpg}
     \caption{10 room Bayesian PDG}
   \end{subfigure}
   ~
-  \begin{subfigure}[b]{0.35\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/generated/TheVerminHollow.yaml_7.jpg}
     \caption{The Vermin Hollow OPDC 2011}
   \end{subfigure}
   ~
-  \begin{subfigure}[b]{0.35\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/generated/RAND_10_6.jpg}
     \caption{10 room Random PDG}
