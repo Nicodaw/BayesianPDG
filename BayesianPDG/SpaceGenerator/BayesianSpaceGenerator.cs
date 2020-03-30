@@ -77,8 +77,8 @@ namespace BayesianPDG.SpaceGenerator
             DungeonGraph.ReducePotentialValues();
 
 
-            Debug.WriteLine("Potential room connections before CP mapping");
-            DungeonGraph.AllNodes.ForEach(node => Debug.WriteLine(node.PrintConnections()));
+            Console.WriteLine("Potential room connections after CP mapping");
+            DungeonGraph.AllNodes.ForEach(node => Console.WriteLine(node.PrintConnections()));
 
             // Transform the basis dungeon in a per-room fashion
             // Compose a list of all nodes that still don't have their full neighbours reached

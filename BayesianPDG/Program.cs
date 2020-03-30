@@ -145,6 +145,8 @@ namespace BayesianPDG
                 {
                     MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
                 }
+                Console.Write("Press any key to exit...");
+                Console.ReadKey();
             }
             catch (Exception e)
             {
