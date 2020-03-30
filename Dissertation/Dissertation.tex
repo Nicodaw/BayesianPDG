@@ -292,7 +292,7 @@ GD is another algorithm that is able to find parameters for missing data. Netica
 \section{Implementation}
 \label{sec:implementation}
 \paragraph{}
-As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. In practice, obtaining a dungeon configuration from our model is done in three steps:
+As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms is a matter of fixing (\textit{observing}) the \texttt{NumRooms} parameter and inferring the rest. When an RV is observed, Netica updates the CPTs for all dependent RVs with the newly added belief. We can then draw a value from the newly formed distributions. This process of taking a single value from a PD is known as \textit{sampling} the PD. After a value for a previously unknown RV has been sampled, it is added as an observed RV for any subsequent inference. The user can choose virtually any permutation of variables to be fixed or inferred. For consistency of this experiment, we start by observing only the size of the dungeon via \texttt{NumRooms}. Obtaining a dungeon configuration from our model is done in three steps:
 
 \begin{outline}[enumerate]
   \1 Infer the dungeon RVs and validate them
@@ -302,18 +302,18 @@ As we discussed in chapter \ref{ch:BNETS}, generating a dungeon with five rooms 
 
 
  %from chosen model --> dungeon graph, assumptions about constraints specifics etc
-\paragraph{Dungeon Sampling} %What 
- Since we have size and CP length as dungeon variables and the size is already fixed, we need to only sample and validate the CP length. The validation is a simple sanity check to see if the value for the CP length is not greater than the size. If the validation is successful we continue the inference process. Otherwise we redraw the sample.
+\paragraph{Dungeon Sampling}
+ As the size of the dungeon is observed, we only require to sample and validate the CP length. The validation is a sanity check to see if the value for the CP length is not greater than the size. If the validation is successful we continue the inference process. Otherwise we redraw the sample. Formally what we are doing is obtaining a point estimate for the CP length \(L=l\) from the PD \(P(L\mid R = r)\) where \(l \le r\).
 
 \paragraph{Room Sampling}
 %TODO: finish
-Once the size and critical path length of the dungeon have been observed we can infer the specific room parameters in the same way as before. The validation for room samples is that the depth and number of neighbours cannot exceed the size of the dungeon. If a sample is invalid, we again retry. This is repeated until we have drawn a valid sample for each room in that dungeon. The sequence of operations for dungeon and room sampling can be seen in Appendix A algorithm \ref{algo:sampling}.
+Once the size and CP length of the dungeon have been observed we can infer the specific room parameters in the same way as before. The validation for room samples is that the depth and number of neighbours cannot exceed the size of the dungeon. If a sample is invalid, we again retry. This is repeated until we have drawn a valid sample for each room in that dungeon. Formally speaking, for each room \(i\) we obtain a point estimate for the room features \((D_i, S_i, N_i) = (d_i, s_i, n_i)\) from the PDs \(\prod_{i}^{r} P(D_i, S_i, N_i \mid R =r, L = l)\) where \(\forall d, \forall n \le r\). The sequence of operations for dungeon and room sampling can be seen in Appendix A algorithm \ref{algo:sampling}.
 % fix dungeon, sample the rest
 % Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
 
 \paragraph{Converting from samples to Space}
 %TODO: Say the CP is hardcoded as an optimisation
-The sampling procedure produces a set of instantiated parameters that define our dungeon, but an algorithm that can convert from the samples to a usable dungeon is still required. We considered the different PDG methods as discussed in section \ref{subsec:DigGen} for this task and chose Constraint Propagators CPs. The samples we have drawn provide an intuitive description of the constraints. More importantly, unlike other PDG methods, CPs can be used as an analytics tool as they give us an intuition of how easy it is to \textit{find} a dungeon that satisfies the samples. Although not considered in this paper, practical optimisations like using general linear solvers can be done. We have coded two practical optimisations: we operate on connection tuples that are of predetermined length and we predefine the critical path. The current constraints are as follows:
+The sampling procedure produces a set of instantiated parameters that define our dungeon, but an algorithm that can convert from the samples to a usable dungeon is still required. We considered the different PDG methods as discussed in section \ref{subsec:DigGen} for this task and chose Constraint Propagators CPs. The samples we have drawn provide an intuitive description of the constraints. More importantly, unlike other PDG methods, CPs can be used as an analytics tool as they give us an intuition of how easy it is to \textit{find} a dungeon that satisfies the samples. We have coded two practical optimisations: we operate on connection tuples that are of predetermined length and we predefine the critical path. The current constraints are as follows:
 \begin{outline}[enumerate]
   \1 The dungeon is exactly of size \(R\)
   \1 The ith room must be exactly \(D_i\) rooms away from the entrance
@@ -410,6 +410,7 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
   \1 Automate the Feature Extraction process (OCR + NLP)
   \1 Incorporate Mission parameters as well
   \1 Analyse PnP specific dungeons and find more parameters that might be useful. E.g. size of rooms, multiple CPs, 
+  \1 Although not considered in this paper, practical optimisations like using general linear solvers can be done.
   \1 Conduct a study with greater environmental impact (e.g. actually get people to play instead of using an aesthetics study)
 \end{outline}
 
