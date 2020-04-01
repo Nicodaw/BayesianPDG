@@ -18,7 +18,7 @@ namespace BayesianPDG
 {
     class Program
     {
-        private const bool enableUserInput = true;
+        private const bool enableUserInput = false;
         private const string defaultNetPath = "Resources\\BNetworks\\LIEMNet.neta";
         static private ConfigLoader cfloader = new ConfigLoader();
         static private double netGenerationTime = 0;
@@ -27,10 +27,10 @@ namespace BayesianPDG
         public static void Main()
         {
             Debug.WriteLine("Starting Bayesian Space Generator...");
-            BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
 
             if (enableUserInput)
             {
+                BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
                 string value = "10";
                 if (Dialog.InputBox("Bayesian PDG", "Dungeon size between 2-27", ref value) == DialogResult.OK)
                 {
@@ -47,11 +47,31 @@ namespace BayesianPDG
             }
             else
             {
-                FileInfo[] files = new DirectoryInfo("Resources\\Maps").GetFiles("*.yaml");
-                foreach (var map in files)
+                for (int i = 2; i < 10; i++)
                 {
-                    GenerateStaticMap(map.Name);
+                    int sampleSize = 3;
+                    double totalTime = 0;
+                    Stopwatch netWatch = new Stopwatch();
+                    SpaceGraph experimentGraph = new SpaceGraph();
+                    for (int j = 0; j < sampleSize; j++)
+                    {
+                        BayesianSpaceGenerator spaceGen = new BayesianSpaceGenerator();
+                        netWatch.Start();
+                        experimentGraph = spaceGen.RunInference(i, defaultNetPath);
+                        netWatch.Stop();
+                        totalTime += netWatch.Elapsed.TotalSeconds;
+                    }
+                    if (experimentGraph != null)
+                    {
+                        netGenerationTime = totalTime / sampleSize;
+                        GenerateMap(experimentGraph);
+                    }
                 }
+                //FileInfo[] files = new DirectoryInfo("Resources\\Maps").GetFiles("*.yaml");
+                //foreach (var map in files)
+                //{
+                //    GenerateStaticMap(map.Name);
+                //}
             }
         }
 
@@ -144,9 +164,9 @@ namespace BayesianPDG
                 if (enableUserInput)
                 {
                     MessageBox.Show($"Images were saved to {folder}", "Images saved", 0);
+                    Console.Write("Press any key to exit...");
+                    Console.ReadKey();
                 }
-                Console.Write("Press any key to exit...");
-                Console.ReadKey();
             }
             catch (Exception e)
             {
