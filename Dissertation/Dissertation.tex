@@ -232,20 +232,28 @@ In exploring data-driven PDG for the Legend of Zelda franchise, Summerville foun
 \end{figure}
 
 \subsubsection{Tree Augmented Na\"{i}ve Bayes}
-%TODO: make TAN clearer
 % In the above approach we used specialist knowledge (Sumerville's experiments) to create the BN structure
 % We made two crucial assumptions in that PnP == ARPG && flattening Mission to Space only will still retain the same operational meaning of the dungeon due to it retaining the same conditional dependency assumptions through the BN properties
 % But we want to put those assumptions to the test by also learning the graph structure from the data we have.
 \paragraph{}
-In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we asserted two assumptions: equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.  
+In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we made two assumptions: equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.
 \paragraph{}
-Informally the learning procedure can be defined as finding the most likely BN structure that agrees with our data. \textbf{[[more formal description of maximising the posterior in respect to P(Network|Data)?]]}. The TAN algorithm starts with the usual na\"{i}ve Bayes model structure which states that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) due to its contextual importance. The na\"{i}ve assumption implies that
+Informally the learning procedure can be defined as finding the most likely BN structure that \textit{agrees} with our data. That means we are searching for the network structure that is most likely to have been produced given the data. TAN finds the most likely network structure in two steps:
+
+\begin{outline}[enumerate]
+  \1 Start with a universal model (Create a na\"{i}ve Bayes model)
+  \1 Find correlated variables in the data and connect them with causal edges
+\end{outline}
+
+The universal model TAN chooses is the standard na\"{i}ve Bayes. It asserts that all RVs are conditionally independent given one specific RV (the class RV). We will choose the class to be \(R\) due to its contextual importance. The na\"{i}vity assumption implies that
 \begin{equation}
   \label{eq:TAN}
   P(R,\boldsymbol X) = P(R)\prod_{x}^{\boldsymbol X} P(x \mid R)
 \end{equation}
 
-where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we have a usable BN structure. But although the induced bias towards the class is often shown to be practically useful, in our case assuming that the room parameters are independent from each other does not make sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The final structure which can be seen in \ref{fig:TAN} is the original na\"{i}ve Bayes with the extra added augmenting edges, resulting in a model that has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
+where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion we have a usable BN structure. The conditional independence given the class variable is useful in practice and has been shown to produce competitive results \parencite{RishEmpiricalBayes}, but the operational meaning of this assumption might cause issues if we use it as is. Namely we are assuming that as long as we know how big the dungeon is, the room variables (depth, critical path distance and neighbours) do not influence one another, which does not make much sense. For precisely this reason, the TAN algorithm analyses our data and creates \textit{augmenting edges}. They are causal links connecting RVs that are found to have correlations. The resultant network has an informed causal structure and is alleviated from the restrictions of the na\"{i}ve assumption. The networks resulting from each of the two steps can be seen in figure \ref{fig:TAN}.
+
+%It should be noted that the we did not discuss the \textit{tree} nature of TAN, because it is related to practical optimisations for learning large graphs with which we are not concerned.
 
 \begin{figure}[htb]
   \centering
@@ -321,6 +329,7 @@ Once the size and CP length of the dungeon have been observed we can infer the s
 % Netica applies the Naive Bayes assumption that given the class variable NumRooms, all rooms are independent. The reason for this assumption is that we avoid the computational complexity of maintaining series of CPTs for each room instantiation. Why is this assumption not bad for us? Potentially because it's empirically shown to not decrease accuracy? https://www.norsys.com/WebHelp/NETICA/X_Bayesian_Learning.htm "Assuming the conditional probabilities to be independent generally results in poor performance when the number of usable cases isn’t large compared to the number of parent configurations of each node to be learned." We're safe because the ratio from parent (dungeon params) to children (room params) is count(dungeon.csv)/count(room.csv)
 
 \subsection{Converting from configuration to Space}
+\label{subsec:CSP}
  We considered the different PDG methods as discussed in section \ref{subsec:DigGen} for this task and chose Constraint Propagators CPs. The reason behind this decision is that the samples we have drawn provide an intuitive description of the constraints. More importantly, unlike other PDG methods, CPs can be used as an analytics tool as they give us an intuition of how easy it is to \textit{find} a layout that satisfies the configuration. As highlighted before, CPs' computational expense grows exponentially with the increase of variables and constraints. To alleviate this issue we have coded two practical optimisations: we operate on connection tuples that are of predetermined length and we predefine the critical path by connecting all rooms with \(S = 0\). The current constraints are as follows:
 \begin{outline}[enumerate]
   \1 The dungeon is exactly of size \(R\)
@@ -354,7 +363,7 @@ The platform of choice for this project is .NET with the language of implementat
 \label{cha:results}
 %TODO: More info about the score rule? Explain the table, each column is one probability \(P(\theta \mid R)\)
 \section{Internal Validation}
-As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities therefore we will choose TAN to continue forward as it is the simpler structure. Our constraint propagation algorithm further reports that on average (sample size of 15) it takes 451 retries and 25 minutes to sample a single 10 room dungeon that satisfies our physical consistency requirements described in \ref{sec:implementation}.
+As we are modelling uncertainty, we can pose the question of "How well do we reduce uncertainty". This question can be answered by using the BNet as a classifier in which we only know the user input parameters (i.e. the size of the dungeon) and see how well we predict the rest of the parameters. We construct a within sample test where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities therefore we will choose TAN to continue forward as it is the simpler structure. Our constraint propagation algorithm further reports that on average (sample size of 15) it takes 451 retries and 25 minutes to sample a single 10 room dungeon that satisfies our physical consistency requirements described in section \ref{subsec:CSP}.
 
 \begin{table}[htb]
   \centering
@@ -389,7 +398,7 @@ The participants were selected to be adults with at least some experience in PnP
 
 \chapter{Discussion}
 %TODO: finish, talk about satisfiability
-As expected, all models surpass the uniform distribution control. However the above 50\% error rate reveals that with the assumptions we made in section \ref{subsec:feature_extraction} for making the problem description more concrete, we have removed crucial explanatory variables. The low predictive capabilities for the Space model is an indicator that the Mission parameters or some other unmodelled hidden set of parameters (perhaps a variable for creativity) are crucial when trying to approximate human-made dungeons. Furthermore the constraint satisfier struggles to generate the sampled dungeons.
+As expected, all models surpass the uniform distribution control. However the above 50\% error rate reveals that with the assumptions we made in section \ref{subsec:feature_extraction} for making the problem description more concrete, we have removed crucial explanatory variables. The low predictive capabilities for the Space model is an indicator that the Mission parameters or some other unmodeled hidden set of parameters are critical when trying to approximate human-made dungeons. Furthermore the constraint satisfier struggles to generate the sampled dungeons even with our optimisations. As seen if figure \textbf{[[fig for elapsed time for net train]]}, the time it takes to produce a layout grows exponentially with the number of rooms. For the most common dungeon size (10 rooms) the inference procedure takes on average 
 
 
 The EM algorithm consistently outperforms GD, albeit not by a large margin. 
