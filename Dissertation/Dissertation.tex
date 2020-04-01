@@ -149,10 +149,10 @@ We discuss Bayesian network architectures in three different levels of complexit
 \section{Data acquisition}
 
 \paragraph{Note on notation}
-Features or RVs are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\).
-Parameters refer to the Bayesian network parameters, i.e. the conditional probability tables CPTs defined by the different RV dependencies \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\).
+\textit{Features} or \textit{RVs} are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\).
+\textit{Parameters} refer to the Bayesian network parameters, i.e. the conditional probability tables CPTs defined by the different RV dependencies \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\).
 Joint probability distributions \(P(X_1, \ldots , X_n)\).
-Calligraphic \(\mathcal{N}\) is a shorthand for the parameters (CPTs) for a given network.
+Calligraphic \(\mathcal{N}\) is a shorthand for the parameters for a given network.
 Calligraphic \(\mathcal{D}\) is a wrapper for all the RVs (i.e. our data).
 
 \subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
@@ -190,7 +190,7 @@ Each global and local set of features is defined by the joint PDs respectively \
 where \(|R|\) is the total number of rooms defined by the instantiation of \(R\). To extract the five features, we need to transform the artistic and graphically rich textual representations of the dungeons in our dataset. Unfortunately automating feature extraction is very difficult due to the variant stylistic formatting and the prose like description of the tasks. Because of this, we establish a systematic way of manually annotating the Space of the dungeon as an abstract undirected graph from which we can calculate all the different features (see Appendix A for example \ref{fig:SOTA}).
 
 \paragraph{}
-The dungeon sizes in our dataset range from two to 27, but due to our restrictions combined with chance, dungeons of some sizes were never recorded. Namely dungeons with sizes \(\{4,23\}\). We could conclude that lack of dungeons from those sizes means they are highly improbable to the point where we should not be concerned with their existence. This is what we do with dungeons that are outside of the range of sizes for one-page adventures. But in terms of utility of our tool we would like to be able generate any dungeon within that range. This issue of undefined data is the main drawback of inference network as outlined in chapter \ref{ch:BNETS}. Our proposed solution is to linearly interpolate \textit{LI} dungeons that are close to the missing ones in order for us to get estimates for the global RVs. We have chosen LI due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. Room (local) RVs could potentially also be linearly interpolated by using all the rooms from the neighbouring dungeons but this poses several questions about what does it mean to interpolate 5 rooms and 6 rooms. A better and more intuitive way to handle them is by leveraging the properties of the BNets. We can represent the rooms for the interpolated dungeons as unknown values to be inferred from the known data. We are treating the data itself as a parameter to be estimated from our other observations. This is a convenient way that inference networks treat missing values or sometimes even missing variables \textbf{[[ce on latent rvs]]}. However this representation of the unknown will impose a restriction on what CPT learning algorithms we can use. We discuss them in section \ref{subsec:param_learning}.
+The dungeon sizes in our dataset range from two to 27, but due to our restrictions combined with chance, dungeons of some sizes were never recorded. Namely dungeons with sizes \(\{4,23\}\). We could conclude that lack of dungeons from those sizes means they are highly improbable to the point where we should not be concerned with their existence. This is what we do with dungeons that are outside of the range of sizes for one-page adventures. But in terms of utility of our tool we would like to be able generate any dungeon within that range. This issue of undefined data is the main drawback of inference network as outlined in chapter \ref{ch:BNETS}. Our proposed solution is to linearly interpolate \textit{LI} dungeons that are close to the missing ones in order for us to get estimates for the global RVs. We have chosen LI due to its simplicity and the fact it has been shown to produce good results in general \parencite{Ibargengoytia2013OnTE} and exceptional results on small datasets \parencite{yu2004advances}. Room (local) RVs could potentially also be linearly interpolated by using all the rooms from the neighbouring dungeons but this poses several questions about what does it \textit{mean} to interpolate 4 rooms and 6 rooms. A better and more intuitive way to handle them is by leveraging the properties of the BNets. We can represent the rooms for the interpolated dungeons as unknown values to be inferred from the known data. We are treating the data itself as a parameter to be estimated from our other observations. This is a convenient way that inference networks treat missing values or sometimes even missing variables \parencite[p45]{neticaCman}. However this representation of the unknown will impose a restriction on what CPT learning algorithms we can use. We discuss them in section \ref{subsec:param_learning}.
 
 \paragraph{}
 The final dataset is saved in a CSV format \texttt{DR\_data.csv} and consists of 92 dungeon + 1193 room entries and 10 linearly interpolated dungeon entries with 189 unknown rooms. Common statistics of the dataset can be found in appendix \ref{cha:aA}.
@@ -202,9 +202,9 @@ The final dataset is saved in a CSV format \texttt{DR\_data.csv} and consists of
 We need to define two key attributes of the BN:
 \begin{outline}[enumerate]
   \1 The causal network's topology
-  \1 Conditional probability tables \textit{CPTs} for each RV
+  \1 The network parameters
 \end{outline}
-In this paper we will empirically compare different models in search of the one with highest statistical predictive capabilities. We will evaluate three structures with two CPT learning algorithms against a unform distribution (control) for a total of 7 models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only), an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes and a fully connected model. The CPT learning algorithms will be Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD}. Implementation of all BN related algorithms is done in the Netica Bayesian Network development software \parencite{netica}.
+In this paper we will empirically compare different models in search of the one with highest statistical predictive capabilities. We will evaluate three structures with two CPT learning algorithms against a uniform distribution (control) for a total of 7 models. The structures are the previously proposed Extreme Sparse model \parencite{SummervilleSamplingHyrule} (modified for Space only), an automatically learned structure using the Tree Augmented Na\"{i}ve Bayes and a fully connected model. The three architectures are chosen as such because each one differs in complexity and in assumptions. The comparison is an exploratory experiment aiming to see which pair of complexity and assumptions fits the OPDC data best. In regards to parameter learning, the CPT learning algorithms will be Expectation Maximisation \textit{EM} and Gradient Descent \textit{GD} due to their ability of handling missing data. Implementation of all BN related algorithms is done in the Netica Bayesian Network development software \parencite{netica}.
 
 \subsection{Bayesian Network topology}
 \subsubsection{Summerville's Extreme Sparse Model \textit{SESM}}
@@ -257,13 +257,13 @@ where \(\boldsymbol X = \{L, S, D, N\}\). With this very restrictive assertion w
 
 \begin{figure}[htb]
   \centering
-  \begin{subfigure}[b]{0.55\textwidth}
+  \begin{subfigure}[b]{0.43\textwidth}
     \centering
     \includegraphics[width=\textwidth]{NBNet.png}
     \caption{Na\"{i}ve Bayes}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.35\textwidth}
+  \begin{subfigure}[b]{0.50\textwidth}
     \centering
     \includegraphics[width=\textwidth]{TANNet.png}
     \caption{TAN}
