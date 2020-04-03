@@ -170,14 +170,6 @@ namespace BayesianPDG.SpaceGenerator
                 }
                 DungeonGraph.Connect(randParent, randChild);
             }
-
-            //while (!DungeonGraph.isComplete)
-            //{
-            //    Random random = new Random();
-            //    int randParent = random.Next(1, rooms - 1);
-            //    int randChild = random.Next(1, rooms - 1);
-            //    DungeonGraph.Connect(randParent, randChild);
-            //}
             return DungeonGraph;
         }
 
@@ -312,32 +304,32 @@ namespace BayesianPDG.SpaceGenerator
                     }
                 }
 
-                //// do not invalidate Depth
-                //foreach (var set in allowedValues.ToList())
-                //{
-                //    foreach (var node in set)
-                //    {
+                // do not invalidate Depth
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
 
-                //        if (!node.IsConnected(child) && !DungeonGraph.ValidDepth(node, child))
-                //        {
-                //            allowedValues.Remove(set);
-                //        }
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidDepth(node, child))
+                        {
+                            allowedValues.Remove(set);
+                        }
 
-                //    }
-                //}
+                    }
+                }
 
-                //// do not invalidate CP distance
-                //foreach (var set in allowedValues.ToList())
-                //{
-                //    foreach (var node in set)
-                //    {
-                //        if (!node.IsConnected(child) && !DungeonGraph.ValidCPDistance(node, child))
-                //        {
-                //            allowedValues.Remove(set);
-                //        }
+                // do not invalidate CP distance
+                foreach (var set in allowedValues.ToList())
+                {
+                    foreach (var node in set)
+                    {
+                        if (!node.IsConnected(child) && !DungeonGraph.ValidCPDistance(node, child))
+                        {
+                            allowedValues.Remove(set);
+                        }
 
-                //    }
-                //}
+                    }
+                }
 
                 // do not invalidate planarity
                 foreach (var set in allowedValues.ToList())

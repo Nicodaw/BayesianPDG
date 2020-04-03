@@ -1,0 +1,28 @@
+﻿name: SMB
+default:
+  doorMode: !OverlapMode
+    doorLength: 1
+    cornerDistance: 2
+roomDescriptions:
+  big-square:
+    shape: [[0,0], [0,12], [12,12], [12,0]]
+  medium-square:
+    shape: [[0,0], [0,8], [8,8], [8,0]]
+  medium-rectangle:
+    shape: [[0,0], [0,12], [8,12], [8,0]]
+  small-square:
+    shape: [[0,0], [0,5], [5,5], [5,0]]
+    doorMode: !OverlapMode
+      doorLength: 1
+      cornerDistance: 1
+  small-rectangle:
+    shape: [[0,0], [0,8], [5,8], [5,0]]
+    doorMode: !OverlapMode
+      doorLength: 1
+      cornerDistance: 1
+  big-rectangle:
+    shape: [[0,0], [0,16], [12,16], [12,0]]
+  long-big-rectangle:
+    shape: [[0,0], [0,16], [6,16], [6,0]]
+  long-medium-rectangle:
+    shape: [[0,0], [0,12], [4,12], [4,0]]
