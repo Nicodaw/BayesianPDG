@@ -6,6 +6,7 @@
 \usepackage{subcaption}
 \usepackage{amsmath,amssymb}
 \usepackage[ruled,vlined]{algorithm2e}
+\usepackage{pdfpages}
 \addbibresource{bibl.bib}
 \author{Angel Simeonov}
 \title{Networks and Dragons: A data-driven approach to procedural dungeon generation}
@@ -94,17 +95,16 @@ Other methods proposed by Thrall \parencite{Thrall} and Brown \parencite{Brown} 
 Formal languages and namely generative grammars have been used for PDG as they have a natural way of describing narrative structures \parencite{DormansMS,Cadogan,Deery}. 
 
 \subsubsection{Data-driven approaches}
- Arguably one of the most pleasant gameplay experiences in tabletop RPGs spring from exploring intricately structured dungeons and their mysteries. Their compelling features are due to the fact that they are made by a human designer that understands the needs of the players. Researchers like Dormans have acknowledged that the structure of human-made dungeons should be studied to better answer the question of "What makes a compelling dungeon". Sumerville \parencite{SummervilleLearningOfZelda} has shown that extracting features for layout and narrative from the Legend of Zelda games can be automated by training a machine learning ML model on data from the existing, man-made dungeon levels. ML for PDG not only promotes informed content generation, but it can be used as an exploratory mixed-initiative/analysis tool for formalising dungeon structures \parencite{SummervillePCGML}. The approaches we have discussed have seen applications for both digital and tabletop RPGs, but data-driven PDG is largely an unexplored area. They are especially rare for tabletop RPGs so much that we do not know of publications on ML for PnP RPGS, presumably because of the lack of consistent datasets.
+\label{subsub:DataDriven}
+ Arguably one of the most pleasant gameplay experiences in tabletop RPGs spring from exploring intricately structured dungeons and their mysteries. Their compelling features are due to the fact that they are made by a human designer that understands the needs of the players. Researchers like Dormans have acknowledged that the structure of human-made dungeons should be studied to better answer the question of "What makes a compelling dungeon". Summerville \parencite{SummervilleLearningOfZelda} has shown that extracting features for layout and narrative from the Legend of Zelda games can be automated by training a machine learning ML model on data from the existing, man-made dungeon levels. ML for PDG not only promotes informed content generation, but it can be used as an exploratory mixed-initiative/analysis tool for formalising dungeon structures \parencite{SummervillePCGML}. The approaches we have discussed have seen applications for both digital and tabletop RPGs, but data-driven PDG is largely an unexplored area. They are especially rare for tabletop RPGs so much that we do not know of publications on ML for PnP RPGS, presumably because of the lack of consistent datasets.
+
+\chapter{Aims and Objectives}
 
 \section{Mission and Space}
-% \begin{outline}
-%   \1 Introduce the notion of Mission and Space
-%   \1 The reason for separating Mission and Space. We can model player experience better \parencite{DormansMS,SummervilleLearningOfZelda}.
-% \end{outline}
 
 \paragraph{}
 An attentive reader would have noted that distinguishing between the level layout and contents is a common occurrence in popular PDG algorithms. This discrimination was formalised by Dormans \parencite{DormansMS} in his definitions of \textit{Mission} and \textit{Space}.
-The \textit{Space} of a dungeon represents its topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. How players interact with the level is governed entirely by the overlap of Mission and Space. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns and it is by understanding the necessities of the two separate entities that we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data \parencite{SummervilleLearningOfZelda}.
+The \textit{Space} of a dungeon represents its topological structure and can be encoded as an undirected cyclic graph where each vertex is a room and each edge is a door or corridor. The \textit{Mission} is the set of narrative tasks the player must accomplish in order for him to complete the dungeon. It can be encoded as a directed graph where each vertex is the objective and the edge directions show the required sequence of completion. How players interact with the level is governed entirely by the overlap of Mission and Space. As noted by Dormans, a \textit{Mission} mapped on different layouts will result in drastically different exploration patterns. By understanding the necessities of the two separate entities we can model player experience better. Due to this separation we have seen advancements in generating adaptable to the player game environments \parencite{DormansAE} and even reverse engineering the creation of \textit{Missions} and \textit{Spaces} by learning structure from data as discussed in \ref{subsub:DataDriven}.
 
 \section{Aim}
 \label{sec:Aim}
@@ -118,7 +118,7 @@ The \textit{Space} of a dungeon represents its topological structure and can be 
 \paragraph{}
 The dungeon’s topology (Space) and contents (Mission) are correlated and embody the narrative of the game. As we have seen, dungeon generators usually implore bottom up approaches in which they apply rules for topology and then introduce dungeon content in an attempt to provide the structure for a captivating narrative. The various algorithmic methods have clear strengths and shortcomings in achieving the complex goal of creating an interesting story. From these observations it can be argued that that the ultimate \textit{dungeon generator} is the human designer. Dungeons and therefore narratives produced by humans are the most compelling out of all created dungeons. If we implore a top-down approach of analysing what makes a good man-made dungeon, we could potentially achieve higher levels of narrative automation.
 \paragraph{}
-Deery \parencite{Deery} made the first steps by manually analysing submissions to the One Page Dungeon Contest \textit{OPDC} \parencite{OPDC} to extract a graph grammar for Mission generation. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all the possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset.
+Deery \parencite{Deery} made the first steps by manually analysing submissions to the One Page Dungeon Contest \textit{OPDC} \parencite{OPDC} to extract a graph grammar for Mission generation. The Mission graph was then mapped to a physical Space in a 1:1 ratio. The result was that each room was limited to a single Mission element. It is trivial to see that the originals in OPDC do not impose such a restriction. One room can have multiple Mission elements (e.g. the key to unlocking the door is on the bandit’s waist, Key + Encounter). Furthermore, Deery’s approach was to manually look at 10 competition winners and heuristically extract the grammar rules, which he highlights that they do not capture all possible patterns. An automated approach to learning would potentially solve that issue. Programmatically learning a level from data has been an object of interest for computer based RPGs \parencite{SummervilleLearningOfZelda}, but has not been applied to PnP RPGs, presumably because of the lack of a consistent dataset.
 
 \paragraph{}
 In this paper we investigate if applying a data-driven approach to learning the Space of the dungeon can produce a map that is undistinguishable from human-made dungeon topologies. We discuss how we can use inference (Bayesian) networks to learn Space features from data. A review of the availability of data is conducted and complemented by assessing how meaningful features can be extracted. Subsequently we compare different network structures and learning algorithms and internally assess which model has the greatest statistical predictive capabilities using two scoring rules. We examine different methods that we can use for generating a dungeon topology from the best performant inference model. We conclude with a user study to externally validate how well the generator has approximated human-made dungeon topologies.
@@ -151,11 +151,13 @@ We discuss Bayesian network architectures in three different levels of complexit
 \section{Data acquisition}
 
 \paragraph{Note on notation}
-\textit{Features} or \textit{RVs} are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\).
-\textit{Parameters} refer to the Bayesian network parameters, i.e. the conditional probability tables CPTs defined by the different RV dependencies \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\).
-Joint probability distributions \(P(X_1, \ldots , X_n)\).
-Calligraphic \(\mathcal{N}\) is a shorthand for the parameters for a given network.
-Calligraphic \(\mathcal{D}\) is a wrapper for all the RVs (i.e. our data).
+\begin{outline}
+  \1 \textit{Features} or \textit{RVs} are denoted by capital letters \(X\) where a boldface \(\boldsymbol{X}\) is a shorthand for a set of RVs \(\{X_1, \ldots, X_n\}\)
+  \1 \textit{Parameters} refer to the Bayesian network parameters, i.e. the conditional probability tables CPTs defined by the different RV dependencies \(P(Y_1, \ldots, Y_n \mid X_1, \ldots , X_n)\)
+  \1 Joint probability distributions \(P(X_1, \ldots , X_n)\)
+  \1 Calligraphic \(\mathcal{N}\) is a shorthand for the parameters for a given network
+  \1 Calligraphic \(\mathcal{D}\) is a wrapper for all the RVs (i.e. our data)
+\end{outline}
 
 \subsection{Data selection} % what dataset should we choose:: OPDC winners for the last five years
 % What problems can we encounter? Sparsity of data. Very different dungeons, some are unusable (say unusable criteria)
@@ -221,7 +223,7 @@ In exploring data-driven PDG for the Legend of Zelda franchise, Summerville foun
   \begin{subfigure}[b]{0.55\textwidth}
     \centering
     \includegraphics[width=\textwidth]{SESM_full.png}
-    \caption{Sumerville's Extreme Sparse Model}
+    \caption{Summerville's Extreme Sparse Model}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.35\textwidth}
@@ -234,11 +236,11 @@ In exploring data-driven PDG for the Legend of Zelda franchise, Summerville foun
 \end{figure}
 
 \subsubsection{Tree Augmented Na\"{i}ve Bayes}
-% In the above approach we used specialist knowledge (Sumerville's experiments) to create the BN structure
+% In the above approach we used specialist knowledge (Summerville's experiments) to create the BN structure
 % We made two crucial assumptions in that PnP == ARPG && flattening Mission to Space only will still retain the same operational meaning of the dungeon due to it retaining the same conditional dependency assumptions through the BN properties
 % But we want to put those assumptions to the test by also learning the graph structure from the data we have.
 \paragraph{}
-In the above approach we applied specialist knowledge from Sumerville's experiments to create the BN structure. For that network to be valid, we made two assumptions: equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.
+In the above approach we applied specialist knowledge from Summerville's experiments to create the BN structure. For that network to be valid, we made two assumptions: equivalence between PnP and ARPG dungeons and that flattening Mission to Space retains the same operational meaning due to the BN retaining the same conditional dependencies. To contest these somewhat ambitious assumptions, we will also create a BN by ignoring any domain knowledge we have and infer the structure purely based on the data using Tree Augmented Na\"{i}ve Bayes \textit{TAN} \parencite{FriedmanTAN}.
 \paragraph{}
 Informally the learning procedure can be defined as finding the most likely BN structure that \textit{agrees} with our data. That means we are searching for the network structure that is most likely to have been produced given the data. TAN finds the most likely network structure in two steps:
 
@@ -400,9 +402,12 @@ As we are modelling probability distributions, we can pose the question of "How 
     \end{table}
 \section{External Validation} %user study
 \paragraph{User study design}
-The ultimate validation for a successful PDG tool is undoubtedly a user study assessing how players use the generator for their games. Unfortunately as discussed in section \ref{subsub:BSP}, the nature of PnP RPGs makes this task very difficult to gather a representative sample size within the timeframe of the project. For this reason we will attempt answering the question of "What makes a compelling dungeon" by proxy. That is, in section \ref{sec:Aim} we have asserted that the ultimate dungeon generator capable of producing compelling dungeons is the human designer. Therefore we conduct a study in which we assess if our produced dungeon layouts are undistinguishable from human-made dungeons. Inspiration for this experiment has been drawn from previous work on the aesthetics of composition in which it has been shown that people can discriminate between computer generated and original artwork \parencite{McManusMondrian} \parencite{FurnhamMondrian}. To validate if our model is able to generate dungeons that are undistinguishable from human-made dungeons we will conduct a preference study. Dungeons from the OPDC, our inferred set and a random control group are selected and formatted in the same visual style. Three sets of pairs are randomly permuted and contain an even distribution of the possible combinations \textit{(OPDC,ours),(OPDC,random),(ours,random)}.
+The ultimate validation for a successful PDG tool is undoubtedly a user study assessing how players use the generator for their games. Unfortunately as discussed in section \ref{subsub:BSP}, the nature of PnP RPGs makes acquiring a representative sample size within the timeframe of the project very difficult. 
 
-The common 10, 13 and 8 room dungeons as highlighted in section \ref{cha:results} were used and examples can be found in Appendix B fig \ref{fig:gen_dungeons}. The experiment was done as an online survey.
+% For this reason we will attempt answering the question of "What makes a compelling dungeon" by proxy. In section \ref{sec:Aim} we asserted that the ultimate dungeon generator capable of producing compelling dungeons is the human designer. Therefore we conduct a study in which we assess if our produced dungeon layouts are undistinguishable from human-made dungeons. 
+
+To work around this issue while still obtaining meaningful information from users, we draw inspiration on previous work on aesthetics of composition. It has been shown that when people are presented with original and computer generated contemporary artwork and are simply asked what is their preference between the two, the human-made originals are consistently preferred \parencite{McManusMondrian, FurnhamMondrian}. We utilise this phenomenon to answer the question of are our dungeons undistinguishable from human-made dungeons and in that way answering the question of have we made \textit{good} dungeons by virtue of proxy. We will conduct a preference study in which dungeons from the OPDC, our inferred set and a random control group are selected and formatted in the same visual style. Three sets of pairs are randomly permuted and contain an even distribution of the possible combinations \textit{(OPDC,ours),(OPDC,random),(ours,random)}.
+The common 10, 13 and 8 room dungeons as highlighted in section \ref{cha:results} were used and examples can be found in Appendix B fig \ref{fig:gen_dungeons}. An equal quantity of pairs from the three sets are presented in random order and random orientation (i.e. each OPDC, ours or random has equal chance on appearing either on the left or right) and the users are simply asked which one they prefer. The experiment was done as an online survey and can be viewed without the ordering logic in appendix \ref{cha:APS}.
 
 \paragraph{Demographics}
 The participants were selected to be adults with at least some experience in PnP RPGs. 
@@ -627,6 +632,10 @@ The EM algorithm consistently outperforms GD, albeit not by a large margin.
   \caption{Generated dungeons}
   \label{fig:gen_dungeons}
 \end{figure}
+
+\chapter{Preference Study}
+\label{cha:APS}
+\includepdf[pages=-,pagecommand={}]{PreferenceStudy.pdf}
 
 \printbibliography
 
