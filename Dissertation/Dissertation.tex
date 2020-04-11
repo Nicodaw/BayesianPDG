@@ -3,7 +3,8 @@
 \usepackage{tikz}
 \usepackage{booktabs,multirow}
 \usepackage{graphicx}
-\usepackage{subcaption}
+\usepackage{subcaption, subfig}
+\usepackage[export]{adjustbox}
 \usepackage{amsmath,amssymb}
 \usepackage[ruled,vlined]{algorithm2e}
 \usepackage{pdfpages}
@@ -30,14 +31,44 @@
 %\renewcommand*{\lstlistlistingname}{List of Listings}
 %\lstlistoflistings
 
+%TODO: FINISH EXEC SUMMARY
 \begin{summary}
->At most two (2) pages, aimed a non-specialist, knowledgeable authorial peer.
-The summary must:
---state the aim of the reported work,
---motivate the work,
---state methods used,
---state results found, and
---highlight any legal, social, ethical, professional, and commercial issues as appropriate to the topic of study (if none, then this should be explicitly stated).
+
+
+% >At most two (2) pages, aimed a non-specialist, knowledgeable authorial peer.
+% The summary must:
+% --state the aim of the reported work,
+% --motivate the work,
+% --state methods used,
+% --state results found, and
+% --highlight any legal, social, ethical, professional, and commercial issues as appropriate to the topic of study (if none, then this should be explicitly stated).
+% Very clearly communicates the aims and key objectives of the project and provides a strong motivation for pursuing it. A very clear discussion of the approach taken, the methodology applied and the results achieved. Detailed evaluation against success criteria and implication of results on future work
+
+\paragraph{}
+Tabletop Role-playing Games TRPGs are multiplayer, story-driven games which have been around for decades. They require a group of players taking up the role of fictional personas and being guided through a fictional world by another player, often referred to as the Dungeon Master DM. Game sessions are played by verbal interaction between the participants and the DM, whereby the DM has the non-trivial task of compiling a compelling narrative. Much like in other literary contexts, creating an interesting story is a difficult and highly creatively demanding job. That is why often the narrative is focused on one location within this fictional world that can be polished with virtually as much detail as wanted. These locations are referred to as Dungeons. Procedural Dungeon Generation PDG has been an object of interest of researchers and hobbyists alike due to the appetising prospect of alleviating time-consuming work from the DM in designing these key spaces. Current state-of-the-art digital and non-digital PDG methods are oriented in defining a unique generative philosophy which produces the skeleton of a Dungeon, but provides little support for assessing the qualities of the product. The lack of focus on the "goodness" of a dungeon is a drawback that is a characteristic shared by all dungeon generators apart of the human designer. Therefore we suggest a data-driven approach to learning dungeon characteristics from human-made dungeons and in that way generating "good" dungeons by imitating the only dungeon generator that is proven to create compelling narratives. This formulation provides us with a natural evaluation criterion by asking \textit{"are dungeons we produce indistinguishable from human-made ones?"}.
+The generative method proposed is split in two sections: firstly human-made dungeons properties are captured by statistical modelling and secondly we construct a generative algorithm that produces a usable dungeon layout given our model.
+%TODO: Say something about basing off assumptions and structure on the work done previously for digital RPGs.
+\paragraph{}
+For the first step, formalising dungeon creation as a statistical modelling problem is done by training a Bayesian network on winning dungeons from the One-Page Dungeon competition. We empirically compare different network architectures and learning algorithms in search of the model with highest statistical predictive capabilities. The statistical evaluation is done by using our trained model as a classifier to predict dungeon features from the data. We infer that the model that can most accurately predict the data has best learned its properties and therefore use it for the generation phase.
+
+\paragraph{}
+The output of the modelling phase is a set of informed dungeon features that can be viewed as a configuration or descriptor of a dungeon. A natural way to view them is as constraints on what the produced dungeon has to have. Therefore the generation algorithm chosen is a Constraint Propagator, which attempts satisfy the produced configurations and in the process give us a performance metric of how long it takes to satisfy these constraints. Ultimately dungeons generated with the best performant model are presented to 90 TRPG players in a blind preference study to validate if our PDG method produces layouts that are indistinguishable from human-made dungeons.
+
+\paragraph{}
+This study discuses the various difficulties associated with formalising a creative task such as dungeon generation and how lack of data is detrimental. We outline an end-to-end pipeline from data acquisition, through statistical modelling to physical dungeon generation and show that our model trained only on layout features fails to produce satisfactory results both in terms of statistical accuracy, speed and ultimately user preference. The implications of this performance strongly suggests that a more detailed analysis on feature selection and data acquisition in general from the highly creative and inconsistent environment of dungeon-making is necessary.
+
+\paragraph{}
+All dungeon data used is under a Creative Commons licence. All user data collected is anonymous. The study was conducted as an online survey and as such no hard copies of the data are produced and the digital entries are securely stored under the University of York Qualtrics suite.
+% Brief definition of roleplaying games
+% Brief defininition of Dungeons and why they are useful (focus the narrative, making for a more compelling story) and why it is time-consuming 
+% Automation is useful, but previous automation methods rely on a single generative method, rarely focusing on answering the question of what makes a ~good~ dungeon.
+
+% We formalise dungeon creation as a statistical modelling problem for which we train a Bayesian network on transcribed winning dungeons from the One-Page Dungeon competition. We empirically compare different network architectures and learning algorithms in search of the model with highest statistical predictive capabilities. Dungeons generated with the best performant model are presented to users in a blind study to attempt externally validate if our PDG method produces layouts that are indistinguishable from human-made dungeons.
+
+%% The lack of data and restrictions we have imposed to introduce consistency for this data-driven method resulted in an unsatisfactory
+
+% This study discuses the various difficulties associated with formalising a creative task such as dungeon generation and how lack of data is detrimental. We outline an end-to-end pipeline from data acquisition, through statistical modelling to informed dungeon generation and show that our model trained only on layout features fails to produce satisfactory results.
+
 \end{summary}
 
 \chapter{Introduction}
@@ -84,7 +115,7 @@ Unlike the original non-digital generators, computerised ones rarely allow for h
 Cellular automata (CA) utilises a procedural generation mechanism in which a $N \times M$ grid space is mutated incrementally by a set of agents. The implementation of these mutation operators define if the CA will simulate erosion \parencite{donjonCA} or man-made structures such as rooms with corridors. An example that can accommodate both can be seen in the donjon dungeon generator \parencite{donjonPDG}. Its simplicity and degrees of customisations of layout and style has made donjon a popular generator choice. At time of writing, it has more than 2500 generated dungeons in the last 12 hours and 100 donations in the last 3 months. Despite its popularity, donjon (as well as other CA PDGs) implores purely random generation techniques which are only evaluated based on the reachability (i.e. is there a path from the start to each room). Furthermore, although we have control over the input parameters for the topological randomness, the narrative elements (the contents, rather than the structure) of the dungeon are entirely arbitrary and often contradictory \parencite{Thrall,Brown}. In terms of the aforementioned reachability, donjon does not take in account the randomly allocated locked doors as the key allocation is left at the DM's discretion. That ultimately limits the usefulness of the tool as a narrative generator. %All information generated about the monsters, treasures and other quest elements are discarded by the DM \textbf{[[citation needed on how people use dungeon generators]]}
 
 \subsubsection{Constraint Propagators}
-Constraint Satisfaction Problems (CSPs) define a discrete set of variables with corresponding constraints that restrict the possible variable instantiations \parencite{kumar1992CPalgorithms}. PDG has been described as a CSP on occasions where the variables and constraints define the layout \textbf{[[cn]]}, contents \parencite{HorswillCSPMission} or both layout and content \parencite{GreenCSPboth} of a dungeon. Constraint Propagation (CP) is a particular method proven useful for solving CSP in the context of PDG. The algorithm randomly selects a set of possible values for a particular variable and \textit{propagates} the result to the rest of the variables, adjusting their possible values accordingly. If the selected value narrows another variable's possible values to the empty set, we infer that this instantiation is suboptimal and we backpropagate to the last viable solution and retry. Furthermore it can be generalised that a level is solvable if an instantiation exists such that no variables are reduced to the empty set. Utilising this formalisation of the \textit{solvability} of a level we can populate a dungeon with varying degrees of complexity from ensuring that keys are always spawned before the door that they unlock to adjusting difficulty by measuring survivability metrics between rooms. Even thought CPs have solved some problems of the purely random generators, formulating a numerical constraint for a narrative element can be difficult. The complication is both in the translation of a story element to a numerical representation and in the computational expense that comes with computing large amounts of permutations.
+Constraint Satisfaction Problems (CSPs) define a discrete set of variables with corresponding constraints that restrict the possible variable instantiations \parencite{kumar1992CPalgorithms}. PDG has been described as a CSP on occasions where the variables and constraints define the layout, contents or both layout and content of a dungeon \parencite{HorswillCSPMission, GreenCSPboth}. Constraint Propagation (CP) is a particular method proven useful for solving CSP in the context of PDG. The algorithm randomly selects a set of possible values for a particular variable and \textit{propagates} the result to the rest of the variables, adjusting their possible values accordingly. If the selected value narrows another variable's possible values to the empty set, we infer that this instantiation is suboptimal and we backpropagate to the last viable solution and retry. Furthermore it can be generalised that a level is solvable if an instantiation exists such that no variables are reduced to the empty set. Utilising this formalisation of the \textit{solvability} of a level we can populate a dungeon with varying degrees of complexity from ensuring that keys are always spawned before the door that they unlock to adjusting difficulty by measuring survivability metrics between rooms. Even thought CPs have solved some problems of the purely random generators, formulating a numerical constraint for a narrative element can be difficult. The complication is both in the translation of a story element to a numerical representation and in the computational expense that comes with computing large amounts of permutations.
 
 \subsubsection{Context aware Binary Space Partitioning}
 \label{subsub:BSP}
@@ -290,7 +321,7 @@ Due to the fact that we have a small number of nodes, we can afford the computat
 
 \subsection{Parameter Learning}
 \label{subsec:param_learning}
-When we learn parameters (CPTs for each RV) we are trying to find the most likely PD for each RV that agrees with our data. More formally if \(\mathcal{N}\) is the network's CPTs and \(\mathcal{D}\) is the data then from Bayes's rule we know that \(P(\mathcal{N} \mid \mathcal{D}) = \frac{P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})}{P(\mathcal{D})}\). We can formulate the parameter learning as an optimisation problem where we find the best values for the posterior \(P(\mathcal{N} \mid \mathcal{D})\) by maximising the likelihood \(P(\mathcal{D} \mid \mathcal{N})\) given our prior \(P(\mathcal{N})\) \parencite[46-48]{neticaCman}. This is in fact the common maximum likelihood estimation MLE \textbf{[[cn for MLE]]}, but because we have missing data, \(P(\mathcal{D})\) is undefined and therefore the MLE is also undefined. To work around this issue and learn the likelihood we review two algorithms Netica has in its toolkit.
+When we learn parameters (CPTs for each RV) we are trying to find the most likely PD for each RV that agrees with our data. More formally if \(\mathcal{N}\) is the network's CPTs and \(\mathcal{D}\) is the data then from Bayes's rule we know that \(P(\mathcal{N} \mid \mathcal{D}) = \frac{P(\mathcal{D} \mid \mathcal{N})P(\mathcal{N})}{P(\mathcal{D})}\). We can formulate the parameter learning as an optimisation problem where we find the best values for the posterior \(P(\mathcal{N} \mid \mathcal{D})\) by maximising the likelihood \(P(\mathcal{D} \mid \mathcal{N})\) given our prior \(P(\mathcal{N})\) \parencite[46-48]{neticaCman}. This is in fact the common maximum likelihood estimation MLE, but because we have missing data, \(P(\mathcal{D})\) is undefined and therefore the MLE is also undefined. To work around this issue and learn the likelihood we review two algorithms Netica has in its toolkit.
  
 % \subsubsection{Count \parencite[48-50]{neticaCman}}
 % The counting learning states that the probabilities in a single node are defined by how often a particular value has been seen in the data. This notion is defined as the \textit{experience} of that value. The network starts in a state of complete ignorance with uniform probabilities across all RVs. As we iteratively load in the data, the CPT are updated by increasing the probability for a particular value every time it is seen. Specifically, the experience is updated by the previous experience and the degree factor of that data point (i.e how often is it repeated, usually 1) \(e^{\prime} = e + d\). The CPT values are computed as a ratio of the previous and newly observed experience \(P^{\prime}(X=x) = \frac{P(X=x) \times e}{e^{\prime}}\). The counting algorithm is recommended due to its speed and simplicity, but it has a substantial drawback in the fact that it needs the data to be fully defined. Theoretically we should be able to use the counting algorithm as we have no latent (undefined) RVs nor missing data.
@@ -299,7 +330,7 @@ When we learn parameters (CPTs for each RV) we are trying to find the most likel
 EM \parencite{EMAlgorithm} is a numerical algorithm that can handle missing data. It assigns random probabilities to our missing values and iteratively alternates between maximising the parameters of the model given the data (Maximisation step) and finding better estimations of the missing data (Expectation step). It converges after a certain set of predefined iterations or when no new updates are happening. 
 
 \subsubsection{Gradient Descent GD}
-GD is another algorithm that is able to find parameters for missing data. Netica specifically uses conjugate gradient descent \textbf{[[cn]]} whereby it maximises \(P(\mathcal{N} \mid \mathcal{D})\) by computing the steepest gradient, taking in account the previous one \parencite[p47]{neticaCman}. Both EM and GD risk getting stuck in local optima.
+GD is another algorithm that is able to find parameters for missing data. Netica specifically uses conjugate gradient descent, whereby it maximises \(P(\mathcal{N} \mid \mathcal{D})\) by computing the steepest gradient, taking in account the previous one \parencite[p47]{neticaCman}. Both EM and GD risk getting stuck in local optima.
 
 \section{Implementation}
 \label{sec:implementation}
@@ -352,7 +383,10 @@ The platform of choice for this project is .NET with the language of implementat
 \chapter{Results}
 \label{cha:results}
 \section{Internal Validation}
-As we are modelling probability distributions, we can pose the question of "How well do we reduce uncertainty". An answer is obtained by using the BNet as a classifier in which the predictor variable is the user input (i.e. the size of the dungeon) and the target variables are the rest of the features. Due to the small dataset, we construct a within sample test (use the same data for training and testing) where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error rate \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is bounded between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities. In favour of simplicity, we will choose TAN with EM to continue forward to the generative process. To assess the computational expense of the generation, 15 layouts each were generated for 8, 10 and 13 room dungeons. The sizes were chosen as they are the most common and additionally 13 is the mean dungeon size. Table \ref{tab:gen_time} shows the time and number of unsatisfiable dungeons sampled (retries) before finding a single dungeon that satisfies our physical constraint requirements described in section \ref{subsec:CSP}.
+As we are modelling probability distributions, we can pose the question of "How well do we reduce uncertainty". An answer is obtained by using the BNet as a classifier in which the predictor variable is the user input (i.e. the size of the dungeon) and the target variables are the rest of the features. Due to the small dataset, we construct a within sample test (use the same data for training and testing) where we measure how well the different models estimate \(P(L,S,D,N\mid R)\). We will use two metrics: the classification error rate \(E\) due to its natural meaning in conjunction with the well known quadratic loss (Brier score) \parencite{PearlScoringRules}. It should be noted that Netica uses the original formulation of the quadratic loss which is bounded between zero and two. The comparison between our different models can be seen in table \ref{table:BNetCompare}. We observe that the TAN and fully connected networks both have the highest predictive capabilities. In favour of simplicity, we will choose TAN with EM to continue forward to the generative process. 
+To assess the computational expense of the generation, 15 layouts each were generated for each size and the average time is taken. Generation time increases exponentially with dungeon size with a factor that makes dungeons above 13 rooms unfeasible. Figure \ref{fig:CP_performance} shows the increase in time and table \ref{tab:gen_time} shows the time and number of unsatisfiable dungeons sampled (retries) before finding a single dungeon that satisfies our physical constraint requirements described in section \ref{subsec:CSP} for the top three most common dungeon sizes (8, 10 and 13).
+
+% To assess the computational expense of the generation, 15 layouts each were generated for 8, 10 and 13 room dungeons. The sizes were chosen as they are the most common and additionally 13 is the mean dungeon size. Table \ref{tab:gen_time} shows the time and number of unsatisfiable dungeons sampled (retries) before finding a single dungeon that satisfies our physical constraint requirements described in section \ref{subsec:CSP}.
 
 \begin{table}[htb]
   \centering
@@ -373,18 +407,38 @@ As we are modelling probability distributions, we can pose the question of "How 
   \label{table:BNetCompare}
   \end{table}
 
-  \begin{table}[]
-    \centering
-    \begin{tabular}{@{}lll@{}}
-    \toprule
-    Size & time (min) & retries \\ \midrule
-    8    & 3          & 105     \\
-    10   & 25         & 451     \\
-    13   & 50         & 314     \\ \bottomrule
-    \end{tabular}
-    \caption{Generation time}
-    \label{tab:gen_time}
-    \end{table}
+  % \begin{table}[]
+  %   \centering
+  %   \begin{tabular}{@{}lll@{}}
+  %   \toprule
+  %   Size & time (min) & retries \\ \midrule
+  %   8    & 3          & 105     \\
+  %   10   & 25         & 451     \\
+  %   13   & 50         & 314     \\ \bottomrule
+  %   \end{tabular}
+  %   \caption{Generation time}
+  %   \label{tab:gen_time}
+  %   \end{table}
+
+    \begin{figure}
+      \centering
+      \subfloat[Common sizes generation]{
+          \adjustbox{valign=b}{\begin{tabular}{@{}lll@{}}
+            \toprule
+            Size & time (min) & retries \\ \midrule
+            8    & 3          & 105     \\
+            10   & 25         & 451     \\
+            13   & 50         & 314     \\ \bottomrule
+            \end{tabular}
+          \label{tab:gen_time}}}
+      \subfloat[Generation time plot]{           
+          \includegraphics[width=0.5\linewidth,valign=b]{figures/cp_performance.png} 
+          \label{fig:CP_performance}          
+          }
+      \caption{CP performance}
+  \end{figure}
+
+
 \section{External Validation} %user study
 \paragraph{}
 The ultimate validation for a successful PDG tool is undoubtedly a user study assessing how players use the generator for their games. Unfortunately as discussed in section \ref{subsub:BSP}, the nature of PnP RPGs makes acquiring a representative sample size within the timeframe of the project very difficult. 
@@ -638,7 +692,7 @@ Furthermore this experiment was focused on answering the question if our generat
 \begin{figure}[htb]
   \centering
   \includegraphics[width=\textwidth]{ExternalValidation/hypothesis_test_summary.png}
-  \caption{significance test summary}
+  \caption{category encoding (OPDC, ours, random) = (1,2,3)}
   \label{fig:binomial_test_summary}
 \end{figure}
 
